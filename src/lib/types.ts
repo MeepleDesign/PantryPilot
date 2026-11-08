@@ -95,3 +95,12 @@ export type Household = {
   default_supermarket: string | null;
   invite_code: string;
 };
+
+export type RecipeRating = {
+  id: string;
+  recipe_id: string;
+  household_id: string;
+  user_id: string;
+  rating: number;
+  updated_at: string;
+};

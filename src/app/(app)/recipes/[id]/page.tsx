@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { ScaledIngredients } from "@/components/scaled-ingredients";
 import { AddToPlanForm } from "@/components/add-to-plan-form";
 import { DeleteRecipeButton } from "@/components/delete-recipe-button";
+import { StaticStars, InteractiveStars } from "@/components/star-rating";
+import { getCurrentHousehold } from "@/lib/current-household";
 
 export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[id]">) {
   const { id } = await params;
@@ -21,6 +23,20 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
   const ingredients = [...recipe.recipe_ingredients].sort(
     (a, b) => a.sort_order - b.sort_order,
   );
+
+  const { household } = await getCurrentHousehold();
+  const { data: auth } = await supabase.auth.getUser();
+  const { data: ratings } = await supabase
+    .from("recipe_ratings")
+    .select("user_id, rating")
+    .eq("recipe_id", id)
+    .eq("household_id", household.id);
+
+  const ratingCount = ratings?.length ?? 0;
+  const avgRating = ratingCount
+    ? ratings!.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+    : 0;
+  const myRating = ratings?.find((r) => r.user_id === auth.user?.id)?.rating ?? 0;
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -53,6 +69,14 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
         {[recipe.cuisine, recipe.diet, recipe.protein_tag].filter(Boolean).join(" · ")}
       </p>
 
+      <div className="mb-3">
+        {ratingCount > 0 ? (
+          <StaticStars value={avgRating} count={ratingCount} size="md" />
+        ) : (
+          <span className="text-xs text-muted">No ratings yet</span>
+        )}
+      </div>
+
       {recipe.tags?.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">
           {recipe.tags.map((tag: string) => (
@@ -83,6 +107,10 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
         <Stat label="Servings" value={String(recipe.servings)} />
         <Stat label="Calories" value={recipe.calories ? `${recipe.calories} kcal` : "—"} />
         <Stat label="Protein" value={recipe.protein_g ? `${recipe.protein_g} g` : "—"} />
+      </div>
+
+      <div className="mb-6 rounded-xl border border-border bg-surface p-3">
+        <InteractiveStars recipeId={id} initialRating={myRating} />
       </div>
 
       <div className="mb-6">

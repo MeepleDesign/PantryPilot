@@ -1,6 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/server";
+import { getCurrentHousehold } from "@/lib/current-household";
+import { StaticStars } from "@/components/star-rating";
 import type { Recipe } from "@/lib/types";
 
 export default async function RecipesPage({
@@ -12,6 +14,7 @@ export default async function RecipesPage({
   const tag = typeof params.tag === "string" ? params.tag : "";
 
   const supabase = await createClient();
+  const { household } = await getCurrentHousehold();
 
   let query = supabase.from("recipes").select("*").order("name");
   if (q) query = query.ilike("name", `%${q}%`);
@@ -24,6 +27,18 @@ export default async function RecipesPage({
   const { data: allRecipes } = await supabase.from("recipes").select("cuisine, tags");
   const cuisines = [...new Set((allRecipes ?? []).map((r) => r.cuisine).filter(Boolean))].sort();
   const tags = [...new Set((allRecipes ?? []).flatMap((r) => r.tags ?? []))].sort();
+
+  const { data: ratingRows } = await supabase
+    .from("recipe_ratings")
+    .select("recipe_id, rating")
+    .eq("household_id", household.id);
+
+  const ratingsByRecipe = new Map<string, number[]>();
+  for (const r of ratingRows ?? []) {
+    const list = ratingsByRecipe.get(r.recipe_id) ?? [];
+    list.push(r.rating);
+    ratingsByRecipe.set(r.recipe_id, list);
+  }
 
   return (
     <div>
@@ -87,7 +102,7 @@ export default async function RecipesPage({
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {recipes.map((r: Recipe) => (
-            <RecipeCard key={r.id} recipe={r} />
+            <RecipeCard key={r.id} recipe={r} ratings={ratingsByRecipe.get(r.id) ?? []} />
           ))}
         </div>
       )}
@@ -95,7 +110,11 @@ export default async function RecipesPage({
   );
 }
 
-function RecipeCard({ recipe }: { recipe: Recipe }) {
+function RecipeCard({ recipe, ratings }: { recipe: Recipe; ratings: number[] }) {
+  const avgRating = ratings.length
+    ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
+    : 0;
+
   return (
     <Link
       href={`/recipes/${recipe.id}`}
@@ -125,9 +144,16 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
             </span>
           )}
         </div>
-        <p className="mb-2 text-xs text-muted">
+        <p className="mb-1 text-xs text-muted">
           {[recipe.cuisine, recipe.diet].filter(Boolean).join(" · ")}
         </p>
+        <div className="mb-2">
+          {ratings.length > 0 ? (
+            <StaticStars value={avgRating} count={ratings.length} />
+          ) : (
+            <span className="text-xs text-muted">No ratings yet</span>
+          )}
+        </div>
         {recipe.tags?.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-1">
             {recipe.tags.map((t) => (
