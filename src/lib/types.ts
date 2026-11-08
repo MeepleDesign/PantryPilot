@@ -1,6 +1,8 @@
 export type StorageLocation = "cupboard" | "fridge" | "freezer" | "other";
 export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack";
 
+export type RecipeCourse = "main" | "side" | "snack" | "dessert";
+
 export type Recipe = {
   id: string;
   household_id: string | null;
@@ -12,6 +14,7 @@ export type Recipe = {
   main_protein_source: string | null;
   total_time_minutes: number | null;
   servings: number;
+  course: RecipeCourse;
   equipment: string | null;
   method: string | null;
   source: "seed" | "manual" | "photo";
@@ -51,7 +54,9 @@ export type MealPlanEntry = {
   batch_multiplier: number;
   cooked: boolean;
   cooked_at: string | null;
+  side_of: string | null;
   recipes?: Recipe;
+  sides?: MealPlanEntry[];
 };
 
 export type PantryItem = {

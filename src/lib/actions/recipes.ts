@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import type { RecipeCourse } from "@/lib/types";
 
 export type RecipeIngredientInput = {
   ingredient_name: string;
@@ -22,6 +23,7 @@ export type RecipeFormInput = {
   main_protein_source: string | null;
   total_time_minutes: number | null;
   servings: number;
+  course: RecipeCourse;
   equipment: string | null;
   method: string | null;
   prep_note: string | null;
@@ -52,6 +54,7 @@ export async function createRecipe(input: RecipeFormInput) {
       main_protein_source: input.main_protein_source,
       total_time_minutes: input.total_time_minutes,
       servings: input.servings,
+      course: input.course,
       equipment: input.equipment,
       method: input.method,
       prep_note: input.prep_note,
@@ -104,6 +107,7 @@ export async function updateRecipe(recipeId: string, input: RecipeFormInput) {
       main_protein_source: input.main_protein_source,
       total_time_minutes: input.total_time_minutes,
       servings: input.servings,
+      course: input.course,
       equipment: input.equipment,
       method: input.method,
       prep_note: input.prep_note,

@@ -4,20 +4,63 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { confirmCooked, removeMealPlanEntry } from "@/lib/actions/planner";
 import { Spinner } from "@/components/spinner";
-import type { MealPlanEntry } from "@/lib/types";
+import { AddSideForm } from "@/components/add-side-form";
+import type { MealPlanEntry, Recipe } from "@/lib/types";
 
-export function MealEntryRow({ entry }: { entry: MealPlanEntry }) {
+export function MealEntryRow({
+  entry,
+  sides = [],
+  sideRecipes = [],
+}: {
+  entry: MealPlanEntry;
+  sides?: MealPlanEntry[];
+  sideRecipes?: Recipe[];
+}) {
+  const [addingSide, setAddingSide] = useState(false);
+
+  return (
+    <div className="px-3 py-2">
+      <EntryLine entry={entry} />
+      {sides.map((side) => (
+        <div key={side.id} className="pl-6">
+          <EntryLine entry={side} isSide />
+        </div>
+      ))}
+      {addingSide ? (
+        <AddSideForm
+          date={entry.plan_date}
+          mealSlot={entry.meal_slot}
+          parentEntryId={entry.id}
+          sideRecipes={sideRecipes}
+          onDone={() => setAddingSide(false)}
+        />
+      ) : (
+        sideRecipes.length > 0 && (
+          <button
+            onClick={() => setAddingSide(true)}
+            className="ml-6 mt-1 text-xs font-medium text-brand"
+          >
+            + Add side
+          </button>
+        )
+      )}
+    </div>
+  );
+}
+
+function EntryLine({ entry, isSide }: { entry: MealPlanEntry; isSide?: boolean }) {
   const [pending, startTransition] = useTransition();
   const [action, setAction] = useState<"cook" | "remove" | null>(null);
 
   return (
-    <div className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
+    <div className="flex items-center justify-between gap-3 py-1 text-sm">
       <div className="min-w-0">
         <Link href={`/recipes/${entry.recipe_id}`} className="font-medium hover:text-brand">
+          {isSide && <span className="mr-1 text-muted">↳</span>}
           {entry.recipes?.name}
         </Link>
         <p className="text-xs text-muted">
-          {entry.meal_slot} ·{" "}
+          {!isSide && `${entry.meal_slot} · `}
           {Math.round(entry.batch_multiplier * (entry.recipes?.servings ?? 1))} servings
           {entry.cooked && <span className="text-success"> · cooked ✓</span>}
         </p>

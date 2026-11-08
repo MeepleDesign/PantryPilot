@@ -14,6 +14,7 @@ export async function addMealPlanEntry(input: {
   meal_slot: MealSlot;
   recipe_id: string;
   batch_multiplier: number;
+  side_of?: string | null;
 }) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -25,6 +26,7 @@ export async function addMealPlanEntry(input: {
     meal_slot: input.meal_slot,
     recipe_id: input.recipe_id,
     batch_multiplier: input.batch_multiplier,
+    side_of: input.side_of ?? null,
     created_by: auth.user?.id,
   });
   if (error) throw new Error(error.message);

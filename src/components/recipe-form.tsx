@@ -5,7 +5,7 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/spinner";
 import type { RecipeFormInput, RecipeIngredientInput } from "@/lib/actions/recipes";
-import type { RecipeWithIngredients } from "@/lib/types";
+import type { RecipeCourse, RecipeWithIngredients } from "@/lib/types";
 
 type Props = {
   initial?: RecipeWithIngredients;
@@ -142,6 +142,7 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
         main_protein_source: (formData.get("main_protein_source") as string) || null,
         total_time_minutes: numOrNull(formData.get("total_time_minutes")),
         servings: Number(formData.get("servings")) || 6,
+        course: (formData.get("course") as RecipeCourse) || "main",
         equipment: (formData.get("equipment") as string) || null,
         method: serialiseStepsToMethod(steps) || null,
         prep_note: (formData.get("prep_note") as string) || null,
@@ -310,6 +311,19 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
             defaultValue={initial?.servings ?? 6}
             required
           />
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium">Course</span>
+            <select
+              name="course"
+              defaultValue={initial?.course ?? "main"}
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+            >
+              <option value="main">Main</option>
+              <option value="side">Side</option>
+              <option value="snack">Snack</option>
+              <option value="dessert">Dessert</option>
+            </select>
+          </label>
         </div>
         <Field
           label="Equipment / appliance settings"

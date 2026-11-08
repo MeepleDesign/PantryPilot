@@ -2,7 +2,7 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { MealEntryRow } from "@/components/meal-entry-row";
 import { QuickAddMealForm } from "@/components/quick-add-meal-form";
-import type { MealPlanEntry } from "@/lib/types";
+import type { MealPlanEntry, Recipe } from "@/lib/types";
 
 function dateRange(days: number) {
   const dates: string[] = [];
@@ -23,7 +23,7 @@ export default async function PlannerPage() {
 
   const { data: entries, error } = await supabase
     .from("meal_plan_entries")
-    .select("*, recipes(name, servings)")
+    .select("*, recipes(name, servings, course)")
     .eq("household_id", household.id)
     .gte("plan_date", dates[0])
     .lte("plan_date", dates[dates.length - 1])
@@ -35,6 +35,8 @@ export default async function PlannerPage() {
     .select("*")
     .order("name");
   if (recipesError) throw new Error(recipesError.message);
+
+  const sideRecipes = (recipes ?? []).filter((r) => r.course === "side");
 
   return (
     <div>
@@ -48,6 +50,14 @@ export default async function PlannerPage() {
           const dayEntries = (entries as MealPlanEntry[] | null)?.filter(
             (e) => e.plan_date === date,
           );
+          const mains = (dayEntries ?? []).filter((e) => !e.side_of);
+          const sidesByParent = new Map<string, MealPlanEntry[]>();
+          for (const e of dayEntries ?? []) {
+            if (!e.side_of) continue;
+            const list = sidesByParent.get(e.side_of) ?? [];
+            list.push(e);
+            sidesByParent.set(e.side_of, list);
+          }
           const label = new Date(date).toLocaleDateString("en-GB", {
             weekday: "long",
             day: "numeric",
@@ -58,10 +68,15 @@ export default async function PlannerPage() {
               <div className="border-b border-border px-3 py-2 text-sm font-medium">
                 {label}
               </div>
-              {dayEntries?.length ? (
+              {mains.length ? (
                 <div className="divide-y divide-border">
-                  {dayEntries.map((entry) => (
-                    <MealEntryRow key={entry.id} entry={entry} />
+                  {mains.map((entry) => (
+                    <MealEntryRow
+                      key={entry.id}
+                      entry={entry}
+                      sides={sidesByParent.get(entry.id) ?? []}
+                      sideRecipes={sideRecipes}
+                    />
                   ))}
                 </div>
               ) : (

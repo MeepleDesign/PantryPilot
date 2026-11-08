@@ -12,6 +12,7 @@ export default async function RecipesPage({
   const q = typeof params.q === "string" ? params.q : "";
   const cuisine = typeof params.cuisine === "string" ? params.cuisine : "";
   const tag = typeof params.tag === "string" ? params.tag : "";
+  const course = typeof params.course === "string" ? params.course : "";
 
   const supabase = await createClient();
   const { household } = await getCurrentHousehold();
@@ -20,6 +21,7 @@ export default async function RecipesPage({
   if (q) query = query.ilike("name", `%${q}%`);
   if (cuisine) query = query.eq("cuisine", cuisine);
   if (tag) query = query.contains("tags", [tag]);
+  if (course) query = query.eq("course", course);
 
   const { data: recipes, error } = await query;
   if (error) throw new Error(error.message);
@@ -27,6 +29,12 @@ export default async function RecipesPage({
   const { data: allRecipes } = await supabase.from("recipes").select("cuisine, tags");
   const cuisines = [...new Set((allRecipes ?? []).map((r) => r.cuisine).filter(Boolean))].sort();
   const tags = [...new Set((allRecipes ?? []).flatMap((r) => r.tags ?? []))].sort();
+  const COURSES = [
+    { value: "main", label: "Main" },
+    { value: "side", label: "Side" },
+    { value: "snack", label: "Snack" },
+    { value: "dessert", label: "Dessert" },
+  ];
 
   const { data: ratingRows } = await supabase
     .from("recipe_ratings")
@@ -89,6 +97,18 @@ export default async function RecipesPage({
             </option>
           ))}
         </select>
+        <select
+          name="course"
+          defaultValue={course}
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+        >
+          <option value="">All courses</option>
+          {COURSES.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
         <button
           type="submit"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-surface"
@@ -145,7 +165,9 @@ function RecipeCard({ recipe, ratings }: { recipe: Recipe; ratings: number[] }) 
           )}
         </div>
         <p className="mb-1 text-xs text-muted">
-          {[recipe.cuisine, recipe.diet].filter(Boolean).join(" · ")}
+          {[recipe.course[0].toUpperCase() + recipe.course.slice(1), recipe.cuisine, recipe.diet]
+            .filter(Boolean)
+            .join(" · ")}
         </p>
         <div className="mb-2">
           {ratings.length > 0 ? (
