@@ -20,7 +20,7 @@ export function MealEntryRow({
 
   return (
     <div className="px-3 py-2">
-      <EntryLine entry={entry} />
+      <EntryLine entry={entry} cookHref={`/planner/cook/${entry.id}`} />
       {sides.map((side) => (
         <div key={side.id} className="pl-6">
           <EntryLine entry={side} isSide />
@@ -48,7 +48,15 @@ export function MealEntryRow({
   );
 }
 
-function EntryLine({ entry, isSide }: { entry: MealPlanEntry; isSide?: boolean }) {
+function EntryLine({
+  entry,
+  isSide,
+  cookHref,
+}: {
+  entry: MealPlanEntry;
+  isSide?: boolean;
+  cookHref?: string;
+}) {
   const [pending, startTransition] = useTransition();
   const [action, setAction] = useState<"cook" | "remove" | null>(null);
 
@@ -66,6 +74,11 @@ function EntryLine({ entry, isSide }: { entry: MealPlanEntry; isSide?: boolean }
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-3">
+        {cookHref && (
+          <Link href={cookHref} className="font-medium text-brand">
+            Cook
+          </Link>
+        )}
         {!entry.cooked && (
           <button
             disabled={pending}
