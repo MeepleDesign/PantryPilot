@@ -3,6 +3,9 @@
 import { useState } from "react";
 import type { RecipeIngredient } from "@/lib/types";
 
+const SERVING_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
+const DEFAULT_SERVINGS = 2;
+
 export function ScaledIngredients({
   ingredients,
   baseServings,
@@ -10,27 +13,26 @@ export function ScaledIngredients({
   ingredients: RecipeIngredient[];
   baseServings: number;
 }) {
-  const [multiplier, setMultiplier] = useState(1);
-  const servings = Math.round(baseServings * multiplier);
+  const [servings, setServings] = useState(DEFAULT_SERVINGS);
+  const multiplier = servings / baseServings;
 
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
         <h2 className="font-medium">Ingredients</h2>
         <div className="flex items-center gap-2 text-sm">
-          <span className="text-muted">Batch</span>
+          <span className="text-muted">Servings</span>
           <select
-            value={multiplier}
-            onChange={(e) => setMultiplier(Number(e.target.value))}
+            value={servings}
+            onChange={(e) => setServings(Number(e.target.value))}
             className="rounded-lg border border-border bg-surface px-2 py-1 outline-none focus:border-brand"
           >
-            {[0.5, 1, 1.5, 2, 3].map((m) => (
-              <option key={m} value={m}>
-                {m}×{" "}
+            {SERVING_OPTIONS.map((s) => (
+              <option key={s} value={s}>
+                {s}
               </option>
             ))}
           </select>
-          <span className="text-muted">({servings} servings)</span>
         </div>
       </div>
       <ul className="divide-y divide-border rounded-xl border border-border bg-surface">
