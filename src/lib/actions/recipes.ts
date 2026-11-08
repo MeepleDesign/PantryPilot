@@ -24,11 +24,14 @@ export type RecipeFormInput = {
   servings: number;
   equipment: string | null;
   method: string | null;
+  prep_note: string | null;
   calories: number | null;
   protein_g: number | null;
   carbs_g: number | null;
   fat_g: number | null;
   fibre_g: number | null;
+  tags: string[];
+  image_url: string | null;
   ingredients: RecipeIngredientInput[];
 };
 
@@ -51,11 +54,14 @@ export async function createRecipe(input: RecipeFormInput) {
       servings: input.servings,
       equipment: input.equipment,
       method: input.method,
+      prep_note: input.prep_note,
       calories: input.calories,
       protein_g: input.protein_g,
       carbs_g: input.carbs_g,
       fat_g: input.fat_g,
       fibre_g: input.fibre_g,
+      tags: input.tags,
+      image_url: input.image_url,
       source: "manual",
       created_by: auth.user?.id,
     })
@@ -100,11 +106,14 @@ export async function updateRecipe(recipeId: string, input: RecipeFormInput) {
       servings: input.servings,
       equipment: input.equipment,
       method: input.method,
+      prep_note: input.prep_note,
       calories: input.calories,
       protein_g: input.protein_g,
       carbs_g: input.carbs_g,
       fat_g: input.fat_g,
       fibre_g: input.fibre_g,
+      tags: input.tags,
+      image_url: input.image_url,
       updated_at: new Date().toISOString(),
     })
     .eq("id", recipeId);

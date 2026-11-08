@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScaledIngredients } from "@/components/scaled-ingredients";
@@ -35,10 +36,45 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
         </div>
       </div>
 
+      {recipe.image_url && (
+        <div className="relative mt-3 h-56 w-full overflow-hidden rounded-xl border border-border sm:h-72">
+          <Image
+            src={recipe.image_url}
+            alt={recipe.name}
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        </div>
+      )}
+
       <h1 className="mb-1 mt-3 text-2xl font-semibold tracking-tight">{recipe.name}</h1>
-      <p className="mb-4 text-sm text-muted">
+      <p className="mb-2 text-sm text-muted">
         {[recipe.cuisine, recipe.diet, recipe.protein_tag].filter(Boolean).join(" · ")}
       </p>
+
+      {recipe.tags?.length > 0 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {recipe.tags.map((tag: string) => (
+            <span
+              key={tag}
+              className="rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand-dark"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {recipe.prep_note && (
+        <div className="mb-4 flex gap-2 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm">
+          <span>⏰</span>
+          <div>
+            <p className="font-medium text-warn">Prep ahead</p>
+            <p className="text-foreground">{recipe.prep_note}</p>
+          </div>
+        </div>
+      )}
 
       {recipe.description && <p className="mb-6 text-sm">{recipe.description}</p>}
 
@@ -60,9 +96,18 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
       {recipe.method && (
         <div className="mb-8">
           <h2 className="mb-3 font-medium">Method</h2>
-          <div className="whitespace-pre-line rounded-xl border border-border bg-surface p-4 text-sm leading-relaxed">
-            {recipe.method}
-          </div>
+          <ol className="space-y-3 rounded-xl border border-border bg-surface p-4 text-sm leading-relaxed">
+            {recipe.method
+              .split("\n")
+              .map((line: string) => line.replace(/^\d+\.\s*/, "").trim())
+              .filter(Boolean)
+              .map((step: string, i: number) => (
+                <li key={i} className="flex gap-3">
+                  <span className="shrink-0 font-medium text-brand-dark">{i + 1}.</span>
+                  <span>{step}</span>
+                </li>
+              ))}
+          </ol>
         </div>
       )}
 

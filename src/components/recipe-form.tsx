@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState } from "react";
+import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
 import type { RecipeFormInput, RecipeIngredientInput } from "@/lib/actions/recipes";
 import type { RecipeWithIngredients } from "@/lib/types";
 
@@ -10,9 +12,60 @@ type Props = {
   submitLabel: string;
 };
 
+const SUGGESTED_TAGS = ["Freezer-friendly", "OmniCook", "Manual cook"];
+
+function parseMethodToSteps(method: string | null | undefined): string[] {
+  if (!method?.trim()) return [""];
+  const lines = method.split("\n").map((l) => l.trim()).filter(Boolean);
+  const steps = lines.map((l) => l.replace(/^\d+\.\s*/, ""));
+  return steps.length ? steps : [""];
+}
+
+function serialiseStepsToMethod(steps: string[]): string {
+  return steps
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .map((s, i) => `${i + 1}. ${s}`)
+    .join("\n");
+}
+
 export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
-  const [pending, startTransition] = useTransition();
+  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
+  const [tagInput, setTagInput] = useState("");
+
+  const [imageUrl, setImageUrl] = useState<string | null>(initial?.image_url ?? null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(
+    initial?.image_url ?? null,
+  );
+
+  const [steps, setSteps] = useState<string[]>(parseMethodToSteps(initial?.method));
+
+  function updateStep(i: number, value: string) {
+    setSteps((prev) => prev.map((s, idx) => (idx === i ? value : s)));
+  }
+
+  function handleStepKeyDown(i: number, e: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      setSteps((prev) => {
+        const next = [...prev];
+        next.splice(i + 1, 0, "");
+        return next;
+      });
+      requestAnimationFrame(() => {
+        const el = document.querySelector<HTMLTextAreaElement>(
+          `textarea[data-step-index="${i + 1}"]`,
+        );
+        el?.focus();
+      });
+    }
+  }
+
   const [ingredients, setIngredients] = useState<RecipeIngredientInput[]>(
     initial?.recipe_ingredients?.length
       ? initial.recipe_ingredients
@@ -33,33 +86,79 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
     );
   }
 
-  function handleSubmit(formData: FormData) {
+  function addTag(tag: string) {
+    const clean = tag.trim();
+    if (!clean || tags.includes(clean)) return;
+    setTags((prev) => [...prev, clean]);
+  }
+
+  function removeTag(tag: string) {
+    setTags((prev) => prev.filter((t) => t !== tag));
+  }
+
+  function handleFileChange(file: File | null) {
+    setImageFile(file);
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      setImagePreview(imageUrl);
+    }
+  }
+
+  function removeImage() {
+    setImageFile(null);
+    setImageUrl(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleSubmit(formData: FormData) {
     setError(null);
-    const input: RecipeFormInput = {
-      name: String(formData.get("name")),
-      description: (formData.get("description") as string) || null,
-      cuisine: (formData.get("cuisine") as string) || null,
-      diet: (formData.get("diet") as string) || "Vegetarian",
-      protein_tag: (formData.get("protein_tag") as string) || null,
-      main_protein_source: (formData.get("main_protein_source") as string) || null,
-      total_time_minutes: numOrNull(formData.get("total_time_minutes")),
-      servings: Number(formData.get("servings")) || 6,
-      equipment: (formData.get("equipment") as string) || null,
-      method: (formData.get("method") as string) || null,
-      calories: numOrNull(formData.get("calories")),
-      protein_g: numOrNull(formData.get("protein_g")),
-      carbs_g: numOrNull(formData.get("carbs_g")),
-      fat_g: numOrNull(formData.get("fat_g")),
-      fibre_g: numOrNull(formData.get("fibre_g")),
-      ingredients: ingredients.filter((i) => i.ingredient_name.trim() !== ""),
-    };
-    startTransition(async () => {
-      try {
-        await onSubmit(input);
-      } catch (e) {
-        setError(e instanceof Error ? e.message : "Something went wrong");
+    setPending(true);
+    try {
+      let finalImageUrl = imageUrl;
+
+      if (imageFile) {
+        const supabase = createClient();
+        const ext = imageFile.name.split(".").pop() ?? "jpg";
+        const path = `${crypto.randomUUID()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("recipe-images")
+          .upload(path, imageFile, { upsert: true });
+        if (uploadError) throw new Error(uploadError.message);
+        const { data: publicUrlData } = supabase.storage
+          .from("recipe-images")
+          .getPublicUrl(path);
+        finalImageUrl = publicUrlData.publicUrl;
       }
-    });
+
+      const input: RecipeFormInput = {
+        name: String(formData.get("name")),
+        description: (formData.get("description") as string) || null,
+        cuisine: (formData.get("cuisine") as string) || null,
+        diet: (formData.get("diet") as string) || "Vegetarian",
+        protein_tag: (formData.get("protein_tag") as string) || null,
+        main_protein_source: (formData.get("main_protein_source") as string) || null,
+        total_time_minutes: numOrNull(formData.get("total_time_minutes")),
+        servings: Number(formData.get("servings")) || 6,
+        equipment: (formData.get("equipment") as string) || null,
+        method: serialiseStepsToMethod(steps) || null,
+        prep_note: (formData.get("prep_note") as string) || null,
+        calories: numOrNull(formData.get("calories")),
+        protein_g: numOrNull(formData.get("protein_g")),
+        carbs_g: numOrNull(formData.get("carbs_g")),
+        fat_g: numOrNull(formData.get("fat_g")),
+        fibre_g: numOrNull(formData.get("fibre_g")),
+        tags,
+        image_url: finalImageUrl,
+        ingredients: ingredients.filter((i) => i.ingredient_name.trim() !== ""),
+      };
+
+      await onSubmit(input);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong");
+      setPending(false);
+    }
   }
 
   return (
@@ -69,6 +168,109 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
           {error}
         </div>
       )}
+
+      <Section title="Photo">
+        <div className="flex items-center gap-4">
+          {imagePreview ? (
+            <div className="relative h-24 w-24 overflow-hidden rounded-lg border border-border">
+              <Image
+                src={imagePreview}
+                alt=""
+                fill
+                className="object-cover"
+                unoptimized
+              />
+            </div>
+          ) : (
+            <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-dashed border-border text-2xl text-muted">
+              🍲
+            </div>
+          )}
+          <div className="space-y-2">
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
+              className="text-sm"
+            />
+            {imagePreview && (
+              <button
+                type="button"
+                onClick={removeImage}
+                className="block text-sm text-danger"
+              >
+                Remove photo
+              </button>
+            )}
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Tags">
+        <div className="mb-2 flex flex-wrap gap-2">
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="flex items-center gap-1 rounded-full bg-brand/10 px-3 py-1 text-xs font-medium text-brand-dark"
+            >
+              {tag}
+              <button
+                type="button"
+                onClick={() => removeTag(tag)}
+                className="text-brand-dark/60 hover:text-danger"
+              >
+                ✕
+              </button>
+            </span>
+          ))}
+        </div>
+        <div className="mb-2 flex flex-wrap gap-2">
+          {SUGGESTED_TAGS.filter((t) => !tags.includes(t)).map((tag) => (
+            <button
+              key={tag}
+              type="button"
+              onClick={() => addTag(tag)}
+              className="rounded-full border border-border px-3 py-1 text-xs text-muted hover:border-brand hover:text-brand-dark"
+            >
+              + {tag}
+            </button>
+          ))}
+        </div>
+        <div className="flex gap-2">
+          <input
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addTag(tagInput);
+                setTagInput("");
+              }
+            }}
+            placeholder="Add a custom tag and press Enter"
+            className="flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+          />
+        </div>
+      </Section>
+
+      <Section title="Prep ahead">
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium">
+            Anything to prep in advance?
+          </span>
+          <textarea
+            name="prep_note"
+            defaultValue={initial?.prep_note ?? ""}
+            rows={2}
+            placeholder="e.g. Soak lentils overnight (at least 8 hours) before cooking"
+            className="w-full rounded-lg border border-warn/40 bg-warn/5 px-3 py-2 text-sm outline-none focus:border-warn"
+          />
+          <span className="mt-1 block text-xs text-muted">
+            Shown at the top of the recipe so you don&apos;t miss it on the day.
+          </span>
+        </label>
+      </Section>
 
       <Section title="Basics">
         <Field label="Recipe name" name="name" defaultValue={initial?.name} required />
@@ -172,13 +374,43 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
       </Section>
 
       <Section title="Method">
-        <Field
-          label="Step-by-step method"
-          name="method"
-          defaultValue={initial?.method ?? ""}
-          textarea
-          rows={8}
-        />
+        <span className="mb-1.5 block text-sm font-medium">Steps</span>
+        <div className="space-y-2">
+          {steps.map((step, i) => (
+            <div key={i} className="flex items-start gap-2">
+              <span className="mt-2 w-5 shrink-0 text-right text-sm text-muted">
+                {i + 1}.
+              </span>
+              <textarea
+                data-step-index={i}
+                value={step}
+                onChange={(e) => updateStep(i, e.target.value)}
+                onKeyDown={(e) => handleStepKeyDown(i, e)}
+                rows={1}
+                placeholder="Describe this step… press Enter for the next step"
+                className="flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setSteps((prev) =>
+                    prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev,
+                  )
+                }
+                className="mt-2 text-sm text-danger"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+        </div>
+        <button
+          type="button"
+          onClick={() => setSteps((prev) => [...prev, ""])}
+          className="mt-2 text-sm font-medium text-brand"
+        >
+          + Add step
+        </button>
       </Section>
 
       <Section title="Nutrition (estimated, per serving)">
