@@ -375,20 +375,20 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
 
       <Section title="Method">
         <span className="mb-1.5 block text-sm font-medium">Steps</span>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {steps.map((step, i) => (
-            <div key={i} className="flex items-start gap-2">
-              <span className="mt-2 w-5 shrink-0 text-right text-sm text-muted">
-                {i + 1}.
+            <div key={i} className="flex items-center gap-3">
+              <span className="w-14 shrink-0 text-sm font-medium text-muted">
+                Step {i + 1}
               </span>
               <textarea
                 data-step-index={i}
                 value={step}
                 onChange={(e) => updateStep(i, e.target.value)}
                 onKeyDown={(e) => handleStepKeyDown(i, e)}
-                rows={1}
+                rows={2}
                 placeholder="Describe this step… press Enter for the next step"
-                className="flex-1 resize-none rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+                className="flex-1 resize-none rounded-lg border-2 border-foreground/70 bg-background px-3 py-2 text-sm outline-none focus:border-brand"
               />
               <button
                 type="button"
@@ -397,7 +397,8 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
                     prev.length > 1 ? prev.filter((_, idx) => idx !== i) : prev,
                   )
                 }
-                className="mt-2 text-sm text-danger"
+                className="shrink-0 text-sm text-danger"
+                aria-label={`Remove step ${i + 1}`}
               >
                 ✕
               </button>
