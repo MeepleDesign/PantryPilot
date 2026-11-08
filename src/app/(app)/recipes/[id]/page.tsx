@@ -104,7 +104,7 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Stat label="Time" value={recipe.total_time_minutes ? `${recipe.total_time_minutes} min` : "—"} />
-        <Stat label="Servings" value={String(recipe.servings)} />
+        <Stat label="Servings" value="2" />
         <Stat label="Calories" value={recipe.calories ? `${recipe.calories} kcal` : "—"} />
         <Stat label="Protein" value={recipe.protein_g ? `${recipe.protein_g} g` : "—"} />
       </div>

@@ -168,7 +168,7 @@ function RecipeCard({ recipe, ratings }: { recipe: Recipe; ratings: number[] }) 
         )}
         <div className="flex gap-4 text-xs text-muted">
           {recipe.total_time_minutes && <span>⏱ {recipe.total_time_minutes} min</span>}
-          <span>🍽 {recipe.servings} servings</span>
+          <span>🍽 2 servings</span>
           {recipe.calories && <span>🔥 {recipe.calories} kcal</span>}
         </div>
       </div>
