@@ -453,7 +453,7 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-4">
+    <div className="rounded-xl border border-border bg-surface p-4 shadow-sm">
       <h2 className="mb-4 font-medium">{title}</h2>
       <div className="space-y-4">{children}</div>
     </div>

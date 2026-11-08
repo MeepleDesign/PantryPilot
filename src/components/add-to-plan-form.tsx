@@ -24,7 +24,7 @@ export function AddToPlanForm({
 
   return (
     <form
-      className="flex flex-wrap items-end gap-2 rounded-xl border border-border bg-surface p-3"
+      className="flex flex-wrap items-end gap-2 rounded-xl border border-border bg-surface p-3 shadow-sm"
       action={(formData) => {
         startTransition(async () => {
           await addMealPlanEntry({

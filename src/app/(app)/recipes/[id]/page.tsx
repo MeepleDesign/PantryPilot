@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { ArrowLeft, Clock, UtensilsCrossed, Flame, Dumbbell, AlarmClock } from "lucide-react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScaledIngredients } from "@/components/scaled-ingredients";
@@ -41,11 +42,14 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-1 flex items-center justify-between">
-        <Link href="/recipes" className="text-sm text-muted hover:text-foreground">
-          ← Recipes
+        <Link
+          href="/recipes"
+          className="flex items-center gap-1 text-sm text-muted hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" /> Recipes
         </Link>
         <div className="flex gap-3 text-sm">
-          <Link href={`/recipes/${id}/edit`} className="font-medium text-brand">
+          <Link href={`/recipes/${id}/edit`} className="font-medium text-brand hover:text-brand-dark">
             Edit
           </Link>
           <DeleteRecipeButton recipeId={id} />
@@ -92,7 +96,7 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
 
       {recipe.prep_note && (
         <div className="mb-4 flex gap-2 rounded-xl border border-warn/40 bg-warn/10 px-4 py-3 text-sm">
-          <span>⏰</span>
+          <AlarmClock className="h-4 w-4 shrink-0 text-warn" />
           <div>
             <p className="font-medium text-warn">Prep ahead</p>
             <p className="text-foreground">{recipe.prep_note}</p>
@@ -103,13 +107,25 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
       {recipe.description && <p className="mb-6 text-sm">{recipe.description}</p>}
 
       <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label="Time" value={recipe.total_time_minutes ? `${recipe.total_time_minutes} min` : "—"} />
-        <Stat label="Servings" value="2" />
-        <Stat label="Calories" value={recipe.calories ? `${recipe.calories} kcal` : "—"} />
-        <Stat label="Protein" value={recipe.protein_g ? `${recipe.protein_g} g` : "—"} />
+        <Stat
+          icon={Clock}
+          label="Time"
+          value={recipe.total_time_minutes ? `${recipe.total_time_minutes} min` : "—"}
+        />
+        <Stat icon={UtensilsCrossed} label="Servings" value="2" />
+        <Stat
+          icon={Flame}
+          label="Calories"
+          value={recipe.calories ? `${recipe.calories} kcal` : "—"}
+        />
+        <Stat
+          icon={Dumbbell}
+          label="Protein"
+          value={recipe.protein_g ? `${recipe.protein_g} g` : "—"}
+        />
       </div>
 
-      <div className="mb-6 rounded-xl border border-border bg-surface p-3">
+      <div className="mb-6 rounded-xl border border-border bg-surface p-3 shadow-sm">
         <InteractiveStars recipeId={id} initialRating={myRating} />
       </div>
 
@@ -124,14 +140,16 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
       {recipe.method && (
         <div className="mb-8">
           <h2 className="mb-3 font-medium">Method</h2>
-          <ol className="space-y-3 rounded-xl border border-border bg-surface p-4 text-sm leading-relaxed">
+          <ol className="space-y-3 rounded-xl border border-border bg-surface p-4 text-sm leading-relaxed shadow-sm">
             {recipe.method
               .split("\n")
               .map((line: string) => line.replace(/^\d+\.\s*/, "").trim())
               .filter(Boolean)
               .map((step: string, i: number) => (
                 <li key={i} className="flex gap-3">
-                  <span className="shrink-0 font-medium text-brand-dark">{i + 1}.</span>
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand-dark">
+                    {i + 1}
+                  </span>
                   <span>{step}</span>
                 </li>
               ))}
@@ -140,14 +158,14 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
       )}
 
       {recipe.equipment && (
-        <div className="mb-8">
+        <div className="mb-8 rounded-xl border border-border bg-surface p-4 shadow-sm">
           <h2 className="mb-2 font-medium">Equipment / settings</h2>
           <p className="text-sm text-muted">{recipe.equipment}</p>
         </div>
       )}
 
       {(recipe.calories || recipe.protein_g) && (
-        <div className="mb-4 rounded-xl border border-border bg-surface p-4">
+        <div className="mb-4 rounded-xl border border-border bg-surface p-4 shadow-sm">
           <h2 className="mb-2 font-medium">Nutrition (estimated per serving)</h2>
           <div className="grid grid-cols-2 gap-2 text-sm sm:grid-cols-5">
             <NutriStat label="Calories" value={recipe.calories} unit="kcal" />
@@ -165,9 +183,18 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: typeof Clock;
+  label: string;
+  value: string;
+}) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-3 text-center">
+    <div className="rounded-xl border border-border bg-surface p-3 text-center shadow-sm">
+      <Icon className="mx-auto mb-1 h-4 w-4 text-brand" strokeWidth={1.75} />
       <p className="text-xs text-muted">{label}</p>
       <p className="font-medium">{value}</p>
     </div>

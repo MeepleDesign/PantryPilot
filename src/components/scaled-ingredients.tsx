@@ -35,7 +35,7 @@ export function ScaledIngredients({
           </select>
         </div>
       </div>
-      <ul className="divide-y divide-border rounded-xl border border-border bg-surface">
+      <ul className="divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
         {ingredients.map((ing) => (
           <li
             key={ing.id}

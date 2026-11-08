@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { RefreshCw, X } from "lucide-react";
 import {
   regenerateShoppingList,
   toggleShoppingItem,
@@ -18,10 +19,10 @@ export function RegenerateButton() {
     <button
       disabled={pending}
       onClick={() => startTransition(() => regenerateShoppingList())}
-      className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-background disabled:cursor-wait disabled:opacity-60"
+      className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-background disabled:cursor-wait disabled:opacity-60"
     >
-      {pending && <Spinner className="h-4 w-4" />}
-      {pending ? "Recalculating…" : "↻ Recalculate from plan"}
+      {pending ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
+      {pending ? "Recalculating…" : "Recalculate from plan"}
     </button>
   );
 }
@@ -61,9 +62,10 @@ export function ResetButton() {
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-danger hover:bg-background"
+      className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-danger shadow-sm transition-colors hover:bg-background"
     >
-      ✕ Reset list
+      <X className="h-4 w-4" />
+      Reset list
     </button>
   );
 }
@@ -107,9 +109,9 @@ export function ShoppingListRow({ item }: { item: ShoppingListItem }) {
       <button
         disabled={pending}
         onClick={() => startTransition(() => removeShoppingItem(item.id))}
-        className="text-danger"
+        className="text-muted hover:text-danger"
       >
-        ✕
+        <X className="h-4 w-4" />
       </button>
     </label>
   );
@@ -128,7 +130,7 @@ export function AddManualItemForm() {
           });
         });
       }}
-      className="flex flex-wrap gap-2 rounded-xl border border-border bg-surface p-3"
+      className="flex flex-wrap gap-2 rounded-xl border border-border bg-surface p-3 shadow-sm"
     >
       <input
         name="ingredient_name"

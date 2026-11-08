@@ -1,3 +1,4 @@
+import { PackageCheck } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -43,7 +44,7 @@ export default async function ShoppingListPage() {
       </div>
 
       {toBuy.length > 0 ? (
-        <div className="mb-6 divide-y divide-border rounded-xl border border-border bg-surface">
+        <div className="mb-6 divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
           {toBuy.map((item) => (
             <ShoppingListRow key={item.id} item={item} />
           ))}
@@ -62,7 +63,8 @@ export default async function ShoppingListPage() {
 
       {covered.length > 0 && (
         <div>
-          <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+          <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-muted">
+            <PackageCheck className="h-4 w-4" />
             Already in your pantry
           </h2>
           <div className="divide-y divide-border rounded-xl border border-border bg-surface opacity-70">

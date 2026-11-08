@@ -1,9 +1,17 @@
+import { Archive, Snowflake, Refrigerator, Package } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { PantryItemForm, PantryItemRow } from "@/components/pantry-item-form";
 import type { PantryItem, StorageLocation } from "@/lib/types";
 
 const LOCATIONS: StorageLocation[] = ["cupboard", "fridge", "freezer", "other"];
+
+const LOCATION_ICONS: Record<StorageLocation, typeof Archive> = {
+  cupboard: Archive,
+  fridge: Refrigerator,
+  freezer: Snowflake,
+  other: Package,
+};
 
 export default async function PantryPage() {
   const { household } = await getCurrentHousehold();
@@ -34,12 +42,14 @@ export default async function PantryPage() {
           (i) => i.storage_location === loc,
         );
         if (!locItems?.length) return null;
+        const Icon = LOCATION_ICONS[loc];
         return (
           <div key={loc} className="mb-6">
-            <h2 className="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">
+            <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-muted">
+              <Icon className="h-4 w-4" />
               {loc}
             </h2>
-            <div className="divide-y divide-border rounded-xl border border-border bg-surface">
+            <div className="divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
               {locItems.map((item) => (
                 <PantryItemRow key={item.id} item={item} />
               ))}

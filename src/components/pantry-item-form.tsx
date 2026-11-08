@@ -25,7 +25,7 @@ export function PantryItemForm({ onDone }: { onDone?: () => void }) {
           onDone?.();
         });
       }}
-      className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-surface p-3 sm:grid-cols-6"
+      className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-surface p-3 shadow-sm sm:grid-cols-6"
     >
       <input
         name="ingredient_name"

@@ -13,12 +13,12 @@ export default async function SettingsPage() {
     <div className="mx-auto max-w-xl space-y-8">
       <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
 
-      <section className="rounded-xl border border-border bg-surface p-5">
+      <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h2 className="mb-4 font-medium">Your profile</h2>
         <ProfileSettingsForm profile={profile} />
       </section>
 
-      <section className="rounded-xl border border-border bg-surface p-5">
+      <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h2 className="mb-4 font-medium">Household</h2>
         <HouseholdSettingsForm household={household} />
         <div className="mt-5 border-t border-border pt-4">

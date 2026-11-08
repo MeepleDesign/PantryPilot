@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ChevronRight, Utensils, ShoppingCart, AlertTriangle, CalendarClock } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import type { MealPlanEntry, PantryItem } from "@/lib/types";
@@ -51,7 +52,7 @@ export default async function DashboardPage() {
       <p className="mb-6 text-sm text-muted">{household.name}</p>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <Card title="Today's meals" href="/planner">
+        <Card title="Today's meals" href="/planner" icon={Utensils}>
           {todayMeals.data?.length ? (
             <ul className="space-y-1 text-sm">
               {(todayMeals.data as MealPlanEntry[]).map((m) => (
@@ -66,7 +67,7 @@ export default async function DashboardPage() {
           )}
         </Card>
 
-        <Card title="Shopping list" href="/shopping-list">
+        <Card title="Shopping list" href="/shopping-list" icon={ShoppingCart}>
           {shoppingItems.data?.length ? (
             <p className="text-sm">
               <span className="font-medium">{shoppingItems.data.length}</span> item
@@ -77,7 +78,7 @@ export default async function DashboardPage() {
           )}
         </Card>
 
-        <Card title="Use soon" href="/pantry">
+        <Card title="Use soon" href="/pantry" icon={AlertTriangle}>
           {expiringItems.length ? (
             <ul className="space-y-1 text-sm">
               {expiringItems.slice(0, 5).map((p) => (
@@ -92,7 +93,7 @@ export default async function DashboardPage() {
           )}
         </Card>
 
-        <Card title="Coming up" href="/planner">
+        <Card title="Coming up" href="/planner" icon={CalendarClock}>
           {upcomingMeals.data?.length ? (
             <ul className="space-y-1 text-sm">
               {(upcomingMeals.data as MealPlanEntry[]).map((m) => (
@@ -114,18 +115,29 @@ export default async function DashboardPage() {
 function Card({
   title,
   href,
+  icon: Icon,
   children,
 }: {
   title: string;
   href: string;
+  icon: typeof Utensils;
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-4">
+    <div className="rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-medium">{title}</h2>
-        <Link href={href} className="text-xs text-brand">
-          View all →
+        <h2 className="flex items-center gap-2 font-medium">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand/10 text-brand-dark">
+            <Icon className="h-4 w-4" />
+          </span>
+          {title}
+        </h2>
+        <Link
+          href={href}
+          className="flex items-center gap-0.5 text-xs font-medium text-brand hover:text-brand-dark"
+        >
+          View all
+          <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       </div>
       {children}

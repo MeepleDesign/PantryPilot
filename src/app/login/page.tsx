@@ -1,5 +1,6 @@
 import { signIn, signUp } from "./actions";
 import Link from "next/link";
+import { ChefHat } from "lucide-react";
 
 export default async function LoginPage({
   searchParams,
@@ -12,8 +13,8 @@ export default async function LoginPage({
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-2xl text-brand-foreground">
-            🥘
+          <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-sm">
+            <ChefHat className="h-6 w-6" />
           </div>
           <h1 className="text-2xl font-semibold tracking-tight">PantryPilot</h1>
           <p className="mt-1 text-sm text-muted">
@@ -21,7 +22,7 @@ export default async function LoginPage({
           </p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div className="rounded-2xl border border-border bg-surface p-6 shadow-md">
           {error && (
             <div className="mb-4 rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
               {error}

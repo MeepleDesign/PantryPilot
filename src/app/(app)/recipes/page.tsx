@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { UtensilsCrossed, Clock, Flame, Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { StaticStars } from "@/components/star-rating";
@@ -59,9 +60,10 @@ export default async function RecipesPage({
         </div>
         <Link
           href="/recipes/new"
-          className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark"
+          className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground shadow-sm transition-colors hover:bg-brand-dark"
         >
-          + Add recipe
+          <Plus className="h-4 w-4" />
+          Add recipe
         </Link>
       </div>
 
@@ -138,7 +140,7 @@ function RecipeCard({ recipe, ratings }: { recipe: Recipe; ratings: number[] }) 
   return (
     <Link
       href={`/recipes/${recipe.id}`}
-      className="block overflow-hidden rounded-xl border border-border bg-surface transition hover:border-brand hover:shadow-sm"
+      className="block overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
     >
       {recipe.image_url ? (
         <div className="relative h-32 w-full">
@@ -151,8 +153,8 @@ function RecipeCard({ recipe, ratings }: { recipe: Recipe; ratings: number[] }) 
           />
         </div>
       ) : (
-        <div className="flex h-32 w-full items-center justify-center bg-background text-3xl">
-          🍲
+        <div className="flex h-32 w-full items-center justify-center bg-background text-muted">
+          <UtensilsCrossed className="h-8 w-8" strokeWidth={1.5} />
         </div>
       )}
       <div className="p-4">
@@ -188,10 +190,20 @@ function RecipeCard({ recipe, ratings }: { recipe: Recipe; ratings: number[] }) 
             ))}
           </div>
         )}
-        <div className="flex gap-4 text-xs text-muted">
-          {recipe.total_time_minutes && <span>⏱ {recipe.total_time_minutes} min</span>}
-          <span>🍽 2 servings</span>
-          {recipe.calories && <span>🔥 {recipe.calories} kcal</span>}
+        <div className="flex flex-wrap gap-3 text-xs text-muted">
+          {recipe.total_time_minutes && (
+            <span className="flex items-center gap-1">
+              <Clock className="h-3.5 w-3.5" /> {recipe.total_time_minutes} min
+            </span>
+          )}
+          <span className="flex items-center gap-1">
+            <UtensilsCrossed className="h-3.5 w-3.5" /> 2 servings
+          </span>
+          {recipe.calories && (
+            <span className="flex items-center gap-1">
+              <Flame className="h-3.5 w-3.5" /> {recipe.calories} kcal
+            </span>
+          )}
         </div>
       </div>
     </Link>
