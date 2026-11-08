@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { addPantryItem, updatePantryItem, deletePantryItem } from "@/lib/actions/pantry";
+import { Spinner } from "@/components/spinner";
 import type { PantryItem, StorageLocation } from "@/lib/types";
 
 const LOCATIONS: StorageLocation[] = ["cupboard", "fridge", "freezer", "other"];
@@ -64,8 +65,9 @@ export function PantryItemForm({ onDone }: { onDone?: () => void }) {
       <button
         type="submit"
         disabled={pending}
-        className="col-span-2 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:opacity-60 sm:col-span-6"
+        className="col-span-2 flex items-center justify-center gap-2 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60 sm:col-span-6"
       >
+        {pending && <Spinner className="h-4 w-4" />}
         {pending ? "Adding…" : "+ Add to pantry"}
       </button>
     </form>

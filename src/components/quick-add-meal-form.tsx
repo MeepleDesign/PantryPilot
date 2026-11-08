@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { addMealPlanEntry } from "@/lib/actions/planner";
+import { Spinner } from "@/components/spinner";
 import type { MealSlot, Recipe } from "@/lib/types";
 
 export function QuickAddMealForm({
@@ -68,8 +69,9 @@ export function QuickAddMealForm({
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-brand px-3 py-1 text-xs font-medium text-brand-foreground disabled:opacity-60"
+        className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1 text-xs font-medium text-brand-foreground disabled:cursor-wait disabled:opacity-60"
       >
+        {pending && <Spinner className="h-3 w-3" />}
         {pending ? "Adding…" : "Add"}
       </button>
     </form>

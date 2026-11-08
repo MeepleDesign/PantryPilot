@@ -1,12 +1,14 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { confirmCooked, removeMealPlanEntry } from "@/lib/actions/planner";
+import { Spinner } from "@/components/spinner";
 import type { MealPlanEntry } from "@/lib/types";
 
 export function MealEntryRow({ entry }: { entry: MealPlanEntry }) {
   const [pending, startTransition] = useTransition();
+  const [action, setAction] = useState<"cook" | "remove" | null>(null);
 
   return (
     <div className="flex items-center justify-between gap-3 px-3 py-2 text-sm">
@@ -19,21 +21,29 @@ export function MealEntryRow({ entry }: { entry: MealPlanEntry }) {
           {entry.cooked && <span className="text-success"> · cooked ✓</span>}
         </p>
       </div>
-      <div className="flex shrink-0 gap-3">
+      <div className="flex shrink-0 items-center gap-3">
         {!entry.cooked && (
           <button
             disabled={pending}
-            onClick={() => startTransition(() => confirmCooked(entry.id))}
-            className="font-medium text-success"
+            onClick={() => {
+              setAction("cook");
+              startTransition(() => confirmCooked(entry.id));
+            }}
+            className="flex items-center gap-1.5 font-medium text-success disabled:cursor-wait disabled:opacity-60"
           >
-            Mark cooked
+            {pending && action === "cook" && <Spinner className="h-3.5 w-3.5" />}
+            {pending && action === "cook" ? "Cooking…" : "Mark cooked"}
           </button>
         )}
         <button
           disabled={pending}
-          onClick={() => startTransition(() => removeMealPlanEntry(entry.id))}
-          className="text-danger"
+          onClick={() => {
+            setAction("remove");
+            startTransition(() => removeMealPlanEntry(entry.id));
+          }}
+          className="flex items-center gap-1.5 text-danger disabled:cursor-wait disabled:opacity-60"
         >
+          {pending && action === "remove" && <Spinner className="h-3.5 w-3.5" />}
           Remove
         </button>
       </div>

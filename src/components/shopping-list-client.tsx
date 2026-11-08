@@ -8,6 +8,7 @@ import {
   addManualShoppingItem,
   clearTickedItems,
 } from "@/lib/actions/shopping-list";
+import { Spinner } from "@/components/spinner";
 import type { ShoppingListItem } from "@/lib/types";
 
 export function RegenerateButton() {
@@ -16,8 +17,9 @@ export function RegenerateButton() {
     <button
       disabled={pending}
       onClick={() => startTransition(() => regenerateShoppingList())}
-      className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-background disabled:opacity-60"
+      className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-background disabled:cursor-wait disabled:opacity-60"
     >
+      {pending && <Spinner className="h-4 w-4" />}
       {pending ? "Recalculating…" : "↻ Recalculate from plan"}
     </button>
   );

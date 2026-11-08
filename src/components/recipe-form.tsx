@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
+import { Spinner } from "@/components/spinner";
 import type { RecipeFormInput, RecipeIngredientInput } from "@/lib/actions/recipes";
 import type { RecipeWithIngredients } from "@/lib/types";
 
@@ -427,8 +428,9 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-brand py-2.5 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:opacity-60 sm:w-auto sm:px-6"
+        className="flex w-full items-center justify-center gap-2 rounded-lg bg-brand py-2.5 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60 sm:w-auto sm:px-6"
       >
+        {pending && <Spinner className="h-4 w-4" />}
         {pending ? "Saving…" : submitLabel}
       </button>
     </form>

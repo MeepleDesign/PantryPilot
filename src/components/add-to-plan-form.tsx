@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { addMealPlanEntry } from "@/lib/actions/planner";
+import { Spinner } from "@/components/spinner";
 import type { MealSlot } from "@/lib/types";
 
 function todayIso() {
@@ -65,8 +66,9 @@ export function AddToPlanForm({ recipeId }: { recipeId: string }) {
       <button
         type="submit"
         disabled={pending}
-        className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:opacity-60"
+        className="flex items-center gap-2 rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
       >
+        {pending && <Spinner className="h-4 w-4" />}
         {pending ? "Adding…" : "Add to plan"}
       </button>
     </form>

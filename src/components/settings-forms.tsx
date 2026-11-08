@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Spinner } from "@/components/spinner";
 import {
   updateHouseholdSettings,
   updateProfileSettings,
@@ -140,8 +141,9 @@ function SaveButton({ pending, saved }: { pending: boolean; saved: boolean }) {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:opacity-60"
+      className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
     >
+      {pending && <Spinner className="h-4 w-4" />}
       {pending ? "Saving…" : saved ? "Saved ✓" : "Save"}
     </button>
   );
