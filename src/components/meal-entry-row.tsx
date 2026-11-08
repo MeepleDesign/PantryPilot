@@ -17,7 +17,8 @@ export function MealEntryRow({ entry }: { entry: MealPlanEntry }) {
           {entry.recipes?.name}
         </Link>
         <p className="text-xs text-muted">
-          {entry.meal_slot} · {entry.batch_multiplier}× batch
+          {entry.meal_slot} ·{" "}
+          {Math.round(entry.batch_multiplier * (entry.recipes?.servings ?? 1))} servings
           {entry.cooked && <span className="text-success"> · cooked ✓</span>}
         </p>
       </div>

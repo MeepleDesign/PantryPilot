@@ -1,9 +1,12 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { addMealPlanEntry } from "@/lib/actions/planner";
 import { Spinner } from "@/components/spinner";
 import type { MealSlot, Recipe } from "@/lib/types";
+
+const SERVING_OPTIONS = [1, 2, 3, 4, 6, 8];
+const DEFAULT_SERVINGS = 2;
 
 export function QuickAddMealForm({
   date,
@@ -13,18 +16,22 @@ export function QuickAddMealForm({
   recipes: Recipe[];
 }) {
   const [pending, startTransition] = useTransition();
+  const [recipeId, setRecipeId] = useState("");
+  const [servings, setServings] = useState(DEFAULT_SERVINGS);
+
+  const baseServings = recipes.find((r) => r.id === recipeId)?.servings || 1;
+  const batchMultiplier = servings / baseServings;
 
   return (
     <form
       action={(formData) => {
-        const recipeId = String(formData.get("recipe_id"));
         if (!recipeId) return;
         startTransition(async () => {
           await addMealPlanEntry({
             plan_date: date,
             recipe_id: recipeId,
             meal_slot: String(formData.get("meal_slot")) as MealSlot,
-            batch_multiplier: Number(formData.get("batch_multiplier")),
+            batch_multiplier: batchMultiplier,
           });
         });
       }}
@@ -33,7 +40,8 @@ export function QuickAddMealForm({
       <select
         name="recipe_id"
         required
-        defaultValue=""
+        value={recipeId}
+        onChange={(e) => setRecipeId(e.target.value)}
         className="min-w-[140px] flex-1 rounded-lg border border-border bg-background px-2 py-1 text-xs"
       >
         <option value="" disabled>
@@ -56,13 +64,13 @@ export function QuickAddMealForm({
         <option value="snack">Snack</option>
       </select>
       <select
-        name="batch_multiplier"
-        defaultValue="1"
+        value={servings}
+        onChange={(e) => setServings(Number(e.target.value))}
         className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
       >
-        {[0.5, 1, 1.5, 2, 3].map((m) => (
-          <option key={m} value={m}>
-            {m}×
+        {SERVING_OPTIONS.map((s) => (
+          <option key={s} value={s}>
+            {s} servings
           </option>
         ))}
       </select>

@@ -1,16 +1,26 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { addMealPlanEntry } from "@/lib/actions/planner";
 import { Spinner } from "@/components/spinner";
 import type { MealSlot } from "@/lib/types";
+
+const SERVING_OPTIONS = [1, 2, 3, 4, 6, 8];
+const DEFAULT_SERVINGS = 2;
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function AddToPlanForm({ recipeId }: { recipeId: string }) {
+export function AddToPlanForm({
+  recipeId,
+  baseServings,
+}: {
+  recipeId: string;
+  baseServings: number;
+}) {
   const [pending, startTransition] = useTransition();
+  const [servings, setServings] = useState(DEFAULT_SERVINGS);
 
   return (
     <form
@@ -21,7 +31,7 @@ export function AddToPlanForm({ recipeId }: { recipeId: string }) {
             recipe_id: recipeId,
             plan_date: String(formData.get("plan_date")),
             meal_slot: String(formData.get("meal_slot")) as MealSlot,
-            batch_multiplier: Number(formData.get("batch_multiplier")),
+            batch_multiplier: servings / (baseServings || 1),
           });
         });
       }}
@@ -50,15 +60,15 @@ export function AddToPlanForm({ recipeId }: { recipeId: string }) {
         </select>
       </label>
       <label className="text-xs">
-        <span className="mb-1 block text-muted">Batch</span>
+        <span className="mb-1 block text-muted">Servings</span>
         <select
-          name="batch_multiplier"
-          defaultValue="1"
+          value={servings}
+          onChange={(e) => setServings(Number(e.target.value))}
           className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
         >
-          {[0.5, 1, 1.5, 2, 3].map((m) => (
-            <option key={m} value={m}>
-              {m}×
+          {SERVING_OPTIONS.map((s) => (
+            <option key={s} value={s}>
+              {s} servings
             </option>
           ))}
         </select>

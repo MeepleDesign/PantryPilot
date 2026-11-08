@@ -114,7 +114,7 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
       </div>
 
       <div className="mb-6">
-        <AddToPlanForm recipeId={id} />
+        <AddToPlanForm recipeId={id} baseServings={recipe.servings} />
       </div>
 
       <div className="mb-8">
