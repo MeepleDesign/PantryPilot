@@ -2,6 +2,7 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import {
   RegenerateButton,
+  ResetButton,
   ClearTickedButton,
   ShoppingListRow,
   AddManualItemForm,
@@ -31,7 +32,10 @@ export default async function ShoppingListPage() {
             after changing your meal plan
           </p>
         </div>
-        <RegenerateButton />
+        <div className="flex gap-2">
+          <RegenerateButton />
+          <ResetButton />
+        </div>
       </div>
 
       <div className="mb-4">

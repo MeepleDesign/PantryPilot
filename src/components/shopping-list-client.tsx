@@ -1,12 +1,13 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import {
   regenerateShoppingList,
   toggleShoppingItem,
   removeShoppingItem,
   addManualShoppingItem,
   clearTickedItems,
+  resetShoppingList,
 } from "@/lib/actions/shopping-list";
 import { Spinner } from "@/components/spinner";
 import type { ShoppingListItem } from "@/lib/types";
@@ -21,6 +22,48 @@ export function RegenerateButton() {
     >
       {pending && <Spinner className="h-4 w-4" />}
       {pending ? "Recalculating…" : "↻ Recalculate from plan"}
+    </button>
+  );
+}
+
+export function ResetButton() {
+  const [pending, startTransition] = useTransition();
+  const [confirming, setConfirming] = useState(false);
+
+  if (confirming) {
+    return (
+      <div className="flex items-center gap-2 text-sm">
+        <span className="text-muted">Delete everything on the list?</span>
+        <button
+          disabled={pending}
+          onClick={() => {
+            startTransition(async () => {
+              await resetShoppingList();
+              setConfirming(false);
+            });
+          }}
+          className="flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 font-medium text-white disabled:cursor-wait disabled:opacity-60"
+        >
+          {pending && <Spinner className="h-4 w-4" />}
+          {pending ? "Resetting…" : "Yes, delete all"}
+        </button>
+        <button
+          disabled={pending}
+          onClick={() => setConfirming(false)}
+          className="rounded-lg border border-border px-3 py-1.5 font-medium"
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setConfirming(true)}
+      className="flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium text-danger hover:bg-background"
+    >
+      ✕ Reset list
     </button>
   );
 }

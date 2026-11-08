@@ -156,6 +156,17 @@ export async function removeShoppingItem(id: string) {
   revalidatePath("/shopping-list");
 }
 
+export async function resetShoppingList() {
+  const supabase = await createClient();
+  const { household } = await getCurrentHousehold();
+  const { error } = await supabase
+    .from("shopping_list_items")
+    .delete()
+    .eq("household_id", household.id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/shopping-list");
+}
+
 export async function clearTickedItems() {
   const supabase = await createClient();
   const { household } = await getCurrentHousehold();
