@@ -120,8 +120,8 @@ function ListView({
             href={`/recipes/${recipe.id}`}
             className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-background"
           >
-            <div className="flex min-w-0 items-center gap-2">
-              <span className="truncate font-medium">{recipe.name}</span>
+            <div className="flex min-w-0 flex-1 items-center gap-2">
+              <span className="min-w-0 truncate font-medium">{recipe.name}</span>
               {recipe.protein_tag && (
                 <span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand-dark">
                   {recipe.protein_tag}
@@ -181,8 +181,8 @@ function ListDetailsView({
               )}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="truncate font-medium">{recipe.name}</span>
+              <div className="flex min-w-0 items-center gap-2">
+                <span className="min-w-0 truncate font-medium">{recipe.name}</span>
                 {recipe.protein_tag && (
                   <span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand-dark">
                     {recipe.protein_tag}
