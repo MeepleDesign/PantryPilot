@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
 import { SelectWithOther } from "@/components/select-with-other";
+import { MultiSelectChips } from "@/components/multi-select-chips";
 import { CUISINES, PROTEIN_TAGS, RECIPE_DIETS } from "@/lib/taxonomies";
 import type { UnitSystem } from "@/lib/units";
 import type { RecipeFormInput, RecipeIngredientInput } from "@/lib/actions/recipes";
@@ -22,6 +23,10 @@ type Props = {
   unitSystem: UnitSystem;
   source?: "manual" | "photo";
   reviewFields?: string[];
+  /** Cuisines already used elsewhere in this household's recipes, merged into the curated list. */
+  cuisineOptions?: string[];
+  /** Diet tags already used elsewhere in this household's recipes, merged into the curated list. */
+  dietOptions?: string[];
 };
 
 const SUGGESTED_TAGS = ["Freezer-friendly", "OmniCook", "Manual cook"];
@@ -48,13 +53,18 @@ export function RecipeForm({
   unitSystem,
   source,
   reviewFields,
+  cuisineOptions,
+  dietOptions,
 }: Props) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const cuisineList = Array.from(new Set([...CUISINES, ...(cuisineOptions ?? [])])).sort();
+  const dietList = Array.from(new Set([...RECIPE_DIETS, ...(dietOptions ?? [])])).sort();
+
   const [cuisine, setCuisine] = useState(initial?.cuisine ?? "");
-  const [diet, setDiet] = useState(initial?.diet ?? "Vegetarian");
+  const [diets, setDiets] = useState<string[]>(initial?.diet ?? ["Vegetarian"]);
   const [proteinTag, setProteinTag] = useState(initial?.protein_tag ?? "");
 
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
@@ -160,7 +170,7 @@ export function RecipeForm({
         name: String(formData.get("name")),
         description: (formData.get("description") as string) || null,
         cuisine: cuisine || null,
-        diet: diet || "Vegetarian",
+        diet: diets.length ? diets : ["Vegetarian"],
         protein_tag: proteinTag || null,
         main_protein_source: (formData.get("main_protein_source") as string) || null,
         total_time_minutes: numOrNull(formData.get("total_time_minutes")),
@@ -313,24 +323,23 @@ export function RecipeForm({
           defaultValue={initial?.description ?? ""}
           textarea
         />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <label className="block">
+          <span className="mb-1.5 block text-sm font-medium">Diet</span>
+          <MultiSelectChips
+            values={diets}
+            onChange={setDiets}
+            options={dietList}
+            placeholder="Add a diet and press Enter (e.g. Gluten-free)"
+          />
+        </label>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <label className="block">
             <span className="mb-1.5 block text-sm font-medium">Cuisine</span>
             <SelectWithOther
               value={cuisine}
               onChange={setCuisine}
-              options={CUISINES}
+              options={cuisineList}
               placeholder="Select cuisine…"
-              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
-            />
-          </label>
-          <label className="block">
-            <span className="mb-1.5 block text-sm font-medium">Diet</span>
-            <SelectWithOther
-              value={diet}
-              onChange={setDiet}
-              options={RECIPE_DIETS}
-              placeholder="Select diet…"
               className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
             />
           </label>

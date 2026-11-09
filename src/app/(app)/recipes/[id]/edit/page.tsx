@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
+import { getLearnedRecipeOptions } from "@/lib/actions/recipe-options";
 import { EditRecipeClient } from "./edit-client";
 import type { UnitSystem } from "@/lib/units";
 
@@ -17,8 +18,9 @@ export default async function EditRecipePage({ params }: PageProps<"/recipes/[id
 
   if (error || !recipe) notFound();
 
-  const { profile } = await getCurrentHousehold();
+  const { household, profile } = await getCurrentHousehold();
   const unitSystem: UnitSystem = profile.units === "imperial" ? "imperial" : "metric";
+  const { cuisineOptions, dietOptions } = await getLearnedRecipeOptions(household.id);
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -26,7 +28,13 @@ export default async function EditRecipePage({ params }: PageProps<"/recipes/[id
         ← Back
       </Link>
       <h1 className="mb-6 mt-3 text-2xl font-semibold tracking-tight">Edit recipe</h1>
-      <EditRecipeClient recipeId={id} recipe={recipe} unitSystem={unitSystem} />
+      <EditRecipeClient
+        recipeId={id}
+        recipe={recipe}
+        unitSystem={unitSystem}
+        cuisineOptions={cuisineOptions}
+        dietOptions={dietOptions}
+      />
     </div>
   );
 }

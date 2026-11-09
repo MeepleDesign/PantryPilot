@@ -9,7 +9,7 @@ export type Recipe = {
   name: string;
   description: string | null;
   cuisine: string | null;
-  diet: string | null;
+  diet: string[] | null;
   protein_tag: string | null;
   main_protein_source: string | null;
   total_time_minutes: number | null;

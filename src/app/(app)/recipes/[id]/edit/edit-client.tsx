@@ -10,16 +10,22 @@ export function EditRecipeClient({
   recipeId,
   recipe,
   unitSystem,
+  cuisineOptions,
+  dietOptions,
 }: {
   recipeId: string;
   recipe: RecipeWithIngredients;
   unitSystem: UnitSystem;
+  cuisineOptions: string[];
+  dietOptions: string[];
 }) {
   return (
     <RecipeForm
       initial={recipe}
       submitLabel="Save changes"
       unitSystem={unitSystem}
+      cuisineOptions={cuisineOptions}
+      dietOptions={dietOptions}
       onSubmit={(input: RecipeFormInput) => updateRecipe(recipeId, input)}
     />
   );

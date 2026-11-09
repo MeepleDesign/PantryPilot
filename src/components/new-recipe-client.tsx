@@ -32,7 +32,15 @@ function toFormInitial(data: ExtractedRecipe): RecipeFormInitial {
   };
 }
 
-export function NewRecipeClient({ unitSystem }: { unitSystem: UnitSystem }) {
+export function NewRecipeClient({
+  unitSystem,
+  cuisineOptions,
+  dietOptions,
+}: {
+  unitSystem: UnitSystem;
+  cuisineOptions: string[];
+  dietOptions: string[];
+}) {
   const [imported, setImported] = useState<RecipeFormInitial | null>(null);
   const [reviewFields, setReviewFields] = useState<string[]>([]);
   const [formKey, setFormKey] = useState(0);
@@ -54,6 +62,8 @@ export function NewRecipeClient({ unitSystem }: { unitSystem: UnitSystem }) {
         unitSystem={unitSystem}
         source={imported ? "photo" : "manual"}
         reviewFields={imported ? reviewFields : undefined}
+        cuisineOptions={cuisineOptions}
+        dietOptions={dietOptions}
       />
     </>
   );

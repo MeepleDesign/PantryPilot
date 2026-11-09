@@ -190,7 +190,9 @@ function ListDetailsView({
                 )}
               </div>
               <p className="truncate text-xs text-muted">
-                {[courseLabel(recipe), recipe.cuisine, recipe.diet].filter(Boolean).join(" · ")}
+                {[courseLabel(recipe), recipe.cuisine, ...(recipe.diet ?? [])]
+                  .filter(Boolean)
+                  .join(" · ")}
                 {recipe.tags?.length ? ` · ${recipe.tags.join(", ")}` : ""}
               </p>
             </div>
@@ -276,7 +278,9 @@ function TilesView({
               </div>
               {size === "medium" && (
                 <p className="mb-1 text-xs text-muted">
-                  {[courseLabel(recipe), recipe.cuisine, recipe.diet].filter(Boolean).join(" · ")}
+                  {[courseLabel(recipe), recipe.cuisine, ...(recipe.diet ?? [])]
+                    .filter(Boolean)
+                    .join(" · ")}
                 </p>
               )}
               <div className={size === "small" ? "mb-1" : "mb-2"}>
