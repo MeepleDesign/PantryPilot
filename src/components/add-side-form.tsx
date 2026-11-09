@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { addMealPlanEntry } from "@/lib/actions/planner";
 import { Spinner } from "@/components/spinner";
+import { OMNICOOK_TAG, OMNICOOK_MAX_SERVINGS } from "@/lib/omnicook";
 import type { MealSlot, Recipe } from "@/lib/types";
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 6, 8];
@@ -25,7 +26,10 @@ export function AddSideForm({
   const [recipeId, setRecipeId] = useState("");
   const [servings, setServings] = useState(DEFAULT_SERVINGS);
 
-  const baseServings = sideRecipes.find((r) => r.id === recipeId)?.servings || 1;
+  const selectedRecipe = sideRecipes.find((r) => r.id === recipeId);
+  const baseServings = selectedRecipe?.servings || 1;
+  const isOmniCook = selectedRecipe?.tags.includes(OMNICOOK_TAG) ?? false;
+  const overCapacity = isOmniCook && servings > OMNICOOK_MAX_SERVINGS;
 
   return (
     <div className="flex flex-wrap items-center gap-2 py-2 pl-6 text-xs">
@@ -77,6 +81,12 @@ export function AddSideForm({
       <button type="button" onClick={onDone} className="text-muted hover:text-foreground">
         Cancel
       </button>
+      {overCapacity && (
+        <p className="w-full text-warn">
+          ⚠ {servings} servings may exceed the Omni Cook's bowl capacity ({OMNICOOK_MAX_SERVINGS}{" "}
+          max recommended).
+        </p>
+      )}
     </div>
   );
 }

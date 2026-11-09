@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { addMealPlanEntry } from "@/lib/actions/planner";
 import { Spinner } from "@/components/spinner";
+import { OMNICOOK_TAG, OMNICOOK_MAX_SERVINGS } from "@/lib/omnicook";
 import type { MealSlot, Recipe } from "@/lib/types";
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 6, 8];
@@ -19,8 +20,11 @@ export function QuickAddMealForm({
   const [recipeId, setRecipeId] = useState("");
   const [servings, setServings] = useState(DEFAULT_SERVINGS);
 
-  const baseServings = recipes.find((r) => r.id === recipeId)?.servings || 1;
+  const selectedRecipe = recipes.find((r) => r.id === recipeId);
+  const baseServings = selectedRecipe?.servings || 1;
   const batchMultiplier = servings / baseServings;
+  const isOmniCook = selectedRecipe?.tags.includes(OMNICOOK_TAG) ?? false;
+  const overCapacity = isOmniCook && servings > OMNICOOK_MAX_SERVINGS;
 
   return (
     <form
@@ -82,6 +86,12 @@ export function QuickAddMealForm({
         {pending && <Spinner className="h-3 w-3" />}
         {pending ? "Adding…" : "Add"}
       </button>
+      {overCapacity && (
+        <p className="w-full text-xs text-warn">
+          ⚠ {servings} servings may exceed the Omni Cook's bowl capacity ({OMNICOOK_MAX_SERVINGS}{" "}
+          max recommended).
+        </p>
+      )}
     </form>
   );
 }

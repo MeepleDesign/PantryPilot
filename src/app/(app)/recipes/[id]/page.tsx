@@ -130,11 +130,15 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
       </div>
 
       <div className="mb-6">
-        <AddToPlanForm recipeId={id} baseServings={recipe.servings} />
+        <AddToPlanForm recipeId={id} baseServings={recipe.servings} tags={recipe.tags} />
       </div>
 
       <div className="mb-8">
-        <ScaledIngredients ingredients={ingredients} baseServings={recipe.servings} />
+        <ScaledIngredients
+          ingredients={ingredients}
+          baseServings={recipe.servings}
+          tags={recipe.tags}
+        />
       </div>
 
       {recipe.method && (
