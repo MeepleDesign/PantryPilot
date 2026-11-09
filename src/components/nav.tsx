@@ -9,10 +9,8 @@ import {
   CalendarDays,
   Archive,
   ShoppingCart,
-  Settings,
-  LogOut,
+  Snowflake,
 } from "lucide-react";
-import { signOut } from "@/app/login/actions";
 
 const ITEMS = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -20,7 +18,7 @@ const ITEMS = [
   { href: "/planner", label: "Planner", icon: CalendarDays },
   { href: "/pantry", label: "Pantry", icon: Archive },
   { href: "/shopping-list", label: "Shopping", icon: ShoppingCart },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/batches", label: "Batches", icon: Snowflake },
 ];
 
 export function Nav({ householdName }: { householdName: string }) {
@@ -59,16 +57,6 @@ export function Nav({ householdName }: { householdName: string }) {
               </Link>
             );
           })}
-          <div className="my-2 border-t border-border" />
-          <form action={signOut}>
-            <button
-              type="submit"
-              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-muted transition-colors hover:bg-danger/10 hover:text-danger"
-            >
-              <LogOut className="h-4 w-4" strokeWidth={2} />
-              Sign out
-            </button>
-          </form>
         </nav>
       </aside>
 

@@ -19,7 +19,7 @@ export default async function SettingsPage() {
         <ProfileSettingsForm profile={profile} />
       </section>
 
-      <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
+      <section id="household" className="scroll-mt-20 rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h2 className="mb-4 font-medium">Household</h2>
         <HouseholdSettingsForm household={household} />
         <div className="mt-5 border-t border-border pt-4">

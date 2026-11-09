@@ -1,8 +1,14 @@
 import Link from "next/link";
-import { ChevronRight, Utensils, ShoppingCart, AlertTriangle, CalendarClock } from "lucide-react";
+import {
+  ChevronRight,
+  Utensils,
+  ShoppingCart,
+  AlertTriangle,
+  CalendarClock,
+  Snowflake,
+} from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
-import { BatchList } from "@/components/batch-list";
 import type { MealBatch, MealPlanEntry, PantryItem } from "@/lib/types";
 
 function todayIso() {
@@ -16,36 +22,34 @@ export default async function DashboardPage() {
   const weekAhead = new Date();
   weekAhead.setDate(weekAhead.getDate() + 6);
 
-  const [todayMeals, upcomingMeals, pantryItems, shoppingItems, batches, recipes] =
-    await Promise.all([
-      supabase
-        .from("meal_plan_entries")
-        .select("*, recipes(name)")
-        .eq("household_id", household.id)
-        .eq("plan_date", today),
-      supabase
-        .from("meal_plan_entries")
-        .select("*, recipes(name)")
-        .eq("household_id", household.id)
-        .gt("plan_date", today)
-        .lte("plan_date", weekAhead.toISOString().slice(0, 10))
-        .order("plan_date")
-        .limit(6),
-      supabase.from("pantry_items").select("*").eq("household_id", household.id),
-      supabase
-        .from("shopping_list_items")
-        .select("*")
-        .eq("household_id", household.id)
-        .eq("ticked", false)
-        .gt("to_buy_qty", 0),
-      supabase
-        .from("meal_batches")
-        .select("*")
-        .eq("household_id", household.id)
-        .gt("portions_remaining", 0)
-        .order("cooked_date", { ascending: false }),
-      supabase.from("recipes").select("id, name").order("name"),
-    ]);
+  const [todayMeals, upcomingMeals, pantryItems, shoppingItems, batches] = await Promise.all([
+    supabase
+      .from("meal_plan_entries")
+      .select("*, recipes(name)")
+      .eq("household_id", household.id)
+      .eq("plan_date", today),
+    supabase
+      .from("meal_plan_entries")
+      .select("*, recipes(name)")
+      .eq("household_id", household.id)
+      .gt("plan_date", today)
+      .lte("plan_date", weekAhead.toISOString().slice(0, 10))
+      .order("plan_date")
+      .limit(6),
+    supabase.from("pantry_items").select("*").eq("household_id", household.id),
+    supabase
+      .from("shopping_list_items")
+      .select("*")
+      .eq("household_id", household.id)
+      .eq("ticked", false)
+      .gt("to_buy_qty", 0),
+    supabase
+      .from("meal_batches")
+      .select("*")
+      .eq("household_id", household.id)
+      .gt("portions_remaining", 0)
+      .order("cooked_date", { ascending: false }),
+  ]);
 
   const now = Date.now();
   const soon = now + 3 * 24 * 60 * 60 * 1000;
@@ -116,13 +120,23 @@ export default async function DashboardPage() {
             <EmptyLine text="Plan your next few days" />
           )}
         </Card>
-      </div>
 
-      <div className="mt-4">
-        <BatchList
-          batches={(batches.data as MealBatch[] | null) ?? []}
-          recipes={recipes.data ?? []}
-        />
+        <Card title="Batch-cooked meals" href="/batches" icon={Snowflake}>
+          {batches.data?.length ? (
+            <ul className="space-y-1 text-sm">
+              {(batches.data as MealBatch[]).slice(0, 5).map((b) => (
+                <li key={b.id} className="flex justify-between">
+                  <span>{b.recipe_name}</span>
+                  <span className="text-muted">
+                    {b.portions_remaining} of {b.portions_total} left
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <EmptyLine text="Nothing batch-cooked yet" />
+          )}
+        </Card>
       </div>
     </div>
   );
