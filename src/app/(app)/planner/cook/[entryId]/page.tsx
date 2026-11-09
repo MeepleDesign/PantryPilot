@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MarkCookedButton } from "@/components/cook-view-actions";
+import { LogBatchPrompt } from "@/components/log-batch-prompt";
+import type { MealBatchStorage } from "@/lib/types";
 
 function round(n: number) {
   return Math.round(n * 100) / 100;
@@ -34,6 +36,20 @@ export default async function CookViewPage({
     .select("*, recipes(*, recipe_ingredients(*))")
     .eq("side_of", entryId);
 
+  const allEntryIds = [mainEntry.id, ...(sideEntries ?? []).map((s) => s.id)];
+  const { data: batches } = await supabase
+    .from("meal_batches")
+    .select("meal_plan_entry_id, portions_total, storage_location")
+    .in("meal_plan_entry_id", allEntryIds);
+
+  const batchByEntry: Record<
+    string,
+    { portions_total: number; storage_location: MealBatchStorage }
+  > = {};
+  for (const b of batches ?? []) {
+    if (b.meal_plan_entry_id) batchByEntry[b.meal_plan_entry_id] = b;
+  }
+
   const label = new Date(mainEntry.plan_date).toLocaleDateString("en-GB", {
     weekday: "long",
     day: "numeric",
@@ -58,10 +74,16 @@ export default async function CookViewPage({
       <RecipeBlock
         label="Main"
         entry={mainEntry}
+        existingBatch={batchByEntry[mainEntry.id] ?? null}
       />
 
       {(sideEntries ?? []).map((side) => (
-        <RecipeBlock key={side.id} label="Side" entry={side} />
+        <RecipeBlock
+          key={side.id}
+          label="Side"
+          entry={side}
+          existingBatch={batchByEntry[side.id] ?? null}
+        />
       ))}
     </div>
   );
@@ -70,10 +92,12 @@ export default async function CookViewPage({
 function RecipeBlock({
   label,
   entry,
+  existingBatch,
 }: {
   label: "Main" | "Side";
   entry: {
     id: string;
+    recipe_id: string;
     cooked: boolean;
     batch_multiplier: number;
     recipes: {
@@ -90,6 +114,7 @@ function RecipeBlock({
       }[];
     } | null;
   };
+  existingBatch: { portions_total: number; storage_location: MealBatchStorage } | null;
 }) {
   const recipe = entry.recipes;
   if (!recipe) return null;
@@ -113,6 +138,16 @@ function RecipeBlock({
         </div>
         <MarkCookedButton entryId={entry.id} cooked={entry.cooked} />
       </div>
+
+      {entry.cooked && (
+        <LogBatchPrompt
+          entryId={entry.id}
+          recipeId={entry.recipe_id}
+          recipeName={recipe.name}
+          defaultPortions={servings}
+          existingBatch={existingBatch}
+        />
+      )}
 
       {recipe.prep_note && (
         <div className="mb-3 flex gap-2 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-sm">

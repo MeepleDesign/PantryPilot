@@ -59,6 +59,22 @@ export type MealPlanEntry = {
   sides?: MealPlanEntry[];
 };
 
+export type MealBatchStorage = "fridge" | "freezer";
+
+export type MealBatch = {
+  id: string;
+  household_id: string;
+  recipe_id: string | null;
+  recipe_name: string;
+  meal_plan_entry_id: string | null;
+  portions_total: number;
+  portions_remaining: number;
+  storage_location: MealBatchStorage;
+  cooked_date: string;
+  notes: string | null;
+  created_at: string;
+};
+
 export type PantryItem = {
   id: string;
   household_id: string;
