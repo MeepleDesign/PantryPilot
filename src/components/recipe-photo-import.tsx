@@ -1,11 +1,15 @@
 "use client";
 
-import { useRef, useState } from "react";
-import { Camera, Sparkles } from "lucide-react";
+import { useState } from "react";
+import Image from "next/image";
+import { Camera, Sparkles, X } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import type { ExtractedRecipe } from "@/lib/actions/recipe-import";
 
 const MAX_DIMENSION = 1568;
+const MAX_PHOTOS = 4;
+
+type StagedPhoto = { id: string; base64: string; mediaType: "image/jpeg"; previewUrl: string };
 
 async function fileToResizedBase64(
   file: File,
@@ -44,57 +48,116 @@ export function RecipePhotoImport({
 }: {
   onImported: (data: ExtractedRecipe, previewUrl: string) => void;
 }) {
+  const [photos, setPhotos] = useState<StagedPhoto[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  async function handleFile(file: File | null) {
-    if (!file) return;
+  async function handleFiles(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    setError(null);
+    const files = Array.from(fileList).slice(0, MAX_PHOTOS - photos.length);
+    try {
+      const staged = await Promise.all(
+        files.map(async (file) => {
+          const { base64, mediaType } = await fileToResizedBase64(file);
+          return {
+            id: crypto.randomUUID(),
+            base64,
+            mediaType,
+            previewUrl: `data:${mediaType};base64,${base64}`,
+          };
+        }),
+      );
+      setPhotos((prev) => [...prev, ...staged].slice(0, MAX_PHOTOS));
+    } catch {
+      setError("Couldn't process one of those photos.");
+    }
+  }
+
+  function removePhoto(id: string) {
+    setPhotos((prev) => prev.filter((p) => p.id !== id));
+  }
+
+  async function handleImport() {
+    if (photos.length === 0) return;
     setError(null);
     setPending(true);
     try {
-      const { base64, mediaType } = await fileToResizedBase64(file);
       const res = await fetch("/api/recipes/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ base64, mediaType }),
+        body: JSON.stringify({
+          images: photos.map((p) => ({ base64: p.base64, mediaType: p.mediaType })),
+        }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? "Something went wrong reading that photo.");
-      onImported(data as ExtractedRecipe, `data:${mediaType};base64,${base64}`);
+      if (!res.ok) throw new Error(data?.error ?? "Something went wrong reading those photos.");
+      onImported(data as ExtractedRecipe, photos[0].previewUrl);
+      setPhotos([]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Something went wrong reading that photo.");
+      setError(e instanceof Error ? e.message : "Something went wrong reading those photos.");
     } finally {
       setPending(false);
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   }
 
   return (
     <div className="mb-6 rounded-xl border border-dashed border-brand/40 bg-brand/5 p-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Sparkles className="h-5 w-5 text-brand" />
-          <div>
-            <p className="text-sm font-medium">Import from a photo</p>
-            <p className="text-xs text-muted">
-              Take a picture of a recipe and we&apos;ll pre-fill the form below for you to review.
-            </p>
-          </div>
+      <div className="mb-3 flex items-center gap-2">
+        <Sparkles className="h-5 w-5 text-brand" />
+        <div>
+          <p className="text-sm font-medium">Import from a photo</p>
+          <p className="text-xs text-muted">
+            Take a picture of a recipe — add more than one if ingredients and method are on
+            different sides — and we&apos;ll pre-fill the form below for you to review.
+          </p>
         </div>
-        <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark">
-          {pending ? <Spinner className="h-4 w-4" /> : <Camera className="h-4 w-4" />}
-          {pending ? "Reading photo…" : "Choose photo"}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
+      </div>
+
+      {photos.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {photos.map((p) => (
+            <div key={p.id} className="relative h-16 w-16 overflow-hidden rounded-lg border border-border">
+              <Image src={p.previewUrl} alt="" fill className="object-cover" unoptimized />
+              <button
+                type="button"
+                onClick={() => removePhoto(p.id)}
+                className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-bl-lg bg-background/80 text-foreground"
+                aria-label="Remove photo"
+              >
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        {photos.length < MAX_PHOTOS && (
+          <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-background">
+            <Camera className="h-4 w-4" />
+            {photos.length === 0 ? "Choose photo(s)" : "Add another"}
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              disabled={pending}
+              onChange={(e) => handleFiles(e.target.files)}
+              className="hidden"
+            />
+          </label>
+        )}
+        {photos.length > 0 && (
+          <button
+            type="button"
+            onClick={handleImport}
             disabled={pending}
-            onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
-            className="hidden"
-          />
-        </label>
+            className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
+          >
+            {pending && <Spinner className="h-4 w-4" />}
+            {pending ? "Reading…" : `Import ${photos.length} photo${photos.length > 1 ? "s" : ""}`}
+          </button>
+        )}
       </div>
       {error && <p className="mt-3 text-sm text-danger">{error}</p>}
     </div>

@@ -55,34 +55,43 @@ const EXTRACT_RECIPE_TOOL: Anthropic.Tool = {
   },
 };
 
-export async function extractRecipeFromPhoto(
-  base64Data: string,
-  mediaType: "image/jpeg" | "image/png" | "image/webp",
-): Promise<ExtractedRecipe> {
+export type PhotoInput = { base64Data: string; mediaType: "image/jpeg" | "image/png" | "image/webp" };
+
+export async function extractRecipeFromPhotos(photos: PhotoInput[]): Promise<ExtractedRecipe> {
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error("Photo import isn't configured yet (missing API key).");
   }
+  if (photos.length === 0) {
+    throw new Error("No photo was received.");
+  }
 
   const client = new Anthropic();
+
+  const imageBlocks: Anthropic.ImageBlockParam[] = photos.map((p) => ({
+    type: "image",
+    source: { type: "base64", media_type: p.mediaType, data: p.base64Data },
+  }));
+
+  const instructionText =
+    photos.length > 1
+      ? `These ${photos.length} photos are all of the same recipe (e.g. one side shows ingredients, another shows the method) — combine them into a single recipe. `
+      : "Read this recipe photo. ";
 
   const response = await client.messages.create({
     model: "claude-sonnet-5-5",
     max_tokens: 4000,
     tools: [EXTRACT_RECIPE_TOOL],
-    tool_choice: { type: "tool", name: "extract_recipe" },
     messages: [
       {
         role: "user",
         content: [
-          {
-            type: "image",
-            source: { type: "base64", media_type: mediaType, data: base64Data },
-          },
+          ...imageBlocks,
           {
             type: "text",
             text:
-              "Read this recipe photo and extract its structured data via the extract_recipe tool. " +
-              "Estimate nutrition per serving as best you can from the ingredients if it isn't printed on the photo. " +
+              instructionText +
+              "Call the extract_recipe tool with its structured data — always respond with a tool call, never plain text. " +
+              "Estimate nutrition per serving as best you can from the ingredients if it isn't printed on the photo(s). " +
               "List anything you guessed or estimated in low_confidence_fields.",
           },
         ],
@@ -95,7 +104,9 @@ export async function extractRecipeFromPhoto(
   );
 
   if (!toolUse) {
-    throw new Error("Couldn't read a recipe from that photo. Try a clearer photo or enter it manually.");
+    throw new Error(
+      "Couldn't read a recipe from that photo. Try a clearer photo or enter it manually.",
+    );
   }
 
   return { ...(toolUse.input as Omit<ExtractedRecipe, "image_url">), image_url: null };

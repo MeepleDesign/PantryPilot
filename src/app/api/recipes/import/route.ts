@@ -1,8 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { extractRecipeFromPhoto } from "@/lib/actions/recipe-import";
+import { extractRecipeFromPhotos, type PhotoInput } from "@/lib/actions/recipe-import";
 
 export const maxDuration = 60;
+
+const MAX_PHOTOS = 4;
+const VALID_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -12,18 +15,27 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
-  const base64 = body?.base64;
-  const mediaType = body?.mediaType;
+  const images = body?.images;
 
-  if (typeof base64 !== "string" || !base64) {
+  if (!Array.isArray(images) || images.length === 0) {
     return NextResponse.json({ error: "No photo data received" }, { status: 400 });
   }
-  if (mediaType !== "image/jpeg" && mediaType !== "image/png" && mediaType !== "image/webp") {
-    return NextResponse.json({ error: "Unsupported image type" }, { status: 400 });
+  if (images.length > MAX_PHOTOS) {
+    return NextResponse.json({ error: `You can import up to ${MAX_PHOTOS} photos at once` }, { status: 400 });
+  }
+  for (const img of images) {
+    if (typeof img?.base64 !== "string" || !img.base64 || !VALID_MEDIA_TYPES.has(img?.mediaType)) {
+      return NextResponse.json({ error: "Unsupported photo data" }, { status: 400 });
+    }
   }
 
+  const photos: PhotoInput[] = images.map((img) => ({
+    base64Data: img.base64,
+    mediaType: img.mediaType,
+  }));
+
   try {
-    const recipe = await extractRecipeFromPhoto(base64, mediaType);
+    const recipe = await extractRecipeFromPhotos(photos);
     return NextResponse.json(recipe);
   } catch (e) {
     const message = e instanceof Error ? e.message : "Something went wrong reading that photo.";
