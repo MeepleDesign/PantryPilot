@@ -3,8 +3,7 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { PantryItemForm, PantryItemRow } from "@/components/pantry-item-form";
 import { PantryPhotoSection } from "@/components/pantry-photo-section";
-import { BatchList } from "@/components/batch-list";
-import type { MealBatch, PantryItem, StorageLocation } from "@/lib/types";
+import type { PantryItem, StorageLocation } from "@/lib/types";
 import type { UnitSystem } from "@/lib/units";
 
 const LOCATIONS: StorageLocation[] = ["cupboard", "fridge", "freezer", "other"];
@@ -28,13 +27,6 @@ export default async function PantryPage() {
     .order("ingredient_name");
   if (error) throw new Error(error.message);
 
-  const { data: batches } = await supabase
-    .from("meal_batches")
-    .select("*")
-    .eq("household_id", household.id)
-    .gt("portions_remaining", 0)
-    .order("cooked_date", { ascending: false });
-
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -45,8 +37,6 @@ export default async function PantryPage() {
       </div>
 
       <PantryPhotoSection unitSystem={unitSystem} />
-
-      <BatchList batches={(batches as MealBatch[] | null) ?? []} />
 
       <div className="mb-8">
         <PantryItemForm unitSystem={unitSystem} />
