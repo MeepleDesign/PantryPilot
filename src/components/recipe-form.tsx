@@ -172,7 +172,7 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
       )}
 
       <Section title="Photo">
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 items-center gap-4">
           {imagePreview ? (
             <div className="relative h-24 w-24 overflow-hidden rounded-lg border border-border">
               <Image
@@ -188,13 +188,13 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
               🍲
             </div>
           )}
-          <div className="space-y-2">
+          <div className="min-w-0 flex-1 space-y-2">
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
               onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
-              className="text-sm"
+              className="w-full max-w-full text-sm"
             />
             {imagePreview && (
               <button
