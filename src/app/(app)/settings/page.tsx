@@ -1,3 +1,4 @@
+import { LogOut } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import {
   HouseholdSettingsForm,
@@ -40,8 +41,9 @@ export default async function SettingsPage() {
       <form action={signOut}>
         <button
           type="submit"
-          className="text-sm font-medium text-muted hover:text-foreground"
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-danger shadow-sm transition-colors hover:bg-danger/10"
         >
+          <LogOut className="h-4 w-4" strokeWidth={2} />
           Sign out
         </button>
       </form>

@@ -1,24 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
-import type { RecipeCourse } from "@/lib/types";
+import type { ExtractedRecipe } from "@/lib/recipe-extraction-types";
 
-export type ExtractedRecipe = {
-  name: string;
-  description: string | null;
-  cuisine: string | null;
-  total_time_minutes: number | null;
-  servings: number;
-  course: RecipeCourse;
-  equipment: string | null;
-  steps: string[];
-  calories: number | null;
-  protein_g: number | null;
-  carbs_g: number | null;
-  fat_g: number | null;
-  fibre_g: number | null;
-  tags: string[];
-  ingredients: { ingredient_name: string; quantity: number | null; unit: string | null }[];
-  low_confidence_fields: string[];
-};
+export type { ExtractedRecipe };
 
 const EXTRACT_RECIPE_TOOL: Anthropic.Tool = {
   name: "extract_recipe",
@@ -115,5 +98,5 @@ export async function extractRecipeFromPhoto(
     throw new Error("Couldn't read a recipe from that photo. Try a clearer photo or enter it manually.");
   }
 
-  return toolUse.input as ExtractedRecipe;
+  return { ...(toolUse.input as Omit<ExtractedRecipe, "image_url">), image_url: null };
 }

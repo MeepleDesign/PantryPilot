@@ -17,7 +17,7 @@ export type Recipe = {
   course: RecipeCourse;
   equipment: string | null;
   method: string | null;
-  source: "seed" | "manual" | "photo";
+  source: "seed" | "manual" | "photo" | "url";
   calories: number | null;
   protein_g: number | null;
   carbs_g: number | null;

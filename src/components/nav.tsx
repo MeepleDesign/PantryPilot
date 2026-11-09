@@ -39,7 +39,7 @@ export function Nav({ householdName }: { householdName: string }) {
             <p className="truncate text-xs text-muted leading-tight">{householdName}</p>
           </div>
         </div>
-        <nav className="flex flex-1 flex-col gap-1">
+        <nav className="flex flex-col gap-1">
           {ITEMS.map((item) => {
             const active =
               item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
@@ -59,16 +59,17 @@ export function Nav({ householdName }: { householdName: string }) {
               </Link>
             );
           })}
+          <div className="my-2 border-t border-border" />
+          <form action={signOut}>
+            <button
+              type="submit"
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm font-medium text-muted transition-colors hover:bg-danger/10 hover:text-danger"
+            >
+              <LogOut className="h-4 w-4" strokeWidth={2} />
+              Sign out
+            </button>
+          </form>
         </nav>
-        <form action={signOut}>
-          <button
-            type="submit"
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-muted transition-colors hover:bg-background hover:text-foreground"
-          >
-            <LogOut className="h-4 w-4" strokeWidth={2} />
-            Sign out
-          </button>
-        </form>
       </aside>
 
       {/* Mobile bottom nav */}
