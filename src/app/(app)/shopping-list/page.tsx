@@ -8,10 +8,12 @@ import {
   ShoppingListRow,
   AddManualItemForm,
 } from "@/components/shopping-list-client";
+import type { UnitSystem } from "@/lib/units";
 
 export default async function ShoppingListPage() {
-  const { household } = await getCurrentHousehold();
+  const { household, profile } = await getCurrentHousehold();
   const supabase = await createClient();
+  const unitSystem: UnitSystem = profile.units === "imperial" ? "imperial" : "metric";
 
   const { data: items, error } = await supabase
     .from("shopping_list_items")
@@ -40,7 +42,7 @@ export default async function ShoppingListPage() {
       </div>
 
       <div className="mb-4">
-        <AddManualItemForm />
+        <AddManualItemForm unitSystem={unitSystem} />
       </div>
 
       {toBuy.length > 0 ? (

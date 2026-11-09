@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/spinner";
+import { UnitSelect } from "@/components/unit-select";
+import type { UnitSystem } from "@/lib/units";
 import type { RecipeFormInput, RecipeIngredientInput } from "@/lib/actions/recipes";
 import type { RecipeCourse, RecipeWithIngredients } from "@/lib/types";
 
@@ -11,6 +13,7 @@ type Props = {
   initial?: RecipeWithIngredients;
   onSubmit: (input: RecipeFormInput) => Promise<void>;
   submitLabel: string;
+  unitSystem: UnitSystem;
 };
 
 const SUGGESTED_TAGS = ["Freezer-friendly", "OmniCook", "Manual cook"];
@@ -30,7 +33,7 @@ function serialiseStepsToMethod(steps: string[]): string {
     .join("\n");
 }
 
-export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
+export function RecipeForm({ initial, onSubmit, submitLabel, unitSystem }: Props) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -356,11 +359,11 @@ export function RecipeForm({ initial, onSubmit, submitLabel }: Props) {
                 }
                 className="w-20 rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
               />
-              <input
-                placeholder="Unit"
+              <UnitSelect
                 value={ing.unit ?? ""}
-                onChange={(e) => updateIngredient(i, { unit: e.target.value })}
-                className="w-20 rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+                onChange={(unit) => updateIngredient(i, { unit })}
+                unitSystem={unitSystem}
+                className="w-28 rounded-lg border border-border bg-surface px-2 py-2 text-sm outline-none focus:border-brand"
               />
               <button
                 type="button"

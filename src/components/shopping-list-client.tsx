@@ -11,6 +11,8 @@ import {
   resetShoppingList,
 } from "@/lib/actions/shopping-list";
 import { Spinner } from "@/components/spinner";
+import { UnitSelect } from "@/components/unit-select";
+import type { UnitSystem } from "@/lib/units";
 import type { ShoppingListItem } from "@/lib/types";
 
 export function RegenerateButton() {
@@ -117,17 +119,19 @@ export function ShoppingListRow({ item }: { item: ShoppingListItem }) {
   );
 }
 
-export function AddManualItemForm() {
+export function AddManualItemForm({ unitSystem }: { unitSystem: UnitSystem }) {
   const [pending, startTransition] = useTransition();
+  const [unit, setUnit] = useState("");
   return (
     <form
       action={(formData) => {
         startTransition(async () => {
           await addManualShoppingItem({
             ingredient_name: String(formData.get("ingredient_name")),
-            unit: (formData.get("unit") as string) || null,
+            unit: unit || null,
             quantity: Number(formData.get("quantity")) || 1,
           });
+          setUnit("");
         });
       }}
       className="flex flex-wrap gap-2 rounded-xl border border-border bg-surface p-3 shadow-sm"
@@ -145,10 +149,11 @@ export function AddManualItemForm() {
         defaultValue={1}
         className="w-20 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
       />
-      <input
-        name="unit"
-        placeholder="Unit"
-        className="w-20 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+      <UnitSelect
+        value={unit}
+        onChange={setUnit}
+        unitSystem={unitSystem}
+        className="w-28 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
       />
       <button
         type="submit"

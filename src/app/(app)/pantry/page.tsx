@@ -3,6 +3,7 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { PantryItemForm, PantryItemRow } from "@/components/pantry-item-form";
 import type { PantryItem, StorageLocation } from "@/lib/types";
+import type { UnitSystem } from "@/lib/units";
 
 const LOCATIONS: StorageLocation[] = ["cupboard", "fridge", "freezer", "other"];
 
@@ -14,8 +15,9 @@ const LOCATION_ICONS: Record<StorageLocation, typeof Archive> = {
 };
 
 export default async function PantryPage() {
-  const { household } = await getCurrentHousehold();
+  const { household, profile } = await getCurrentHousehold();
   const supabase = await createClient();
+  const unitSystem: UnitSystem = profile.units === "imperial" ? "imperial" : "metric";
 
   const { data: items, error } = await supabase
     .from("pantry_items")
@@ -34,7 +36,7 @@ export default async function PantryPage() {
       </div>
 
       <div className="mb-8">
-        <PantryItemForm />
+        <PantryItemForm unitSystem={unitSystem} />
       </div>
 
       {LOCATIONS.map((loc) => {
@@ -51,7 +53,7 @@ export default async function PantryPage() {
             </h2>
             <div className="divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
               {locItems.map((item) => (
-                <PantryItemRow key={item.id} item={item} />
+                <PantryItemRow key={item.id} item={item} unitSystem={unitSystem} />
               ))}
             </div>
           </div>

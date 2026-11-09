@@ -3,12 +3,21 @@
 import { useState, useTransition } from "react";
 import { addPantryItem, updatePantryItem, deletePantryItem } from "@/lib/actions/pantry";
 import { Spinner } from "@/components/spinner";
+import { UnitSelect } from "@/components/unit-select";
+import type { UnitSystem } from "@/lib/units";
 import type { PantryItem, StorageLocation } from "@/lib/types";
 
 const LOCATIONS: StorageLocation[] = ["cupboard", "fridge", "freezer", "other"];
 
-export function PantryItemForm({ onDone }: { onDone?: () => void }) {
+export function PantryItemForm({
+  onDone,
+  unitSystem,
+}: {
+  onDone?: () => void;
+  unitSystem: UnitSystem;
+}) {
   const [pending, startTransition] = useTransition();
+  const [unit, setUnit] = useState("");
 
   return (
     <form
@@ -18,10 +27,11 @@ export function PantryItemForm({ onDone }: { onDone?: () => void }) {
             ingredient_name: String(formData.get("ingredient_name")),
             storage_location: String(formData.get("storage_location")) as StorageLocation,
             quantity: Number(formData.get("quantity")) || 0,
-            unit: (formData.get("unit") as string) || null,
+            unit: unit || null,
             expiry_date: (formData.get("expiry_date") as string) || null,
             notes: null,
           });
+          setUnit("");
           onDone?.();
         });
       }}
@@ -41,9 +51,10 @@ export function PantryItemForm({ onDone }: { onDone?: () => void }) {
         required
         className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
       />
-      <input
-        name="unit"
-        placeholder="Unit"
+      <UnitSelect
+        value={unit}
+        onChange={setUnit}
+        unitSystem={unitSystem}
         className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
       />
       <select
@@ -74,9 +85,16 @@ export function PantryItemForm({ onDone }: { onDone?: () => void }) {
   );
 }
 
-export function PantryItemRow({ item }: { item: PantryItem }) {
+export function PantryItemRow({
+  item,
+  unitSystem,
+}: {
+  item: PantryItem;
+  unitSystem: UnitSystem;
+}) {
   const [editing, setEditing] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [unit, setUnit] = useState(item.unit ?? "");
 
   const expiringSoon =
     item.expiry_date &&
@@ -94,7 +112,7 @@ export function PantryItemRow({ item }: { item: PantryItem }) {
                 formData.get("storage_location"),
               ) as StorageLocation,
               quantity: Number(formData.get("quantity")) || 0,
-              unit: (formData.get("unit") as string) || null,
+              unit: unit || null,
               expiry_date: (formData.get("expiry_date") as string) || null,
               notes: item.notes,
             });
@@ -115,9 +133,10 @@ export function PantryItemRow({ item }: { item: PantryItem }) {
           defaultValue={item.quantity}
           className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
         />
-        <input
-          name="unit"
-          defaultValue={item.unit ?? ""}
+        <UnitSelect
+          value={unit}
+          onChange={setUnit}
+          unitSystem={unitSystem}
           className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
         />
         <select
