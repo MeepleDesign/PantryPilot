@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import Image from "next/image";
+import { Camera } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
@@ -62,6 +63,8 @@ export function RecipeForm({
 
   const cuisineList = Array.from(new Set([...CUISINES, ...(cuisineOptions ?? [])])).sort();
   const dietList = Array.from(new Set([...RECIPE_DIETS, ...(dietOptions ?? [])])).sort();
+
+  const photoInputId = useId();
 
   const [cuisine, setCuisine] = useState(initial?.cuisine ?? "");
   const [diets, setDiets] = useState<string[]>(initial?.diet ?? ["Vegetarian"]);
@@ -214,29 +217,37 @@ export function RecipeForm({
 
       <Section title="Photo">
         <div className="flex min-w-0 items-center gap-4">
-          {imagePreview ? (
-            <div className="relative h-24 w-24 overflow-hidden rounded-lg border border-border">
-              <Image
-                src={imagePreview}
-                alt=""
-                fill
-                className="object-cover"
-                unoptimized
-              />
+          <label
+            htmlFor={photoInputId}
+            className="group relative block h-24 w-24 shrink-0 cursor-pointer overflow-hidden rounded-lg border border-dashed border-border transition-colors hover:border-brand"
+          >
+            {imagePreview ? (
+              <Image src={imagePreview} alt="" fill className="object-cover" unoptimized />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-2xl text-muted">
+                🍲
+              </div>
+            )}
+            <div className="absolute inset-0 flex items-center justify-center bg-background/80 opacity-0 transition-opacity group-hover:opacity-100">
+              <Camera className="h-6 w-6 text-brand" />
             </div>
-          ) : (
-            <div className="flex h-24 w-24 items-center justify-center rounded-lg border border-dashed border-border text-2xl text-muted">
-              🍲
-            </div>
-          )}
+          </label>
           <div className="min-w-0 flex-1 space-y-2">
             <input
               ref={fileInputRef}
+              id={photoInputId}
               type="file"
               accept="image/*"
               onChange={(e) => handleFileChange(e.target.files?.[0] ?? null)}
-              className="w-full max-w-full text-sm"
+              className="hidden"
             />
+            <label
+              htmlFor={photoInputId}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-background"
+            >
+              <Camera className="h-4 w-4" />
+              {imagePreview ? "Change photo" : "Choose photo"}
+            </label>
             {imagePreview && (
               <button
                 type="button"
