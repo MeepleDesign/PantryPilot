@@ -1,10 +1,8 @@
 import Link from "next/link";
-import Image from "next/image";
-import { UtensilsCrossed, Clock, Flame, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
-import { StaticStars } from "@/components/star-rating";
-import type { Recipe } from "@/lib/types";
+import { RecipeBrowser } from "@/components/recipe-views";
 
 export default async function RecipesPage({
   searchParams,
@@ -42,11 +40,11 @@ export default async function RecipesPage({
     .select("recipe_id, rating")
     .eq("household_id", household.id);
 
-  const ratingsByRecipe = new Map<string, number[]>();
+  const ratingsByRecipe: Record<string, number[]> = {};
   for (const r of ratingRows ?? []) {
-    const list = ratingsByRecipe.get(r.recipe_id) ?? [];
+    const list = ratingsByRecipe[r.recipe_id] ?? [];
     list.push(r.rating);
-    ratingsByRecipe.set(r.recipe_id, list);
+    ratingsByRecipe[r.recipe_id] = list;
   }
 
   return (
@@ -122,91 +120,9 @@ export default async function RecipesPage({
       {!recipes?.length ? (
         <EmptyState />
       ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {recipes.map((r: Recipe) => (
-            <RecipeCard key={r.id} recipe={r} ratings={ratingsByRecipe.get(r.id) ?? []} />
-          ))}
-        </div>
+        <RecipeBrowser recipes={recipes} ratings={ratingsByRecipe} />
       )}
     </div>
-  );
-}
-
-function RecipeCard({ recipe, ratings }: { recipe: Recipe; ratings: number[] }) {
-  const avgRating = ratings.length
-    ? ratings.reduce((sum, r) => sum + r, 0) / ratings.length
-    : 0;
-
-  return (
-    <Link
-      href={`/recipes/${recipe.id}`}
-      className="block overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
-    >
-      {recipe.image_url ? (
-        <div className="relative h-32 w-full">
-          <Image
-            src={recipe.image_url}
-            alt={recipe.name}
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        </div>
-      ) : (
-        <div className="flex h-32 w-full items-center justify-center bg-background text-muted">
-          <UtensilsCrossed className="h-8 w-8" strokeWidth={1.5} />
-        </div>
-      )}
-      <div className="p-4">
-        <div className="mb-2 flex items-start justify-between gap-2">
-          <h3 className="font-medium leading-snug">{recipe.name}</h3>
-          {recipe.protein_tag && (
-            <span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand-dark">
-              {recipe.protein_tag}
-            </span>
-          )}
-        </div>
-        <p className="mb-1 text-xs text-muted">
-          {[recipe.course[0].toUpperCase() + recipe.course.slice(1), recipe.cuisine, recipe.diet]
-            .filter(Boolean)
-            .join(" · ")}
-        </p>
-        <div className="mb-2">
-          {ratings.length > 0 ? (
-            <StaticStars value={avgRating} count={ratings.length} />
-          ) : (
-            <span className="text-xs text-muted">No ratings yet</span>
-          )}
-        </div>
-        {recipe.tags?.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-1">
-            {recipe.tags.map((t) => (
-              <span
-                key={t}
-                className="rounded-full bg-background px-2 py-0.5 text-[11px] text-muted"
-              >
-                {t}
-              </span>
-            ))}
-          </div>
-        )}
-        <div className="flex flex-wrap gap-3 text-xs text-muted">
-          {recipe.total_time_minutes && (
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" /> {recipe.total_time_minutes} min
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            <UtensilsCrossed className="h-3.5 w-3.5" /> 2 servings
-          </span>
-          {recipe.calories && (
-            <span className="flex items-center gap-1">
-              <Flame className="h-3.5 w-3.5" /> {recipe.calories} kcal
-            </span>
-          )}
-        </div>
-      </div>
-    </Link>
   );
 }
 
