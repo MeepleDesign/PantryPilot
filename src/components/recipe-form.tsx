@@ -5,6 +5,8 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
+import { SelectWithOther } from "@/components/select-with-other";
+import { CUISINES, PROTEIN_TAGS, RECIPE_DIETS } from "@/lib/taxonomies";
 import type { UnitSystem } from "@/lib/units";
 import type { RecipeFormInput, RecipeIngredientInput } from "@/lib/actions/recipes";
 import type { RecipeCourse, RecipeIngredient, RecipeWithIngredients } from "@/lib/types";
@@ -50,6 +52,10 @@ export function RecipeForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [cuisine, setCuisine] = useState(initial?.cuisine ?? "");
+  const [diet, setDiet] = useState(initial?.diet ?? "Vegetarian");
+  const [proteinTag, setProteinTag] = useState(initial?.protein_tag ?? "");
 
   const [tags, setTags] = useState<string[]>(initial?.tags ?? []);
   const [tagInput, setTagInput] = useState("");
@@ -153,9 +159,9 @@ export function RecipeForm({
       const input: RecipeFormInput = {
         name: String(formData.get("name")),
         description: (formData.get("description") as string) || null,
-        cuisine: (formData.get("cuisine") as string) || null,
-        diet: (formData.get("diet") as string) || "Vegetarian",
-        protein_tag: (formData.get("protein_tag") as string) || null,
+        cuisine: cuisine || null,
+        diet: diet || "Vegetarian",
+        protein_tag: proteinTag || null,
         main_protein_source: (formData.get("main_protein_source") as string) || null,
         total_time_minutes: numOrNull(formData.get("total_time_minutes")),
         servings: Number(formData.get("servings")) || 6,
@@ -308,14 +314,36 @@ export function RecipeForm({
           textarea
         />
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <Field label="Cuisine" name="cuisine" defaultValue={initial?.cuisine ?? ""} />
-          <Field label="Diet" name="diet" defaultValue={initial?.diet ?? "Vegetarian"} />
-          <Field
-            label="Protein tag"
-            name="protein_tag"
-            defaultValue={initial?.protein_tag ?? ""}
-            placeholder="e.g. High protein"
-          />
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium">Cuisine</span>
+            <SelectWithOther
+              value={cuisine}
+              onChange={setCuisine}
+              options={CUISINES}
+              placeholder="Select cuisine…"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium">Diet</span>
+            <SelectWithOther
+              value={diet}
+              onChange={setDiet}
+              options={RECIPE_DIETS}
+              placeholder="Select diet…"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+            />
+          </label>
+          <label className="block">
+            <span className="mb-1.5 block text-sm font-medium">Protein tag</span>
+            <SelectWithOther
+              value={proteinTag}
+              onChange={setProteinTag}
+              options={PROTEIN_TAGS}
+              placeholder="Select…"
+              className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+            />
+          </label>
           <Field
             label="Main protein source"
             name="main_protein_source"

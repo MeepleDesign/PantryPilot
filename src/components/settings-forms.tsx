@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Spinner } from "@/components/spinner";
+import { SelectWithOther } from "@/components/select-with-other";
+import { PROFILE_DIETS } from "@/lib/taxonomies";
 import {
   updateHouseholdSettings,
   updateProfileSettings,
@@ -41,6 +43,9 @@ export function HouseholdSettingsForm({ household }: { household: Household }) {
 export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const [dietaryPreference, setDietaryPreference] = useState(
+    profile.dietary_preference ?? "vegetarian",
+  );
 
   return (
     <form
@@ -49,7 +54,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
         startTransition(async () => {
           await updateProfileSettings({
             display_name: String(formData.get("display_name")),
-            dietary_preference: String(formData.get("dietary_preference")),
+            dietary_preference: dietaryPreference,
             units: String(formData.get("units")),
           });
           setSaved(true);
@@ -58,11 +63,16 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
       className="space-y-4"
     >
       <Field label="Your name" name="display_name" defaultValue={profile.display_name ?? ""} />
-      <Field
-        label="Dietary preference"
-        name="dietary_preference"
-        defaultValue={profile.dietary_preference ?? "vegetarian"}
-      />
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium">Dietary preference</span>
+        <SelectWithOther
+          value={dietaryPreference}
+          onChange={setDietaryPreference}
+          options={PROFILE_DIETS}
+          placeholder="Select…"
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+        />
+      </label>
       <label className="block">
         <span className="mb-1.5 block text-sm font-medium">Units</span>
         <select
