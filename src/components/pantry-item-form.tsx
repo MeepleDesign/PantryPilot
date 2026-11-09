@@ -211,7 +211,8 @@ export function PantryItemRow({
       <div className="min-w-0">
         <p className="font-medium">{item.ingredient_name}</p>
         <p className="text-xs text-muted">
-          {item.quantity} {item.unit ?? ""} · {item.storage_location}
+          {item.quantity} {item.unit ?? ""} ·{" "}
+          <span className="capitalize">{item.storage_location}</span>
           {item.expiry_date && (
             <span
               className={

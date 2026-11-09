@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { User, Settings, LogOut } from "lucide-react";
+import { User, Settings, CreditCard, LogOut } from "lucide-react";
 import { signOut } from "@/app/login/actions";
 
 function initialsOf(name: string) {
@@ -49,7 +49,7 @@ export function AccountMenu({
           </div>
           <div className="py-1">
             <Link
-              href="/settings"
+              href="/profile"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-4 py-2 text-sm text-foreground hover:bg-background"
             >
@@ -57,12 +57,20 @@ export function AccountMenu({
               My Profile
             </Link>
             <Link
-              href="/settings#household"
+              href="/settings"
               onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-4 py-2 text-sm text-foreground hover:bg-background"
             >
               <Settings className="h-4 w-4" strokeWidth={2} />
               Settings
+            </Link>
+            <Link
+              href="/billing"
+              onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-4 py-2 text-sm text-foreground hover:bg-background"
+            >
+              <CreditCard className="h-4 w-4" strokeWidth={2} />
+              Billing
             </Link>
           </div>
           <div className="border-t border-border py-1">

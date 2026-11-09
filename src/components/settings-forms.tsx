@@ -44,7 +44,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
   const [dietaryPreference, setDietaryPreference] = useState(
-    profile.dietary_preference ?? "vegetarian",
+    profile.dietary_preference ?? "Vegetarian",
   );
 
   return (

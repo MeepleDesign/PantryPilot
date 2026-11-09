@@ -51,7 +51,8 @@ function BatchRow({ batch }: { batch: MealBatch }) {
         <p className="truncate font-medium">{batch.recipe_name}</p>
         <p className="flex items-center gap-1 text-xs text-muted">
           <Icon className="h-3 w-3" />
-          {batch.portions_remaining} of {batch.portions_total} portions left · {batch.storage_location}
+          {batch.portions_remaining} of {batch.portions_total} portions left ·{" "}
+          <span className="capitalize">{batch.storage_location}</span>
         </p>
       </div>
       <div className="flex shrink-0 items-center gap-2">

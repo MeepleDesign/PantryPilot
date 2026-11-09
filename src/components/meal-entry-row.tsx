@@ -68,7 +68,7 @@ function EntryLine({
           {entry.recipes?.name}
         </Link>
         <p className="text-xs text-muted">
-          {!isSide && `${entry.meal_slot} · `}
+          {!isSide && <span className="capitalize">{entry.meal_slot} · </span>}
           {Math.round(entry.batch_multiplier * (entry.recipes?.servings ?? 1))} servings
           {entry.cooked && <span className="text-success"> · cooked ✓</span>}
         </p>

@@ -115,6 +115,7 @@ export type Household = {
   name: string;
   default_supermarket: string | null;
   invite_code: string;
+  plan: "free" | "pro";
 };
 
 export type RecipeRating = {

@@ -1,25 +1,22 @@
-import { LogOut } from "lucide-react";
+import Link from "next/link";
+import { Sparkles } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
-import {
-  HouseholdSettingsForm,
-  ProfileSettingsForm,
-  JoinHouseholdForm,
-} from "@/components/settings-forms";
-import { signOut } from "@/app/login/actions";
+import { HouseholdSettingsForm, JoinHouseholdForm } from "@/components/settings-forms";
+
+const FREE_INCLUDES = [
+  "Unlimited recipes, pantry & shopping list",
+  "Meal planner with batch-cook portion tracking",
+  "Import recipes from any website",
+];
 
 export default async function SettingsPage() {
-  const { profile, household } = await getCurrentHousehold();
+  const { household } = await getCurrentHousehold();
 
   return (
     <div className="mx-auto max-w-xl space-y-8">
       <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
 
       <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
-        <h2 className="mb-4 font-medium">Your profile</h2>
-        <ProfileSettingsForm profile={profile} />
-      </section>
-
-      <section id="household" className="scroll-mt-20 rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h2 className="mb-4 font-medium">Household</h2>
         <HouseholdSettingsForm household={household} />
         <div className="mt-5 border-t border-border pt-4">
@@ -38,15 +35,31 @@ export default async function SettingsPage() {
         </div>
       </section>
 
-      <form action={signOut}>
-        <button
-          type="submit"
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-danger shadow-sm transition-colors hover:bg-danger/10"
+      <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
+        <div className="mb-3 flex items-center justify-between">
+          <h2 className="flex items-center gap-2 font-medium">
+            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand/10 text-brand-dark">
+              <Sparkles className="h-4 w-4" />
+            </span>
+            Plan
+          </h2>
+          <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-medium capitalize text-brand-dark">
+            {household.plan} plan
+          </span>
+        </div>
+        <p className="mb-2 text-sm font-medium">Includes:</p>
+        <ul className="mb-4 space-y-1 text-sm text-muted">
+          {FREE_INCLUDES.map((item) => (
+            <li key={item}>· {item}</li>
+          ))}
+        </ul>
+        <Link
+          href="/billing"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark"
         >
-          <LogOut className="h-4 w-4" strokeWidth={2} />
-          Sign out
-        </button>
-      </form>
+          See plans & billing
+        </Link>
+      </section>
     </div>
   );
 }

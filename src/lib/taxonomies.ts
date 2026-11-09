@@ -33,6 +33,6 @@ export const RECIPE_DIETS = [
   "Flexitarian",
 ];
 
-export const PROFILE_DIETS = RECIPE_DIETS.map((d) => d.toLowerCase());
+export const PROFILE_DIETS = RECIPE_DIETS;
 
 export const PROTEIN_TAGS = ["High protein", "Low protein", "Vegetarian", "Vegan"];
