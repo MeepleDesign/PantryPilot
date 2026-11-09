@@ -13,6 +13,7 @@ import {
   Flame,
 } from "lucide-react";
 import { StaticStars } from "@/components/star-rating";
+import type { RecipeMatch } from "@/lib/pantry-match";
 import type { Recipe } from "@/lib/types";
 
 type ViewMode = "list" | "list-details" | "tiles-small" | "tiles-medium";
@@ -58,9 +59,11 @@ function useViewMode() {
 export function RecipeBrowser({
   recipes,
   ratings,
+  pantryMatch,
 }: {
   recipes: Recipe[];
   ratings: Record<string, number[]>;
+  pantryMatch?: Record<string, RecipeMatch>;
 }) {
   const { view, setView } = useViewMode();
 
@@ -88,10 +91,30 @@ export function RecipeBrowser({
       </div>
 
       {view === "list" && <ListView recipes={recipes} ratings={ratings} />}
-      {view === "list-details" && <ListDetailsView recipes={recipes} ratings={ratings} />}
+      {view === "list-details" && (
+        <ListDetailsView recipes={recipes} ratings={ratings} pantryMatch={pantryMatch} />
+      )}
       {view === "tiles-small" && <TilesView recipes={recipes} ratings={ratings} size="small" />}
-      {view === "tiles-medium" && <TilesView recipes={recipes} ratings={ratings} size="medium" />}
+      {view === "tiles-medium" && (
+        <TilesView recipes={recipes} ratings={ratings} size="medium" pantryMatch={pantryMatch} />
+      )}
     </div>
+  );
+}
+
+function PantryMatchBadge({ match }: { match?: RecipeMatch }) {
+  if (!match || match.total === 0) return null;
+  if (match.covered === match.total) {
+    return (
+      <span className="shrink-0 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-medium text-success">
+        Ready to cook
+      </span>
+    );
+  }
+  return (
+    <span className="shrink-0 rounded-full bg-background px-2 py-0.5 text-[11px] text-muted">
+      {match.covered}/{match.total} in pantry
+    </span>
   );
 }
 
@@ -151,9 +174,11 @@ function ListView({
 function ListDetailsView({
   recipes,
   ratings,
+  pantryMatch,
 }: {
   recipes: Recipe[];
   ratings: Record<string, number[]>;
+  pantryMatch?: Record<string, RecipeMatch>;
 }) {
   return (
     <div className="divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
@@ -188,6 +213,7 @@ function ListDetailsView({
                     {recipe.protein_tag}
                   </span>
                 )}
+                <PantryMatchBadge match={pantryMatch?.[recipe.id]} />
               </div>
               <p className="truncate text-xs text-muted">
                 {[courseLabel(recipe), recipe.cuisine, ...(recipe.diet ?? [])]
@@ -226,10 +252,12 @@ function TilesView({
   recipes,
   ratings,
   size,
+  pantryMatch,
 }: {
   recipes: Recipe[];
   ratings: Record<string, number[]>;
   size: "small" | "medium";
+  pantryMatch?: Record<string, RecipeMatch>;
 }) {
   const gridClass =
     size === "small"
@@ -270,10 +298,15 @@ function TilesView({
                 <h3 className={`font-medium leading-snug ${size === "small" ? "text-sm" : ""}`}>
                   {recipe.name}
                 </h3>
-                {size === "medium" && recipe.protein_tag && (
-                  <span className="shrink-0 rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand-dark">
-                    {recipe.protein_tag}
-                  </span>
+                {size === "medium" && (
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    {recipe.protein_tag && (
+                      <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand-dark">
+                        {recipe.protein_tag}
+                      </span>
+                    )}
+                    <PantryMatchBadge match={pantryMatch?.[recipe.id]} />
+                  </div>
                 )}
               </div>
               {size === "medium" && (

@@ -3,11 +3,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { revalidatePath } from "next/cache";
+import { normaliseIngredient as normalise } from "@/lib/ingredient-match";
 import type { MealSlot } from "@/lib/types";
-
-function normalise(s: string) {
-  return s.trim().toLowerCase();
-}
 
 export async function addMealPlanEntry(input: {
   plan_date: string;

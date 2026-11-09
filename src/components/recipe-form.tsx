@@ -60,6 +60,7 @@ export function RecipeForm({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
 
   const cuisineList = Array.from(new Set([...CUISINES, ...(cuisineOptions ?? [])])).sort();
   const dietList = Array.from(new Set([...RECIPE_DIETS, ...(dietOptions ?? [])])).sort();
@@ -123,6 +124,51 @@ export function RecipeForm({
     );
   }
 
+  const [nutrition, setNutrition] = useState({
+    calories: initial?.calories ?? null,
+    protein_g: initial?.protein_g ?? null,
+    carbs_g: initial?.carbs_g ?? null,
+    fat_g: initial?.fat_g ?? null,
+    fibre_g: initial?.fibre_g ?? null,
+  });
+  const [nutritionNote, setNutritionNote] = useState<string | null>(null);
+  const [estimating, setEstimating] = useState(false);
+  const [estimateError, setEstimateError] = useState<string | null>(null);
+
+  async function handleEstimateNutrition() {
+    setEstimateError(null);
+    setEstimating(true);
+    try {
+      const formEl = formRef.current;
+      const name = (formEl?.elements.namedItem("name") as HTMLInputElement | null)?.value ?? "";
+      const servingsValue =
+        (formEl?.elements.namedItem("servings") as HTMLInputElement | null)?.value ?? "";
+      const res = await fetch("/api/recipes/estimate-nutrition", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          servings: Number(servingsValue) || 1,
+          ingredients: ingredients.filter((i) => i.ingredient_name.trim() !== ""),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error ?? "Couldn't estimate nutrition.");
+      setNutrition({
+        calories: data.calories,
+        protein_g: data.protein_g,
+        carbs_g: data.carbs_g,
+        fat_g: data.fat_g,
+        fibre_g: data.fibre_g,
+      });
+      setNutritionNote(data.note ?? "AI-estimated, please double-check.");
+    } catch (e) {
+      setEstimateError(e instanceof Error ? e.message : "Couldn't estimate nutrition.");
+    } finally {
+      setEstimating(false);
+    }
+  }
+
   function addTag(tag: string) {
     const clean = tag.trim();
     if (!clean || tags.includes(clean)) return;
@@ -182,11 +228,11 @@ export function RecipeForm({
         equipment: (formData.get("equipment") as string) || null,
         method: serialiseStepsToMethod(steps) || null,
         prep_note: (formData.get("prep_note") as string) || null,
-        calories: numOrNull(formData.get("calories")),
-        protein_g: numOrNull(formData.get("protein_g")),
-        carbs_g: numOrNull(formData.get("carbs_g")),
-        fat_g: numOrNull(formData.get("fat_g")),
-        fibre_g: numOrNull(formData.get("fibre_g")),
+        calories: nutrition.calories,
+        protein_g: nutrition.protein_g,
+        carbs_g: nutrition.carbs_g,
+        fat_g: nutrition.fat_g,
+        fibre_g: nutrition.fibre_g,
         tags,
         image_url: finalImageUrl,
         ingredients: ingredients.filter((i) => i.ingredient_name.trim() !== ""),
@@ -201,7 +247,7 @@ export function RecipeForm({
   }
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form ref={formRef} action={handleSubmit} className="space-y-6">
       {error && (
         <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
           {error}
@@ -503,12 +549,45 @@ export function RecipeForm({
       </Section>
 
       <Section title="Nutrition (estimated, per serving)">
+        <div className="mb-3 flex items-center justify-between gap-2">
+          <button
+            type="button"
+            onClick={handleEstimateNutrition}
+            disabled={estimating}
+            className="flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium shadow-sm transition-colors hover:bg-surface disabled:cursor-wait disabled:opacity-60"
+          >
+            {estimating && <Spinner className="h-4 w-4" />}
+            {estimating ? "Estimating…" : "Estimate with AI"}
+          </button>
+          {estimateError && <p className="text-xs text-danger">{estimateError}</p>}
+        </div>
+        {nutritionNote && <p className="mb-3 text-xs text-warn">{nutritionNote}</p>}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
-          <Field label="Calories" name="calories" type="number" defaultValue={initial?.calories ?? ""} />
-          <Field label="Protein (g)" name="protein_g" type="number" defaultValue={initial?.protein_g ?? ""} />
-          <Field label="Carbs (g)" name="carbs_g" type="number" defaultValue={initial?.carbs_g ?? ""} />
-          <Field label="Fat (g)" name="fat_g" type="number" defaultValue={initial?.fat_g ?? ""} />
-          <Field label="Fibre (g)" name="fibre_g" type="number" defaultValue={initial?.fibre_g ?? ""} />
+          <NumberField
+            label="Calories"
+            value={nutrition.calories}
+            onChange={(v) => setNutrition((prev) => ({ ...prev, calories: v }))}
+          />
+          <NumberField
+            label="Protein (g)"
+            value={nutrition.protein_g}
+            onChange={(v) => setNutrition((prev) => ({ ...prev, protein_g: v }))}
+          />
+          <NumberField
+            label="Carbs (g)"
+            value={nutrition.carbs_g}
+            onChange={(v) => setNutrition((prev) => ({ ...prev, carbs_g: v }))}
+          />
+          <NumberField
+            label="Fat (g)"
+            value={nutrition.fat_g}
+            onChange={(v) => setNutrition((prev) => ({ ...prev, fat_g: v }))}
+          />
+          <NumberField
+            label="Fibre (g)"
+            value={nutrition.fibre_g}
+            onChange={(v) => setNutrition((prev) => ({ ...prev, fibre_g: v }))}
+          />
         </div>
       </Section>
 
@@ -581,4 +660,26 @@ function numOrNull(v: FormDataEntryValue | null) {
   if (v === null || v === "") return null;
   const n = Number(v);
   return Number.isNaN(n) ? null : n;
+}
+
+function NumberField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: number | null;
+  onChange: (value: number | null) => void;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium">{label}</span>
+      <input
+        type="number"
+        value={value ?? ""}
+        onChange={(e) => onChange(e.target.value === "" ? null : Number(e.target.value))}
+        className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
+      />
+    </label>
+  );
 }

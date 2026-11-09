@@ -3,10 +3,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { revalidatePath } from "next/cache";
-
-function normalise(s: string) {
-  return s.trim().toLowerCase();
-}
+import { normaliseIngredient as normalise } from "@/lib/ingredient-match";
 
 /**
  * Recalculate the shopping list from all not-yet-cooked meal plan entries,

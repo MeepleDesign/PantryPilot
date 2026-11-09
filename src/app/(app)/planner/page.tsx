@@ -2,6 +2,8 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { MealEntryRow } from "@/components/meal-entry-row";
 import { QuickAddMealForm } from "@/components/quick-add-meal-form";
+import { GenerateWeekForm } from "@/components/generate-week-form";
+import { PROTEIN_TAGS } from "@/lib/taxonomies";
 import type { MealPlanEntry, Recipe } from "@/lib/types";
 
 function dateRange(days: number) {
@@ -38,12 +40,37 @@ export default async function PlannerPage() {
 
   const sideRecipes = (recipes ?? []).filter((r) => r.course === "side");
 
+  const cuisineOptions = Array.from(
+    new Set((recipes ?? []).map((r) => r.cuisine).filter((c): c is string => !!c)),
+  ).sort();
+  const wellnessTagOptions = Array.from(
+    new Set([
+      ...PROTEIN_TAGS,
+      ...(recipes ?? []).flatMap((r) => r.tags ?? []),
+    ]),
+  ).sort();
+
+  const dateOptions = dates.map((date) => ({
+    date,
+    label: new Date(date).toLocaleDateString("en-GB", {
+      weekday: "long",
+      day: "numeric",
+      month: "short",
+    }),
+  }));
+
   return (
     <div>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold tracking-tight">Meal planner</h1>
         <p className="text-sm text-muted">Next 7 days</p>
       </div>
+
+      <GenerateWeekForm
+        dates={dateOptions}
+        cuisineOptions={cuisineOptions}
+        wellnessTagOptions={wellnessTagOptions}
+      />
 
       <div className="space-y-4">
         {dates.map((date) => {

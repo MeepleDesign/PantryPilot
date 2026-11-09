@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { RecipeBrowser } from "@/components/recipe-views";
+import { computeRecipeMatches } from "@/lib/pantry-match";
 
 export default async function RecipesPage({
   searchParams,
@@ -13,6 +14,7 @@ export default async function RecipesPage({
   const tag = typeof params.tag === "string" ? params.tag : "";
   const course = typeof params.course === "string" ? params.course : "";
   const minRating = typeof params.minRating === "string" ? params.minRating : "";
+  const readyOnly = params.ready === "1";
 
   const supabase = await createClient();
   const { household } = await getCurrentHousehold();
@@ -25,6 +27,21 @@ export default async function RecipesPage({
 
   const { data: recipes, error } = await query;
   if (error) throw new Error(error.message);
+
+  const recipeIds = (recipes ?? []).map((r) => r.id);
+  const [{ data: recipeIngredients }, { data: pantryItems }] = await Promise.all([
+    recipeIds.length
+      ? supabase
+          .from("recipe_ingredients")
+          .select("recipe_id, ingredient_name, unit, quantity")
+          .in("recipe_id", recipeIds)
+      : Promise.resolve({ data: [] }),
+    supabase
+      .from("pantry_items")
+      .select("ingredient_name, unit, quantity")
+      .eq("household_id", household.id),
+  ]);
+  const pantryMatch = computeRecipeMatches(recipeIngredients ?? [], pantryItems ?? []);
 
   const { data: allRecipes } = await supabase.from("recipes").select("cuisine, tags");
   const cuisines = [...new Set((allRecipes ?? []).map((r) => r.cuisine).filter(Boolean))].sort();
@@ -48,7 +65,7 @@ export default async function RecipesPage({
     ratingsByRecipe[r.recipe_id] = list;
   }
 
-  const visibleRecipes = minRating
+  let visibleRecipes = minRating
     ? (recipes ?? []).filter((r) => {
         const list = ratingsByRecipe[r.id] ?? [];
         if (!list.length) return false;
@@ -56,6 +73,13 @@ export default async function RecipesPage({
         return avg >= Number(minRating);
       })
     : (recipes ?? []);
+
+  if (readyOnly) {
+    visibleRecipes = visibleRecipes.filter((r) => {
+      const m = pantryMatch[r.id];
+      return m && m.total > 0 && m.covered === m.total;
+    });
+  }
 
   return (
     <div>
@@ -130,6 +154,10 @@ export default async function RecipesPage({
           <option value="2">★★ & up</option>
           <option value="1">★ & up</option>
         </select>
+        <label className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm">
+          <input type="checkbox" name="ready" value="1" defaultChecked={readyOnly} className="h-4 w-4 accent-brand" />
+          I can make this now
+        </label>
         <button
           type="submit"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-surface"
@@ -141,7 +169,7 @@ export default async function RecipesPage({
       {!visibleRecipes.length ? (
         <EmptyState />
       ) : (
-        <RecipeBrowser recipes={visibleRecipes} ratings={ratingsByRecipe} />
+        <RecipeBrowser recipes={visibleRecipes} ratings={ratingsByRecipe} pantryMatch={pantryMatch} />
       )}
     </div>
   );
