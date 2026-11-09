@@ -35,6 +35,7 @@ export type RecipeFormInput = {
   tags: string[];
   image_url: string | null;
   ingredients: RecipeIngredientInput[];
+  source?: "manual" | "photo";
 };
 
 export async function createRecipe(input: RecipeFormInput) {
@@ -65,7 +66,7 @@ export async function createRecipe(input: RecipeFormInput) {
       fibre_g: input.fibre_g,
       tags: input.tags,
       image_url: input.image_url,
-      source: "manual",
+      source: input.source ?? "manual",
       created_by: auth.user?.id,
     })
     .select()

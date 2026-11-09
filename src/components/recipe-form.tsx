@@ -7,13 +7,19 @@ import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
 import type { UnitSystem } from "@/lib/units";
 import type { RecipeFormInput, RecipeIngredientInput } from "@/lib/actions/recipes";
-import type { RecipeCourse, RecipeWithIngredients } from "@/lib/types";
+import type { RecipeCourse, RecipeIngredient, RecipeWithIngredients } from "@/lib/types";
+
+export type RecipeFormInitial = Partial<Omit<RecipeWithIngredients, "recipe_ingredients">> & {
+  recipe_ingredients?: Array<Partial<RecipeIngredient>>;
+};
 
 type Props = {
-  initial?: RecipeWithIngredients;
+  initial?: RecipeFormInitial;
   onSubmit: (input: RecipeFormInput) => Promise<void>;
   submitLabel: string;
   unitSystem: UnitSystem;
+  source?: "manual" | "photo";
+  reviewFields?: string[];
 };
 
 const SUGGESTED_TAGS = ["Freezer-friendly", "OmniCook", "Manual cook"];
@@ -33,7 +39,14 @@ function serialiseStepsToMethod(steps: string[]): string {
     .join("\n");
 }
 
-export function RecipeForm({ initial, onSubmit, submitLabel, unitSystem }: Props) {
+export function RecipeForm({
+  initial,
+  onSubmit,
+  submitLabel,
+  unitSystem,
+  source,
+  reviewFields,
+}: Props) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -73,13 +86,14 @@ export function RecipeForm({ initial, onSubmit, submitLabel, unitSystem }: Props
   const [ingredients, setIngredients] = useState<RecipeIngredientInput[]>(
     initial?.recipe_ingredients?.length
       ? initial.recipe_ingredients
-          .sort((a, b) => a.sort_order - b.sort_order)
+          .slice()
+          .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0))
           .map((i) => ({
-            ingredient_name: i.ingredient_name,
-            quantity: i.quantity,
-            unit: i.unit,
-            category: i.category,
-            notes: i.notes,
+            ingredient_name: i.ingredient_name ?? "",
+            quantity: i.quantity ?? null,
+            unit: i.unit ?? null,
+            category: i.category ?? null,
+            notes: i.notes ?? null,
           }))
       : [{ ingredient_name: "", quantity: null, unit: "", category: "", notes: "" }],
   );
@@ -157,6 +171,7 @@ export function RecipeForm({ initial, onSubmit, submitLabel, unitSystem }: Props
         tags,
         image_url: finalImageUrl,
         ingredients: ingredients.filter((i) => i.ingredient_name.trim() !== ""),
+        source,
       };
 
       await onSubmit(input);
@@ -171,6 +186,13 @@ export function RecipeForm({ initial, onSubmit, submitLabel, unitSystem }: Props
       {error && (
         <div className="rounded-lg bg-danger/10 px-3 py-2 text-sm text-danger">
           {error}
+        </div>
+      )}
+
+      {reviewFields && reviewFields.length > 0 && (
+        <div className="rounded-lg border border-warn/40 bg-warn/5 px-3 py-2 text-sm">
+          <p className="font-medium text-warn">AI-extracted — please double-check:</p>
+          <p className="text-muted">{reviewFields.join(", ")}</p>
         </div>
       )}
 

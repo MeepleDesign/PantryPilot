@@ -1,0 +1,119 @@
+import Anthropic from "@anthropic-ai/sdk";
+import type { RecipeCourse } from "@/lib/types";
+
+export type ExtractedRecipe = {
+  name: string;
+  description: string | null;
+  cuisine: string | null;
+  total_time_minutes: number | null;
+  servings: number;
+  course: RecipeCourse;
+  equipment: string | null;
+  steps: string[];
+  calories: number | null;
+  protein_g: number | null;
+  carbs_g: number | null;
+  fat_g: number | null;
+  fibre_g: number | null;
+  tags: string[];
+  ingredients: { ingredient_name: string; quantity: number | null; unit: string | null }[];
+  low_confidence_fields: string[];
+};
+
+const EXTRACT_RECIPE_TOOL: Anthropic.Tool = {
+  name: "extract_recipe",
+  description:
+    "Record structured recipe data read from a photo of a recipe (cookbook page, printed recipe, handwritten card, or recipe website screenshot).",
+  input_schema: {
+    type: "object",
+    properties: {
+      name: { type: "string", description: "Recipe title" },
+      description: { type: ["string", "null"], description: "Short one-line description, or null if none is evident" },
+      cuisine: { type: ["string", "null"] },
+      total_time_minutes: { type: ["number", "null"] },
+      servings: { type: "number", description: "Number of servings the recipe makes; default to 4 if not stated" },
+      course: { type: "string", enum: ["main", "side", "snack", "dessert"] },
+      equipment: { type: ["string", "null"], description: "Any specific equipment or appliance settings mentioned" },
+      steps: {
+        type: "array",
+        items: { type: "string" },
+        description: "Method steps, in order, one instruction per entry",
+      },
+      calories: { type: ["number", "null"], description: "Estimated calories per serving" },
+      protein_g: { type: ["number", "null"], description: "Estimated protein grams per serving" },
+      carbs_g: { type: ["number", "null"], description: "Estimated carbohydrate grams per serving" },
+      fat_g: { type: ["number", "null"], description: "Estimated fat grams per serving" },
+      fibre_g: { type: ["number", "null"], description: "Estimated fibre grams per serving" },
+      tags: {
+        type: "array",
+        items: { type: "string" },
+        description: "Short descriptive tags, e.g. 'Freezer-friendly', 'Vegetarian', 'Quick'",
+      },
+      ingredients: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            ingredient_name: { type: "string" },
+            quantity: { type: ["number", "null"] },
+            unit: { type: ["string", "null"] },
+          },
+          required: ["ingredient_name"],
+        },
+      },
+      low_confidence_fields: {
+        type: "array",
+        items: { type: "string" },
+        description:
+          "Names of fields you had to guess or estimate (e.g. because the photo was cropped, blurry, or didn't state nutrition) so the user knows to double-check them",
+      },
+    },
+    required: ["name", "servings", "course", "steps", "ingredients", "low_confidence_fields"],
+  },
+};
+
+export async function extractRecipeFromPhoto(
+  base64Data: string,
+  mediaType: "image/jpeg" | "image/png" | "image/webp",
+): Promise<ExtractedRecipe> {
+  if (!process.env.ANTHROPIC_API_KEY) {
+    throw new Error("Photo import isn't configured yet (missing API key).");
+  }
+
+  const client = new Anthropic();
+
+  const response = await client.messages.create({
+    model: "claude-sonnet-5-5",
+    max_tokens: 4000,
+    tools: [EXTRACT_RECIPE_TOOL],
+    tool_choice: { type: "tool", name: "extract_recipe" },
+    messages: [
+      {
+        role: "user",
+        content: [
+          {
+            type: "image",
+            source: { type: "base64", media_type: mediaType, data: base64Data },
+          },
+          {
+            type: "text",
+            text:
+              "Read this recipe photo and extract its structured data via the extract_recipe tool. " +
+              "Estimate nutrition per serving as best you can from the ingredients if it isn't printed on the photo. " +
+              "List anything you guessed or estimated in low_confidence_fields.",
+          },
+        ],
+      },
+    ],
+  });
+
+  const toolUse = response.content.find(
+    (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "extract_recipe",
+  );
+
+  if (!toolUse) {
+    throw new Error("Couldn't read a recipe from that photo. Try a clearer photo or enter it manually.");
+  }
+
+  return toolUse.input as ExtractedRecipe;
+}
