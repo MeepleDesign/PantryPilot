@@ -42,8 +42,8 @@ export function ScaledIngredients({
       </div>
       {overCapacity && (
         <p className="mb-3 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
-          ⚠ {servings} servings may exceed the Omni Cook's bowl capacity — {OMNICOOK_MAX_SERVINGS}{" "}
-          servings is the recommended max for this cook method.
+          ⚠ {servings} servings may exceed the Omni Cook's bowl capacity.{" "}
+          {OMNICOOK_MAX_SERVINGS} servings is the recommended max for this cook method.
         </p>
       )}
       <ul className="divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
@@ -56,7 +56,7 @@ export function ScaledIngredients({
             <span className="font-medium tabular-nums">
               {ing.quantity != null
                 ? `${round(ing.quantity * multiplier)} ${ing.unit ?? ""}`
-                : ing.unit ?? "—"}
+                : ing.unit ?? "-"}
             </span>
           </li>
         ))}

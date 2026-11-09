@@ -41,7 +41,7 @@ export function RecipeUrlImport({
         <Link2 className="h-5 w-5 text-muted" />
         <div>
           <p className="text-sm font-medium">Import from a website</p>
-          <p className="text-xs text-muted">Paste a link to a recipe page and we&apos;ll pre-fill the form below — free, no AI involved.</p>
+          <p className="text-xs text-muted">Paste a link to a recipe page and we&apos;ll pre-fill the form below. Free, no AI involved.</p>
         </div>
       </div>
       <div className="flex flex-wrap gap-2">

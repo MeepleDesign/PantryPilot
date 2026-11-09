@@ -79,7 +79,7 @@ export default async function BillingPage() {
           Payment method
         </h2>
         <p className="rounded-lg border border-dashed border-border bg-background px-4 py-6 text-center text-sm text-muted">
-          No payment method on file — this app is currently free to use. Payment details will
+          No payment method on file. This app is currently free to use. Payment details will
           appear here once paid plans launch.
         </p>
       </section>

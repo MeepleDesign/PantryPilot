@@ -109,7 +109,7 @@ export function PantryPhotoImport({
           <p className="text-sm font-medium">Scan your pantry</p>
           <p className="text-xs text-muted">
             Take a photo of a cupboard, fridge, or shopping haul and we&apos;ll list what&apos;s
-            there for you to review before adding — take more than one photo to cover a whole
+            there for you to review before adding. Take more than one photo to cover a whole
             shelf or fridge.
           </p>
         </div>

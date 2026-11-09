@@ -210,7 +210,7 @@ export function RecipeForm({
 
       {reviewFields && reviewFields.length > 0 && (
         <div className="rounded-lg border border-warn/40 bg-warn/5 px-3 py-2 text-sm">
-          <p className="font-medium text-warn">AI-extracted — please double-check:</p>
+          <p className="font-medium text-warn">AI-extracted, please double-check:</p>
           <p className="text-muted">{reviewFields.join(", ")}</p>
         </div>
       )}

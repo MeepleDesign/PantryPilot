@@ -36,7 +36,7 @@ const EXTRACT_PANTRY_TOOL: Anthropic.Tool = {
             },
             unit: {
               type: ["string", "null"],
-              description: "e.g. g, kg, ml, l, pack, can, each — null if unclear",
+              description: "e.g. g, kg, ml, l, pack, can, each. Null if unclear.",
             },
             storage_location: {
               type: ["string", "null"],
@@ -47,7 +47,7 @@ const EXTRACT_PANTRY_TOOL: Anthropic.Tool = {
               type: "array",
               items: { type: "string" },
               description:
-                "Plain-language notes on what you had to guess for this item, e.g. 'pack size not visible', 'amount remaining unclear' — empty array if confident",
+                "Plain-language notes on what you had to guess for this item, e.g. 'pack size not visible', 'amount remaining unclear'. Empty array if confident.",
             },
           },
           required: ["ingredient_name", "uncertain_fields"],
@@ -79,7 +79,7 @@ export async function extractPantryItemsFromPhotos(photos: PhotoInput[]): Promis
 
   const instructionText =
     photos.length > 1
-      ? `These ${photos.length} photos are of the same pantry/fridge/shop — list each distinct item once, combining duplicates you see across photos. `
+      ? `These ${photos.length} photos are of the same pantry/fridge/shop. List each distinct item once, combining duplicates you see across photos. `
       : "Look at this photo of a cupboard, fridge, freezer, or shopping haul. ";
 
   const response = await client.messages.create({
@@ -95,7 +95,7 @@ export async function extractPantryItemsFromPhotos(photos: PhotoInput[]): Promis
             type: "text",
             text:
               instructionText +
-              "Call the extract_pantry_items tool listing every distinct food item you can identify — always respond with a tool call, never plain text. " +
+              "Call the extract_pantry_items tool listing every distinct food item you can identify. Always respond with a tool call, never plain text. " +
               "For each item, guess quantity/unit/storage_location where you reasonably can, and flag anything uncertain (like pack size or how much is left) in uncertain_fields so the user can confirm it before saving.",
           },
         ],

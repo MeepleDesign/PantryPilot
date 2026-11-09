@@ -31,7 +31,7 @@ export default async function ShoppingListPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Shopping list</h1>
           <p className="text-sm text-muted">
-            For {household.default_supermarket ?? "your supermarket"} — recalculate
+            For {household.default_supermarket ?? "your supermarket"}. Recalculate
             after changing your meal plan
           </p>
         </div>

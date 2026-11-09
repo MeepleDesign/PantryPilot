@@ -108,8 +108,8 @@ export function RecipePhotoImport({
         <div>
           <p className="text-sm font-medium">Import from a photo</p>
           <p className="text-xs text-muted">
-            Take a picture of a recipe — add more than one if ingredients and method are on
-            different sides — and we&apos;ll pre-fill the form below for you to review.
+            Take a picture of a recipe (add more than one if ingredients and method are on
+            different sides) and we&apos;ll pre-fill the form below for you to review.
           </p>
         </div>
       </div>

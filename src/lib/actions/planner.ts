@@ -58,7 +58,7 @@ export async function removeMealPlanEntry(id: string) {
 
 /**
  * Mark a planned meal as cooked and deduct its scaled ingredients from
- * pantry stock — only where ingredient name + unit match reliably.
+ * pantry stock, only where ingredient name + unit match reliably.
  */
 export async function confirmCooked(entryId: string) {
   const supabase = await createClient();

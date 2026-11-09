@@ -171,7 +171,7 @@ function RecipeBlock({
                 <span className="font-medium tabular-nums">
                   {ing.quantity != null
                     ? `${round(ing.quantity * entry.batch_multiplier)} ${ing.unit ?? ""}`
-                    : (ing.unit ?? "—")}
+                    : (ing.unit ?? "-")}
                 </span>
               </li>
             ))}

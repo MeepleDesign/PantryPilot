@@ -74,7 +74,7 @@ export async function extractRecipeFromPhotos(photos: PhotoInput[]): Promise<Ext
 
   const instructionText =
     photos.length > 1
-      ? `These ${photos.length} photos are all of the same recipe (e.g. one side shows ingredients, another shows the method) — combine them into a single recipe. `
+      ? `These ${photos.length} photos are all of the same recipe (e.g. one side shows ingredients, another shows the method). Combine them into a single recipe. `
       : "Read this recipe photo. ";
 
   const response = await client.messages.create({
@@ -90,7 +90,7 @@ export async function extractRecipeFromPhotos(photos: PhotoInput[]): Promise<Ext
             type: "text",
             text:
               instructionText +
-              "Call the extract_recipe tool with its structured data — always respond with a tool call, never plain text. " +
+              "Call the extract_recipe tool with its structured data. Always respond with a tool call, never plain text. " +
               "Estimate nutrition per serving as best you can from the ingredients if it isn't printed on the photo(s). " +
               "List anything you guessed or estimated in low_confidence_fields.",
           },

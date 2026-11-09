@@ -110,18 +110,18 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
         <Stat
           icon={Clock}
           label="Time"
-          value={recipe.total_time_minutes ? `${recipe.total_time_minutes} min` : "—"}
+          value={recipe.total_time_minutes ? `${recipe.total_time_minutes} min` : "-"}
         />
         <Stat icon={UtensilsCrossed} label="Servings" value="2" />
         <Stat
           icon={Flame}
           label="Calories"
-          value={recipe.calories ? `${recipe.calories} kcal` : "—"}
+          value={recipe.calories ? `${recipe.calories} kcal` : "-"}
         />
         <Stat
           icon={Dumbbell}
           label="Protein"
-          value={recipe.protein_g ? `${recipe.protein_g} g` : "—"}
+          value={recipe.protein_g ? `${recipe.protein_g} g` : "-"}
         />
       </div>
 
@@ -179,7 +179,7 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
             <NutriStat label="Fibre" value={recipe.fibre_g} unit="g" />
           </div>
           <p className="mt-3 text-xs text-muted">
-            {recipe.nutrition_note ?? "Estimates only — not laboratory-tested."}
+            {recipe.nutrition_note ?? "Estimates only, not laboratory-tested."}
           </p>
         </div>
       )}
@@ -217,7 +217,7 @@ function NutriStat({
   return (
     <div>
       <p className="text-xs text-muted">{label}</p>
-      <p className="font-medium">{value != null ? `${value}${unit}` : "—"}</p>
+      <p className="font-medium">{value != null ? `${value}${unit}` : "-"}</p>
     </div>
   );
 }

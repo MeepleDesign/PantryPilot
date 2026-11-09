@@ -94,7 +94,7 @@ function collectJsonLdNodes(html: string): JsonLdNode[] {
         }
       }
     } catch {
-      // Malformed JSON-LD block — skip it.
+      // Malformed JSON-LD block, skip it.
     }
   }
   return nodes;
@@ -264,7 +264,7 @@ export async function extractRecipeFromUrl(rawUrl: string): Promise<ExtractedRec
 
   if (!recipe) {
     throw new Error(
-      "Couldn't find a recipe on that page. Some sites don't publish structured recipe data — try a photo of the recipe instead.",
+      "Couldn't find a recipe on that page. Some sites don't publish structured recipe data, try a photo of the recipe instead.",
     );
   }
 

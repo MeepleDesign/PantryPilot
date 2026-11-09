@@ -132,7 +132,7 @@ function ListView({
               {r.length > 0 ? (
                 <StaticStars value={avgOf(r)} />
               ) : (
-                <span className="text-muted">—</span>
+                <span className="text-muted">-</span>
               )}
               <span className="hidden sm:inline">{courseLabel(recipe)}</span>
               {recipe.total_time_minutes && (
@@ -288,7 +288,7 @@ function TilesView({
                   <StaticStars value={avgRating} count={size === "medium" ? r.length : undefined} />
                 ) : (
                   <span className="text-xs text-muted">
-                    {size === "small" ? "—" : "No ratings yet"}
+                    {size === "small" ? "-" : "No ratings yet"}
                   </span>
                 )}
               </div>
