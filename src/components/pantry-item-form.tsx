@@ -37,42 +37,57 @@ export function PantryItemForm({
       }}
       className="grid grid-cols-2 gap-2 rounded-xl border border-border bg-surface p-3 shadow-sm sm:grid-cols-6"
     >
-      <input
-        name="ingredient_name"
-        placeholder="Ingredient"
-        required
-        className="col-span-2 rounded-lg border border-border bg-background px-2 py-1.5 text-sm sm:col-span-2"
-      />
-      <input
-        name="quantity"
-        type="number"
-        step="any"
-        placeholder="Qty"
-        required
-        className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-      />
-      <UnitSelect
-        value={unit}
-        onChange={setUnit}
-        unitSystem={unitSystem}
-        className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-      />
-      <select
-        name="storage_location"
-        defaultValue="cupboard"
-        className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-      >
-        {LOCATIONS.map((l) => (
-          <option key={l} value={l}>
-            {l[0].toUpperCase() + l.slice(1)}
-          </option>
-        ))}
-      </select>
-      <input
-        name="expiry_date"
-        type="date"
-        className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-      />
+      <label className="col-span-2 block sm:col-span-2">
+        <span className="mb-1 block text-xs font-medium text-muted">Ingredient</span>
+        <input
+          name="ingredient_name"
+          placeholder="e.g. Chickpeas"
+          required
+          className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+        />
+      </label>
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium text-muted">Qty</span>
+        <input
+          name="quantity"
+          type="number"
+          step="any"
+          placeholder="Qty"
+          required
+          className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+        />
+      </label>
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium text-muted">Unit</span>
+        <UnitSelect
+          value={unit}
+          onChange={setUnit}
+          unitSystem={unitSystem}
+          className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+        />
+      </label>
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium text-muted">Storage</span>
+        <select
+          name="storage_location"
+          defaultValue="cupboard"
+          className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+        >
+          {LOCATIONS.map((l) => (
+            <option key={l} value={l}>
+              {l[0].toUpperCase() + l.slice(1)}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label className="block">
+        <span className="mb-1 block text-xs font-medium text-muted">Use by (optional)</span>
+        <input
+          name="expiry_date"
+          type="date"
+          className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+        />
+      </label>
       <button
         type="submit"
         disabled={pending}
@@ -121,41 +136,56 @@ export function PantryItemRow({
         }}
         className="grid grid-cols-2 gap-2 px-4 py-3 sm:grid-cols-6"
       >
-        <input
-          name="ingredient_name"
-          defaultValue={item.ingredient_name}
-          className="col-span-2 rounded-lg border border-border bg-background px-2 py-1 text-sm sm:col-span-2"
-        />
-        <input
-          name="quantity"
-          type="number"
-          step="any"
-          defaultValue={item.quantity}
-          className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
-        />
-        <UnitSelect
-          value={unit}
-          onChange={setUnit}
-          unitSystem={unitSystem}
-          className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
-        />
-        <select
-          name="storage_location"
-          defaultValue={item.storage_location}
-          className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
-        >
-          {LOCATIONS.map((l) => (
-            <option key={l} value={l}>
-              {l[0].toUpperCase() + l.slice(1)}
-            </option>
-          ))}
-        </select>
-        <input
-          name="expiry_date"
-          type="date"
-          defaultValue={item.expiry_date ?? ""}
-          className="rounded-lg border border-border bg-background px-2 py-1 text-sm"
-        />
+        <label className="col-span-2 block sm:col-span-2">
+          <span className="mb-1 block text-xs font-medium text-muted">Ingredient</span>
+          <input
+            name="ingredient_name"
+            defaultValue={item.ingredient_name}
+            className="w-full rounded-lg border border-border bg-background px-2 py-1 text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-muted">Qty</span>
+          <input
+            name="quantity"
+            type="number"
+            step="any"
+            defaultValue={item.quantity}
+            className="w-full rounded-lg border border-border bg-background px-2 py-1 text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-muted">Unit</span>
+          <UnitSelect
+            value={unit}
+            onChange={setUnit}
+            unitSystem={unitSystem}
+            className="w-full rounded-lg border border-border bg-background px-2 py-1 text-sm"
+          />
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-muted">Storage</span>
+          <select
+            name="storage_location"
+            defaultValue={item.storage_location}
+            className="w-full rounded-lg border border-border bg-background px-2 py-1 text-sm"
+          >
+            {LOCATIONS.map((l) => (
+              <option key={l} value={l}>
+                {l[0].toUpperCase() + l.slice(1)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="block">
+          <span className="mb-1 block text-xs font-medium text-muted">Use by</span>
+          <input
+            name="expiry_date"
+            type="date"
+            defaultValue={item.expiry_date ?? ""}
+            className="w-full rounded-lg border border-border bg-background px-2 py-1 text-sm"
+          />
+        </label>
         <div className="col-span-2 flex gap-2 sm:col-span-6">
           <button
             type="submit"
