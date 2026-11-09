@@ -2,6 +2,7 @@ import { Archive, Snowflake, Refrigerator, Package } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { PantryItemForm, PantryItemRow } from "@/components/pantry-item-form";
+import { PantryPhotoSection } from "@/components/pantry-photo-section";
 import type { PantryItem, StorageLocation } from "@/lib/types";
 import type { UnitSystem } from "@/lib/units";
 
@@ -35,6 +36,8 @@ export default async function PantryPage() {
         </div>
       </div>
 
+      <PantryPhotoSection unitSystem={unitSystem} />
+
       <div className="mb-8">
         <PantryItemForm unitSystem={unitSystem} />
       </div>
@@ -62,8 +65,7 @@ export default async function PantryPage() {
 
       {!items?.length && (
         <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted">
-          Your pantry is empty. Add what you already have above — photo scanning is
-          coming in Phase 2.
+          Your pantry is empty. Scan a photo or add what you already have above.
         </div>
       )}
     </div>

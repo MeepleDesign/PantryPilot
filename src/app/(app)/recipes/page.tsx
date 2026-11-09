@@ -12,6 +12,7 @@ export default async function RecipesPage({
   const cuisine = typeof params.cuisine === "string" ? params.cuisine : "";
   const tag = typeof params.tag === "string" ? params.tag : "";
   const course = typeof params.course === "string" ? params.course : "";
+  const minRating = typeof params.minRating === "string" ? params.minRating : "";
 
   const supabase = await createClient();
   const { household } = await getCurrentHousehold();
@@ -47,13 +48,22 @@ export default async function RecipesPage({
     ratingsByRecipe[r.recipe_id] = list;
   }
 
+  const visibleRecipes = minRating
+    ? (recipes ?? []).filter((r) => {
+        const list = ratingsByRecipe[r.id] ?? [];
+        if (!list.length) return false;
+        const avg = list.reduce((a, b) => a + b, 0) / list.length;
+        return avg >= Number(minRating);
+      })
+    : (recipes ?? []);
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Recipes</h1>
           <p className="text-sm text-muted">
-            {recipes?.length ?? 0} recipe{recipes?.length === 1 ? "" : "s"}
+            {visibleRecipes.length} recipe{visibleRecipes.length === 1 ? "" : "s"}
           </p>
         </div>
         <Link
@@ -109,6 +119,17 @@ export default async function RecipesPage({
             </option>
           ))}
         </select>
+        <select
+          name="minRating"
+          defaultValue={minRating}
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+        >
+          <option value="">Any rating</option>
+          <option value="4">★★★★ & up</option>
+          <option value="3">★★★ & up</option>
+          <option value="2">★★ & up</option>
+          <option value="1">★ & up</option>
+        </select>
         <button
           type="submit"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-surface"
@@ -117,10 +138,10 @@ export default async function RecipesPage({
         </button>
       </form>
 
-      {!recipes?.length ? (
+      {!visibleRecipes.length ? (
         <EmptyState />
       ) : (
-        <RecipeBrowser recipes={recipes} ratings={ratingsByRecipe} />
+        <RecipeBrowser recipes={visibleRecipes} ratings={ratingsByRecipe} />
       )}
     </div>
   );
