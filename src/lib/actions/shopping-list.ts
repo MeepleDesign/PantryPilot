@@ -139,13 +139,92 @@ export async function addManualShoppingItem(input: {
   revalidatePath("/shopping-list");
 }
 
+/**
+ * Toggle a shopping list item's ticked state. On a genuine false -> true
+ * transition (actually marking something as bought), add its to-buy
+ * quantity to a matching pantry item, or create a new one.
+ */
 export async function toggleShoppingItem(id: string, ticked: boolean) {
   const supabase = await createClient();
+  const { household } = await getCurrentHousehold();
+  const { data: auth } = await supabase.auth.getUser();
+
+  const { data: item, error: fetchError } = await supabase
+    .from("shopping_list_items")
+    .select("*")
+    .eq("id", id)
+    .single();
+  if (fetchError || !item) throw new Error(fetchError?.message ?? "Item not found");
+
   const { error } = await supabase
     .from("shopping_list_items")
     .update({ ticked, updated_at: new Date().toISOString() })
     .eq("id", id);
   if (error) throw new Error(error.message);
+
+  if (ticked && !item.ticked && item.to_buy_qty > 0) {
+    const { data: pantryItems } = await supabase
+      .from("pantry_items")
+      .select("*")
+      .eq("household_id", household.id);
+
+    const match = (pantryItems ?? []).find(
+      (p) =>
+        normalise(p.ingredient_name) === normalise(item.ingredient_name) &&
+        normalise(p.unit ?? "") === normalise(item.unit ?? ""),
+    );
+
+    if (match) {
+      const newQty = Number(match.quantity) + Number(item.to_buy_qty);
+      await supabase
+        .from("pantry_items")
+        .update({ quantity: newQty, updated_at: new Date().toISOString() })
+        .eq("id", match.id);
+
+      await supabase.from("pantry_stock_history").insert({
+        household_id: household.id,
+        pantry_item_id: match.id,
+        ingredient_name: match.ingredient_name,
+        change_type: "add",
+        quantity_delta: item.to_buy_qty,
+        unit: match.unit,
+        reason: "Bought from shopping list",
+        created_by: auth.user?.id,
+      });
+    } else {
+      const { data: newItem, error: insertError } = await supabase
+        .from("pantry_items")
+        .insert({
+          household_id: household.id,
+          ingredient_name: item.ingredient_name,
+          storage_location: "cupboard",
+          quantity: item.to_buy_qty,
+          unit: item.unit,
+          expiry_date: null,
+          source: "manual",
+          notes: null,
+          created_by: auth.user?.id,
+        })
+        .select()
+        .single();
+      if (insertError) throw new Error(insertError.message);
+
+      await supabase.from("pantry_stock_history").insert({
+        household_id: household.id,
+        pantry_item_id: newItem.id,
+        ingredient_name: item.ingredient_name,
+        change_type: "add",
+        quantity_delta: item.to_buy_qty,
+        unit: item.unit,
+        reason: "Bought from shopping list",
+        created_by: auth.user?.id,
+      });
+    }
+
+    revalidatePath("/pantry");
+    revalidatePath("/");
+  }
+
   revalidatePath("/shopping-list");
 }
 
