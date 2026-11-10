@@ -32,7 +32,7 @@ export async function logMealBatch(input: LogMealBatchInput) {
   });
   if (error) throw new Error(error.message);
 
-  revalidatePath("/pantry");
+  revalidatePath("/batches");
   revalidatePath("/planner");
   revalidatePath("/");
 }
@@ -55,7 +55,35 @@ export async function consumeBatchPortion(id: string, count: number = 1) {
     .eq("id", id);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/pantry");
+  revalidatePath("/batches");
+  revalidatePath("/");
+}
+
+export type UpdateMealBatchInput = {
+  recipe_name: string;
+  portions_total: number;
+  portions_remaining: number;
+  storage_location: MealBatchStorage;
+};
+
+export async function updateMealBatch(id: string, input: UpdateMealBatchInput) {
+  const supabase = await createClient();
+
+  const portions_total = Math.max(1, input.portions_total);
+  const portions_remaining = Math.min(Math.max(0, input.portions_remaining), portions_total);
+
+  const { error } = await supabase
+    .from("meal_batches")
+    .update({
+      recipe_name: input.recipe_name,
+      portions_total,
+      portions_remaining,
+      storage_location: input.storage_location,
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/batches");
   revalidatePath("/");
 }
 
@@ -64,6 +92,6 @@ export async function deleteMealBatch(id: string) {
   const { error } = await supabase.from("meal_batches").delete().eq("id", id);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/pantry");
+  revalidatePath("/batches");
   revalidatePath("/");
 }

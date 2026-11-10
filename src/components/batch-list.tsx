@@ -1,10 +1,14 @@
 "use client";
 
-import { useTransition } from "react";
-import { Minus, Snowflake, Refrigerator, Trash2, Layers } from "lucide-react";
+import { useState, useTransition } from "react";
+import { Minus, Snowflake, Refrigerator, Trash2, Layers, Pencil } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import { LogBatchManual } from "@/components/log-batch-manual";
-import { consumeBatchPortion, deleteMealBatch } from "@/lib/actions/meal-batches";
+import {
+  consumeBatchPortion,
+  deleteMealBatch,
+  updateMealBatch,
+} from "@/lib/actions/meal-batches";
 import type { MealBatch, MealBatchStorage } from "@/lib/types";
 
 const LOCATIONS: MealBatchStorage[] = ["freezer", "fridge"];
@@ -79,10 +83,92 @@ export function BatchList({
 
 function BatchRow({ batch }: { batch: MealBatch }) {
   const [pending, startTransition] = useTransition();
+  const [editing, setEditing] = useState(false);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const [name, setName] = useState(batch.recipe_name);
+  const [total, setTotal] = useState(batch.portions_total);
+  const [remaining, setRemaining] = useState(batch.portions_remaining);
+  const [location, setLocation] = useState<MealBatchStorage>(batch.storage_location);
+
   const usedPct = Math.round(
     ((batch.portions_total - batch.portions_remaining) / batch.portions_total) * 100,
   );
   const empty = batch.portions_remaining === 0;
+
+  if (editing) {
+    return (
+      <div className="space-y-2 px-3 py-2.5 text-sm">
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+          placeholder="Recipe name"
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <label className="flex items-center gap-1.5 text-xs text-muted">
+            Total
+            <input
+              type="number"
+              min={1}
+              value={total}
+              onChange={(e) => setTotal(Number(e.target.value) || 1)}
+              className="w-16 rounded-lg border border-border bg-background px-2 py-1 text-sm"
+            />
+          </label>
+          <label className="flex items-center gap-1.5 text-xs text-muted">
+            Left
+            <input
+              type="number"
+              min={0}
+              value={remaining}
+              onChange={(e) => setRemaining(Number(e.target.value) || 0)}
+              className="w-16 rounded-lg border border-border bg-background px-2 py-1 text-sm"
+            />
+          </label>
+          <div className="flex overflow-hidden rounded-lg border border-border text-xs">
+            {(["fridge", "freezer"] as const).map((loc) => (
+              <button
+                key={loc}
+                type="button"
+                onClick={() => setLocation(loc)}
+                className={`px-2.5 py-1.5 capitalize transition-colors ${
+                  location === loc ? "bg-brand/10 font-medium text-brand-dark" : "bg-surface text-muted"
+                }`}
+              >
+                {loc}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="flex gap-2">
+          <button
+            disabled={pending || !name.trim()}
+            onClick={() =>
+              startTransition(async () => {
+                await updateMealBatch(batch.id, {
+                  recipe_name: name.trim(),
+                  portions_total: total,
+                  portions_remaining: remaining,
+                  storage_location: location,
+                });
+                setEditing(false);
+              })
+            }
+            className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-brand-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {pending && <Spinner className="h-3.5 w-3.5" />}
+            Save
+          </button>
+          <button
+            onClick={() => setEditing(false)}
+            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="px-3 py-2.5 text-sm">
@@ -101,24 +187,51 @@ function BatchRow({ batch }: { batch: MealBatch }) {
             )}
           </p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <button
-            disabled={pending || empty}
-            onClick={() => startTransition(() => consumeBatchPortion(batch.id, 1))}
-            className="flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            {pending ? <Spinner className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-            1 used
-          </button>
-          <button
-            disabled={pending}
-            onClick={() => startTransition(() => deleteMealBatch(batch.id))}
-            className="text-muted hover:text-danger"
-            aria-label="Remove batch"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
+        {confirmingRemove ? (
+          <div className="flex shrink-0 items-center gap-2 text-xs">
+            <span className="text-muted">Remove this batch?</span>
+            <button
+              disabled={pending}
+              onClick={() => startTransition(() => deleteMealBatch(batch.id))}
+              className="rounded-lg bg-danger/10 px-2 py-1 font-medium text-danger hover:bg-danger/20"
+            >
+              Remove
+            </button>
+            <button
+              disabled={pending}
+              onClick={() => setConfirmingRemove(false)}
+              className="text-muted hover:text-foreground"
+            >
+              Cancel
+            </button>
+          </div>
+        ) : (
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              disabled={pending || empty}
+              onClick={() => startTransition(() => consumeBatchPortion(batch.id, 1))}
+              className="flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {pending ? <Spinner className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
+              1 used
+            </button>
+            <button
+              onClick={() => setEditing(true)}
+              className="text-muted hover:text-foreground"
+              aria-label="Edit batch"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+            <button
+              disabled={pending}
+              onClick={() => setConfirmingRemove(true)}
+              className="text-muted hover:text-danger"
+              aria-label="Remove batch"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </div>
+        )}
       </div>
       <div
         className="h-1.5 w-full overflow-hidden rounded-full bg-background"
