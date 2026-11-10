@@ -14,7 +14,11 @@ export default async function BatchesPage() {
       .eq("household_id", household.id)
       .gt("portions_remaining", 0)
       .order("cooked_date", { ascending: false }),
-    supabase.from("recipes").select("id, name").order("name"),
+    supabase
+      .from("recipes")
+      .select("id, name")
+      .or(`household_id.is.null,household_id.eq.${household.id}`)
+      .order("name"),
   ]);
 
   return (

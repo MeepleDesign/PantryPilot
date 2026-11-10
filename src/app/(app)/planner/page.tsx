@@ -35,6 +35,7 @@ export default async function PlannerPage() {
   const { data: recipes, error: recipesError } = await supabase
     .from("recipes")
     .select("*")
+    .or(`household_id.is.null,household_id.eq.${household.id}`)
     .order("name");
   if (recipesError) throw new Error(recipesError.message);
 

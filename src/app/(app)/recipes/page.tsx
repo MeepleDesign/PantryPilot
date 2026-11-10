@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { RecipeBrowser } from "@/components/recipe-views";
+import { RecipeViewTabs } from "@/components/recipe-view-tabs";
 import { computeRecipeMatches } from "@/lib/pantry-match";
 
 export default async function RecipesPage({
@@ -19,7 +20,11 @@ export default async function RecipesPage({
   const supabase = await createClient();
   const { household } = await getCurrentHousehold();
 
-  let query = supabase.from("recipes").select("*").order("name");
+  let query = supabase
+    .from("recipes")
+    .select("*")
+    .or(`household_id.is.null,household_id.eq.${household.id}`)
+    .order("name");
   if (q) query = query.ilike("name", `%${q}%`);
   if (cuisine) query = query.eq("cuisine", cuisine);
   if (tag) query = query.contains("tags", [tag]);
@@ -43,7 +48,10 @@ export default async function RecipesPage({
   ]);
   const pantryMatch = computeRecipeMatches(recipeIngredients ?? [], pantryItems ?? []);
 
-  const { data: allRecipes } = await supabase.from("recipes").select("cuisine, tags");
+  const { data: allRecipes } = await supabase
+    .from("recipes")
+    .select("cuisine, tags")
+    .or(`household_id.is.null,household_id.eq.${household.id}`);
   const cuisines = [...new Set((allRecipes ?? []).map((r) => r.cuisine).filter(Boolean))].sort();
   const tags = [...new Set((allRecipes ?? []).flatMap((r) => r.tags ?? []))].sort();
   const COURSES = [
@@ -98,6 +106,8 @@ export default async function RecipesPage({
           Add recipe
         </Link>
       </div>
+
+      <RecipeViewTabs active="mine" />
 
       <form className="mb-6 flex flex-wrap gap-3" method="get">
         <input

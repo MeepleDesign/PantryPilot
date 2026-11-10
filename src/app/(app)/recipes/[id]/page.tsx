@@ -8,7 +8,9 @@ import { AddToPlanForm } from "@/components/add-to-plan-form";
 import { DeleteRecipeButton } from "@/components/delete-recipe-button";
 import { StaticStars, InteractiveStars } from "@/components/star-rating";
 import { PrintButton } from "@/components/print-button";
+import { ShareRecipeControl } from "@/components/share-recipe-control";
 import { getCurrentHousehold } from "@/lib/current-household";
+import { getCommunityRatings, getCommunityHouseholdNames } from "@/lib/community-data";
 
 export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[id]">) {
   const { id } = await params;
@@ -40,6 +42,19 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
     : 0;
   const myRating = ratings?.find((r) => r.user_id === auth.user?.id)?.rating ?? 0;
 
+  const isOwner = recipe.household_id === household.id;
+
+  let communityRating: { avg: number; count: number } | null = null;
+  let sharedByName: string | null = null;
+  if (recipe.community_origin_id) {
+    const ratingsMap = await getCommunityRatings([recipe.community_origin_id]);
+    communityRating = ratingsMap[recipe.community_origin_id] ?? null;
+    if (!isOwner && recipe.household_id) {
+      const names = await getCommunityHouseholdNames([recipe.household_id]);
+      sharedByName = names[recipe.household_id] ?? null;
+    }
+  }
+
   return (
     <div className="mx-auto max-w-3xl">
       <div className="mb-1 flex items-center justify-between">
@@ -51,12 +66,16 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
         </Link>
         <div className="flex items-center gap-3 text-sm">
           <PrintButton />
-          <Link href={`/recipes/${id}/edit`} className="font-medium text-brand hover:text-brand-dark print:hidden">
-            Edit
-          </Link>
-          <span className="print:hidden">
-            <DeleteRecipeButton recipeId={id} />
-          </span>
+          {isOwner && (
+            <>
+              <Link href={`/recipes/${id}/edit`} className="font-medium text-brand hover:text-brand-dark print:hidden">
+                Edit
+              </Link>
+              <span className="print:hidden">
+                <DeleteRecipeButton recipeId={id} />
+              </span>
+            </>
+          )}
         </div>
       </div>
 
@@ -77,12 +96,26 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
         {[recipe.cuisine, ...(recipe.diet ?? []), recipe.protein_tag].filter(Boolean).join(" · ")}
       </p>
 
-      <div className="mb-3">
+      <div className="mb-1">
         {ratingCount > 0 ? (
           <StaticStars value={avgRating} count={ratingCount} size="md" />
         ) : (
           <span className="text-xs text-muted">No ratings yet</span>
         )}
+      </div>
+
+      {communityRating && communityRating.count > 0 && (
+        <p className="mb-2 text-xs text-muted">
+          Community rating: {communityRating.avg.toFixed(1)}★ ({communityRating.count})
+        </p>
+      )}
+
+      {sharedByName && (
+        <p className="mb-2 text-xs text-muted">Shared by {sharedByName}</p>
+      )}
+
+      <div className="mb-3 print:hidden">
+        <ShareRecipeControl recipeId={id} isOwner={isOwner} isShared={recipe.is_shared} />
       </div>
 
       {recipe.tags?.length > 0 && (

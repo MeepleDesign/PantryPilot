@@ -17,7 +17,7 @@ export type Recipe = {
   course: RecipeCourse;
   equipment: string | null;
   method: string | null;
-  source: "seed" | "manual" | "photo" | "url";
+  source: "seed" | "manual" | "photo" | "url" | "community";
   calories: number | null;
   protein_g: number | null;
   carbs_g: number | null;
@@ -28,6 +28,10 @@ export type Recipe = {
   tags: string[];
   prep_note: string | null;
   created_at: string;
+  is_shared: boolean;
+  shared_at: string | null;
+  community_origin_id: string | null;
+  imported_from_recipe_id: string | null;
 };
 
 export type RecipeIngredient = {
