@@ -242,7 +242,7 @@ function BatchRow({ batch }: { batch: MealBatch }) {
           className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-border disabled:text-muted"
         >
           {pending ? <Spinner className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-          Used a batch
+          Used a portion
         </button>
         <div className="flex shrink-0 gap-3 text-xs">
           <button onClick={() => setEditing(true)} className="font-medium text-brand hover:text-brand-dark">
