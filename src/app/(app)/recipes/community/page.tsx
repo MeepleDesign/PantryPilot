@@ -10,6 +10,7 @@ export default async function CommunityRecipesPage({
   const params = await searchParams;
   const cuisine = typeof params.cuisine === "string" ? params.cuisine : "";
   const minRating = typeof params.minRating === "string" ? Number(params.minRating) : 0;
+  const mineOnly = params.mine === "1";
 
   const supabase = await createClient();
   const { household } = await getCurrentHousehold();
@@ -20,6 +21,7 @@ export default async function CommunityRecipesPage({
     .eq("is_shared", true)
     .order("name");
   if (cuisine) query = query.eq("cuisine", cuisine);
+  if (mineOnly) query = query.eq("household_id", household.id);
 
   const { data: shared, error } = await query;
   if (error) throw new Error(error.message);
@@ -97,6 +99,16 @@ export default async function CommunityRecipesPage({
           <option value="2">★★ & up</option>
           <option value="1">★ & up</option>
         </select>
+        <label className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm">
+          <input
+            type="checkbox"
+            name="mine"
+            value="1"
+            defaultChecked={mineOnly}
+            className="h-4 w-4 accent-brand"
+          />
+          Recipes I&apos;ve shared
+        </label>
         <button
           type="submit"
           className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-surface"
