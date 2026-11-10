@@ -8,6 +8,7 @@ import {
   ShoppingListRow,
   AddManualItemForm,
 } from "@/components/shopping-list-client";
+import { PrintButton } from "@/components/print-button";
 import type { UnitSystem } from "@/lib/units";
 
 export default async function ShoppingListPage() {
@@ -35,13 +36,14 @@ export default async function ShoppingListPage() {
             after changing your meal plan
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 print:hidden">
+          <PrintButton label="Print" />
           <RegenerateButton />
           <ResetButton />
         </div>
       </div>
 
-      <div className="mb-4">
+      <div className="mb-4 print:hidden">
         <AddManualItemForm unitSystem={unitSystem} />
       </div>
 
@@ -58,13 +60,13 @@ export default async function ShoppingListPage() {
       )}
 
       {toBuy.some((i) => i.ticked) && (
-        <div className="mb-6 text-right">
+        <div className="mb-6 text-right print:hidden">
           <ClearTickedButton />
         </div>
       )}
 
       {covered.length > 0 && (
-        <div>
+        <div className="print:hidden">
           <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-muted">
             <PackageCheck className="h-4 w-4" />
             Already in your pantry

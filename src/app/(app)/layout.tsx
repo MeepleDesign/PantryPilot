@@ -20,7 +20,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
     <div className="flex min-h-screen">
       <Nav householdName={household.name} expiringCount={expiringCount} />
       <main className="min-w-0 flex-1 pb-20 md:pb-0">
-        <div className="flex items-center justify-end border-b border-border bg-surface px-4 py-3 md:px-8">
+        <div className="flex items-center justify-end border-b border-border bg-surface px-4 py-3 md:px-8 print:hidden">
           <AccountMenu
             displayName={profile.display_name ?? "You"}
             householdName={household.name}

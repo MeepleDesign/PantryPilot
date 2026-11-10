@@ -33,7 +33,7 @@ export function Nav({
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden w-60 flex-col border-r border-border bg-surface px-4 py-6 md:flex">
+      <aside className="hidden w-60 flex-col border-r border-border bg-surface px-4 py-6 md:flex print:hidden">
         <div className="mb-8 flex items-center gap-2.5 px-2">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-sm">
             <ChefHat className="h-5 w-5" />
@@ -73,7 +73,7 @@ export function Nav({
       </aside>
 
       {/* Mobile bottom nav */}
-      <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-border bg-surface/95 shadow-[0_-2px_8px_rgba(0,0,0,0.04)] backdrop-blur md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-border bg-surface/95 shadow-[0_-2px_8px_rgba(0,0,0,0.04)] backdrop-blur md:hidden print:hidden">
         {ITEMS.map((item) => {
           const active =
             item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);

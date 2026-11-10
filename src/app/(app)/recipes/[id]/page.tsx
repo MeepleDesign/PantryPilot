@@ -7,6 +7,7 @@ import { ScaledIngredients } from "@/components/scaled-ingredients";
 import { AddToPlanForm } from "@/components/add-to-plan-form";
 import { DeleteRecipeButton } from "@/components/delete-recipe-button";
 import { StaticStars, InteractiveStars } from "@/components/star-rating";
+import { PrintButton } from "@/components/print-button";
 import { getCurrentHousehold } from "@/lib/current-household";
 
 export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[id]">) {
@@ -48,11 +49,14 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
         >
           <ArrowLeft className="h-4 w-4" /> Recipes
         </Link>
-        <div className="flex gap-3 text-sm">
-          <Link href={`/recipes/${id}/edit`} className="font-medium text-brand hover:text-brand-dark">
+        <div className="flex items-center gap-3 text-sm">
+          <PrintButton />
+          <Link href={`/recipes/${id}/edit`} className="font-medium text-brand hover:text-brand-dark print:hidden">
             Edit
           </Link>
-          <DeleteRecipeButton recipeId={id} />
+          <span className="print:hidden">
+            <DeleteRecipeButton recipeId={id} />
+          </span>
         </div>
       </div>
 
@@ -125,11 +129,11 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
         />
       </div>
 
-      <div className="mb-6 rounded-xl border border-border bg-surface p-3 shadow-sm">
+      <div className="mb-6 rounded-xl border border-border bg-surface p-3 shadow-sm print:hidden">
         <InteractiveStars recipeId={id} initialRating={myRating} />
       </div>
 
-      <div className="mb-6">
+      <div className="mb-6 print:hidden">
         <AddToPlanForm recipeId={id} baseServings={recipe.servings} tags={recipe.tags} />
       </div>
 

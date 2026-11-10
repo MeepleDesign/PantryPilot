@@ -24,8 +24,10 @@ export function ScaledIngredients({
   return (
     <div>
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="font-medium">Ingredients</h2>
-        <div className="flex items-center gap-2 text-sm">
+        <h2 className="font-medium">
+          Ingredients <span className="hidden font-normal text-muted print:inline">(for {servings} servings)</span>
+        </h2>
+        <div className="flex items-center gap-2 text-sm print:hidden">
           <span className="text-muted">Servings</span>
           <select
             value={servings}
@@ -42,7 +44,7 @@ export function ScaledIngredients({
       </div>
       {overCapacity && (
         <p className="mb-3 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
-          ⚠ {servings} servings may exceed the Omni Cook's bowl capacity.{" "}
+          ⚠ {servings} servings may exceed the Omni Cook&apos;s bowl capacity.{" "}
           {OMNICOOK_MAX_SERVINGS} servings is the recommended max for this cook method.
         </p>
       )}

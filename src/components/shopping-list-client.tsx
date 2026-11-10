@@ -111,7 +111,7 @@ export function ShoppingListRow({ item }: { item: ShoppingListItem }) {
       <button
         disabled={pending}
         onClick={() => startTransition(() => removeShoppingItem(item.id))}
-        className="text-muted hover:text-danger"
+        className="text-muted hover:text-danger print:hidden"
       >
         <X className="h-4 w-4" />
       </button>
