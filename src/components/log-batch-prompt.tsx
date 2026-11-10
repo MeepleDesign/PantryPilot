@@ -20,7 +20,7 @@ export function LogBatchPrompt({
   existingBatch: { portions_total: number; storage_location: MealBatchStorage } | null;
 }) {
   const [dismissed, setDismissed] = useState(false);
-  const [portions, setPortions] = useState(defaultPortions);
+  const [portionsInput, setPortionsInput] = useState(String(defaultPortions));
   const [storage, setStorage] = useState<MealBatchStorage>("freezer");
   const [pending, startTransition] = useTransition();
   const [logged, setLogged] = useState(existingBatch);
@@ -42,9 +42,13 @@ export function LogBatchPrompt({
       <span className="text-xs text-muted">Batch cooked? Log portions:</span>
       <input
         type="number"
+        inputMode="numeric"
         min={1}
-        value={portions}
-        onChange={(e) => setPortions(Number(e.target.value) || 1)}
+        value={portionsInput}
+        onChange={(e) => setPortionsInput(e.target.value)}
+        onBlur={() => {
+          if (!portionsInput.trim() || Number(portionsInput) < 1) setPortionsInput("1");
+        }}
         className="w-16 rounded-lg border border-border bg-surface px-2 py-1 text-sm"
       />
       <div className="flex overflow-hidden rounded-lg border border-border text-xs">
@@ -66,15 +70,16 @@ export function LogBatchPrompt({
         disabled={pending}
         onClick={() =>
           startTransition(async () => {
+            const portionsTotal = Number(portionsInput) || 1;
             await logMealBatch({
               recipe_id: recipeId,
               recipe_name: recipeName,
               meal_plan_entry_id: entryId,
-              portions_total: portions,
+              portions_total: portionsTotal,
               storage_location: storage,
               notes: null,
             });
-            setLogged({ portions_total: portions, storage_location: storage });
+            setLogged({ portions_total: portionsTotal, storage_location: storage });
           })
         }
         className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1 text-xs font-medium text-brand-foreground disabled:cursor-wait disabled:opacity-60"

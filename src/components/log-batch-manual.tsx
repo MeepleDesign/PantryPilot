@@ -10,7 +10,7 @@ export function LogBatchManual({ recipes }: { recipes: { id: string; name: strin
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [recipeId, setRecipeId] = useState("");
-  const [portions, setPortions] = useState(4);
+  const [portionsInput, setPortionsInput] = useState("4");
   const [storage, setStorage] = useState<MealBatchStorage>("freezer");
   const [pending, startTransition] = useTransition();
 
@@ -37,14 +37,14 @@ export function LogBatchManual({ recipes }: { recipes: { id: string; name: strin
             recipe_id: recipeId || null,
             recipe_name: name.trim(),
             meal_plan_entry_id: null,
-            portions_total: portions,
+            portions_total: Number(portionsInput) || 1,
             storage_location: storage,
             notes: null,
           });
           setOpen(false);
           setName("");
           setRecipeId("");
-          setPortions(4);
+          setPortionsInput("4");
         });
       }}
       className="space-y-2 rounded-lg border border-dashed border-border bg-background p-3"
@@ -77,9 +77,13 @@ export function LogBatchManual({ recipes }: { recipes: { id: string; name: strin
       <div className="flex flex-wrap items-center gap-2">
         <input
           type="number"
+          inputMode="numeric"
           min={1}
-          value={portions}
-          onChange={(e) => setPortions(Number(e.target.value) || 1)}
+          value={portionsInput}
+          onChange={(e) => setPortionsInput(e.target.value)}
+          onBlur={() => {
+            if (!portionsInput.trim() || Number(portionsInput) < 1) setPortionsInput("1");
+          }}
           className="w-20 rounded-lg border border-border bg-surface px-2 py-1.5 text-sm"
           aria-label="Portions"
         />
