@@ -99,7 +99,7 @@ export async function updatePantryItem(id: string, input: PantryItemInput) {
   revalidatePath("/");
 }
 
-export async function deletePantryItem(id: string) {
+export async function deletePantryItem(id: string, reason: "used" | "wasted" = "used") {
   const supabase = await createClient();
   const { household } = await getCurrentHousehold();
   const { data: auth } = await supabase.auth.getUser();
@@ -118,10 +118,10 @@ export async function deletePantryItem(id: string) {
       household_id: household.id,
       pantry_item_id: null,
       ingredient_name: existing.ingredient_name,
-      change_type: "consume",
+      change_type: reason === "wasted" ? "waste" : "consume",
       quantity_delta: -existing.quantity,
       unit: existing.unit,
-      reason: "Removed from pantry",
+      reason: reason === "wasted" ? "Thrown away" : "Used up",
       created_by: auth.user?.id,
     });
   }

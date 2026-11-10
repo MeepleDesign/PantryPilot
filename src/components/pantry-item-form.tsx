@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { addPantryItem, updatePantryItem, deletePantryItem } from "@/lib/actions/pantry";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
+import { expiryStatus } from "@/lib/expiry";
 import type { UnitSystem } from "@/lib/units";
 import type { PantryItem, StorageLocation } from "@/lib/types";
 
@@ -108,13 +109,13 @@ export function PantryItemRow({
   unitSystem: UnitSystem;
 }) {
   const [editing, setEditing] = useState(false);
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [pending, startTransition] = useTransition();
   const [unit, setUnit] = useState(item.unit ?? "");
 
-  const expiringSoon =
-    item.expiry_date &&
-    new Date(item.expiry_date).getTime() - Date.now() < 3 * 24 * 60 * 60 * 1000;
-  const expired = item.expiry_date && new Date(item.expiry_date).getTime() < Date.now();
+  const status = expiryStatus(item.expiry_date);
+  const expiringSoon = status === "soon";
+  const expired = status === "expired";
 
   if (editing) {
     return (
@@ -207,7 +208,7 @@ export function PantryItemRow({
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 px-4 py-3 text-sm">
+    <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-3 px-4 py-3 text-sm">
       <div className="min-w-0">
         <p className="font-medium">{item.ingredient_name}</p>
         <p className="text-xs text-muted">
@@ -225,18 +226,51 @@ export function PantryItemRow({
           )}
         </p>
       </div>
-      <div className="flex shrink-0 gap-3">
-        <button onClick={() => setEditing(true)} className="font-medium text-brand">
-          Edit
-        </button>
-        <button
-          disabled={pending}
-          onClick={() => startTransition(() => deletePantryItem(item.id))}
-          className="text-danger"
-        >
-          Remove
-        </button>
-      </div>
+      {confirmingRemove ? (
+        <div className="flex shrink-0 items-center gap-2 text-xs">
+          <span className="text-muted">Used it or wasted?</span>
+          <button
+            disabled={pending}
+            onClick={() => {
+              startTransition(async () => {
+                await deletePantryItem(item.id, "used");
+                setConfirmingRemove(false);
+              });
+            }}
+            className="rounded-lg border border-border px-2 py-1 font-medium hover:bg-background"
+          >
+            Used it
+          </button>
+          <button
+            disabled={pending}
+            onClick={() => {
+              startTransition(async () => {
+                await deletePantryItem(item.id, "wasted");
+                setConfirmingRemove(false);
+              });
+            }}
+            className="rounded-lg bg-danger/10 px-2 py-1 font-medium text-danger hover:bg-danger/20"
+          >
+            Wasted it
+          </button>
+          <button
+            disabled={pending}
+            onClick={() => setConfirmingRemove(false)}
+            className="text-muted hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </div>
+      ) : (
+        <div className="flex shrink-0 gap-3">
+          <button onClick={() => setEditing(true)} className="font-medium text-brand">
+            Edit
+          </button>
+          <button onClick={() => setConfirmingRemove(true)} className="text-danger">
+            Remove
+          </button>
+        </div>
+      )}
     </div>
   );
 }

@@ -21,7 +21,13 @@ const ITEMS = [
   { href: "/batches", label: "Batches", icon: Snowflake },
 ];
 
-export function Nav({ householdName }: { householdName: string }) {
+export function Nav({
+  householdName,
+  expiringCount = 0,
+}: {
+  householdName: string;
+  expiringCount?: number;
+}) {
   const pathname = usePathname();
 
   return (
@@ -42,6 +48,7 @@ export function Nav({ householdName }: { householdName: string }) {
             const active =
               item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
             const Icon = item.icon;
+            const badge = item.href === "/pantry" ? expiringCount : 0;
             return (
               <Link
                 key={item.href}
@@ -54,6 +61,11 @@ export function Nav({ householdName }: { householdName: string }) {
               >
                 <Icon className="h-4 w-4" strokeWidth={2} />
                 {item.label}
+                {badge > 0 && (
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-[11px] font-semibold text-white">
+                    {badge}
+                  </span>
+                )}
               </Link>
             );
           })}
@@ -66,15 +78,23 @@ export function Nav({ householdName }: { householdName: string }) {
           const active =
             item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           const Icon = item.icon;
+          const badge = item.href === "/pantry" ? expiringCount : 0;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors ${
+              className={`relative flex flex-1 flex-col items-center gap-0.5 py-2.5 text-[11px] font-medium transition-colors ${
                 active ? "text-brand-dark" : "text-muted"
               }`}
             >
-              <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 2} />
+              <span className="relative">
+                <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 2} />
+                {badge > 0 && (
+                  <span className="absolute -right-1.5 -top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-danger text-[9px] font-semibold text-white">
+                    {badge > 9 ? "9+" : badge}
+                  </span>
+                )}
+              </span>
               {item.label}
             </Link>
           );

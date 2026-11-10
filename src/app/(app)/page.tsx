@@ -6,9 +6,11 @@ import {
   AlertTriangle,
   CalendarClock,
   Snowflake,
+  Trash2,
 } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
+import { expiryStatus } from "@/lib/expiry";
 import type { MealBatch, MealPlanEntry, PantryItem } from "@/lib/types";
 
 function todayIso() {
@@ -22,7 +24,12 @@ export default async function DashboardPage() {
   const weekAhead = new Date();
   weekAhead.setDate(weekAhead.getDate() + 6);
 
-  const [todayMeals, upcomingMeals, pantryItems, shoppingItems, batches] = await Promise.all([
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+
+  const [todayMeals, upcomingMeals, pantryItems, shoppingItems, batches, wasteRows] =
+    await Promise.all([
     supabase
       .from("meal_plan_entries")
       .select("*, recipes(name)")
@@ -49,13 +56,18 @@ export default async function DashboardPage() {
       .eq("household_id", household.id)
       .gt("portions_remaining", 0)
       .order("cooked_date", { ascending: false }),
+    supabase
+      .from("pantry_stock_history")
+      .select("id")
+      .eq("household_id", household.id)
+      .eq("change_type", "waste")
+      .gte("created_at", monthStart.toISOString()),
   ]);
 
-  const now = Date.now();
-  const soon = now + 3 * 24 * 60 * 60 * 1000;
-  const expiringItems = ((pantryItems.data as PantryItem[] | null) ?? []).filter(
-    (p) => p.expiry_date && new Date(p.expiry_date).getTime() <= soon,
-  );
+  const allPantryItems = (pantryItems.data as PantryItem[] | null) ?? [];
+  const expiredItems = allPantryItems.filter((p) => expiryStatus(p.expiry_date) === "expired");
+  const soonItems = allPantryItems.filter((p) => expiryStatus(p.expiry_date) === "soon");
+  const wastedThisMonth = wasteRows.data?.length ?? 0;
 
   return (
     <div>
@@ -92,12 +104,18 @@ export default async function DashboardPage() {
         </Card>
 
         <Card title="Use soon" href="/pantry" icon={AlertTriangle}>
-          {expiringItems.length ? (
+          {expiredItems.length || soonItems.length ? (
             <ul className="space-y-1 text-sm">
-              {expiringItems.slice(0, 5).map((p) => (
+              {expiredItems.slice(0, 5).map((p) => (
                 <li key={p.id} className="flex justify-between">
                   <span>{p.ingredient_name}</span>
-                  <span className="text-warn">{p.expiry_date}</span>
+                  <span className="font-medium text-danger">Expired {p.expiry_date}</span>
+                </li>
+              ))}
+              {soonItems.slice(0, 5 - Math.min(expiredItems.length, 5)).map((p) => (
+                <li key={p.id} className="flex justify-between">
+                  <span>{p.ingredient_name}</span>
+                  <span className="text-warn">Use by {p.expiry_date}</span>
                 </li>
               ))}
             </ul>
@@ -135,6 +153,17 @@ export default async function DashboardPage() {
             </ul>
           ) : (
             <EmptyLine text="Nothing batch-cooked yet" />
+          )}
+        </Card>
+
+        <Card title="Food waste" href="/pantry/waste" icon={Trash2}>
+          {wastedThisMonth > 0 ? (
+            <p className="text-sm">
+              <span className="font-medium">{wastedThisMonth}</span> item
+              {wastedThisMonth === 1 ? "" : "s"} wasted this month
+            </p>
+          ) : (
+            <EmptyLine text="No waste logged this month" />
           )}
         </Card>
       </div>
