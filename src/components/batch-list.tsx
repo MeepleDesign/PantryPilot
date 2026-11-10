@@ -239,10 +239,10 @@ function BatchRow({ batch }: { batch: MealBatch }) {
         <button
           disabled={pending || empty}
           onClick={() => startTransition(() => consumeBatchPortion(batch.id, 1))}
-          className="flex items-center gap-1 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium hover:bg-background disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-border disabled:text-muted"
         >
           {pending ? <Spinner className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-          1 used
+          Used a batch
         </button>
         <div className="flex shrink-0 gap-3 text-xs">
           <button onClick={() => setEditing(true)} className="font-medium text-brand hover:text-brand-dark">
