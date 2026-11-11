@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { Spinner } from "@/components/spinner";
 import { useToast } from "@/components/toast";
 import { saveReceiptScan } from "@/lib/actions/receipts";
+import { getKnownPrices, type KnownPrice } from "@/lib/actions/ingredient-prices";
+import { normalizeIngredientName } from "@/lib/ingredient-name";
 import type { ExtractedReceiptScan } from "@/lib/actions/receipt-import";
 
 type ReviewRow = {
@@ -13,10 +15,18 @@ type ReviewRow = {
   quantity: number | null;
   uncertain_fields: string[];
   include: boolean;
+  updatePrice: boolean;
 };
 
 function money(n: number) {
   return `£${n.toFixed(2)}`;
+}
+
+function daysAgo(iso: string): string {
+  const days = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
+  if (days === 0) return "today";
+  if (days === 1) return "1 day ago";
+  return `${days} days ago`;
 }
 
 export function ReceiptScanReview({
@@ -38,10 +48,16 @@ export function ReceiptScanReview({
       quantity: item.quantity,
       uncertain_fields: item.uncertain_fields,
       include: true,
+      updatePrice: false,
     })),
   );
+  const [knownPrices, setKnownPrices] = useState<Record<string, KnownPrice>>({});
   const [pending, startTransition] = useTransition();
   const showToast = useToast();
+
+  useEffect(() => {
+    getKnownPrices().then(setKnownPrices).catch(() => {});
+  }, []);
 
   function updateRow(id: string, patch: Partial<ReviewRow>) {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
@@ -60,6 +76,7 @@ export function ReceiptScanReview({
           ingredient_name: r.ingredient_name.trim(),
           price: r.price,
           quantity: r.quantity,
+          update_price: r.updatePrice,
         })),
       });
       showToast(`Saved ${includedRows.length} item${includedRows.length === 1 ? "" : "s"} · ${money(includedTotal)}`);
@@ -110,55 +127,74 @@ export function ReceiptScanReview({
       </div>
 
       <div className="space-y-2">
-        {rows.map((row) => (
-          <div
-            key={row.id}
-            className={`rounded-lg border p-3 ${row.include ? "border-border" : "border-border opacity-50"}`}
-          >
-            <div className="flex flex-wrap items-center gap-2">
-              <label className="flex min-w-0 flex-1 items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={row.include}
-                  onChange={(e) => updateRow(row.id, { include: e.target.checked })}
-                  className="h-4 w-4 shrink-0 accent-brand"
-                />
-                <input
-                  value={row.ingredient_name}
-                  onChange={(e) => updateRow(row.id, { ingredient_name: e.target.value })}
-                  className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-                />
-              </label>
-              <input
-                type="number"
-                step="any"
-                value={row.quantity ?? ""}
-                onChange={(e) =>
-                  updateRow(row.id, {
-                    quantity: e.target.value === "" ? null : Number(e.target.value),
-                  })
-                }
-                placeholder="Qty"
-                className="w-20 shrink-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-              />
-              <div className="flex shrink-0 items-center gap-1">
-                <span className="text-sm text-muted">£</span>
+        {rows.map((row) => {
+          const known = knownPrices[normalizeIngredientName(row.ingredient_name)];
+          const priceChanged = known && Math.abs(known.price - row.price) > 0.001;
+          return (
+            <div
+              key={row.id}
+              className={`rounded-lg border p-3 ${row.include ? "border-border" : "border-border opacity-50"}`}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <label className="flex min-w-0 flex-1 items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={row.include}
+                    onChange={(e) => updateRow(row.id, { include: e.target.checked })}
+                    className="h-4 w-4 shrink-0 accent-brand"
+                  />
+                  <input
+                    value={row.ingredient_name}
+                    onChange={(e) => updateRow(row.id, { ingredient_name: e.target.value })}
+                    className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                  />
+                </label>
                 <input
                   type="number"
-                  step="0.01"
-                  value={row.price}
-                  onChange={(e) => updateRow(row.id, { price: Number(e.target.value) || 0 })}
-                  className="w-20 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                  step="any"
+                  value={row.quantity ?? ""}
+                  onChange={(e) =>
+                    updateRow(row.id, {
+                      quantity: e.target.value === "" ? null : Number(e.target.value),
+                    })
+                  }
+                  placeholder="Qty"
+                  className="w-20 shrink-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
                 />
+                <div className="flex shrink-0 items-center gap-1">
+                  <span className="text-sm text-muted">£</span>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={row.price}
+                    onChange={(e) => updateRow(row.id, { price: Number(e.target.value) || 0 })}
+                    className="w-20 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                  />
+                </div>
               </div>
+              {row.uncertain_fields.length > 0 && (
+                <p className="mt-1.5 text-xs text-warn">
+                  Please check: {row.uncertain_fields.join(", ")}
+                </p>
+              )}
+              {priceChanged && (
+                <label className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
+                  <input
+                    type="checkbox"
+                    checked={row.updatePrice}
+                    onChange={(e) => updateRow(row.id, { updatePrice: e.target.checked })}
+                    className="h-3.5 w-3.5 accent-brand"
+                  />
+                  Last priced {money(known.price)} ({daysAgo(known.updated_at)}) — update remembered
+                  price to {money(row.price)}?
+                </label>
+              )}
+              {!known && (
+                <p className="mt-1.5 text-xs text-muted">New price — will be remembered for your shopping list.</p>
+              )}
             </div>
-            {row.uncertain_fields.length > 0 && (
-              <p className="mt-1.5 text-xs text-warn">
-                Please check: {row.uncertain_fields.join(", ")}
-              </p>
-            )}
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">

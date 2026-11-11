@@ -11,6 +11,7 @@ import {
 } from "@/components/shopping-list-client";
 import { PrintButton } from "@/components/print-button";
 import { EmptyState } from "@/components/empty-state";
+import { normalizeIngredientName } from "@/lib/ingredient-name";
 import type { UnitSystem } from "@/lib/units";
 
 export default async function ShoppingListPage() {
@@ -18,15 +19,33 @@ export default async function ShoppingListPage() {
   const supabase = await createClient();
   const unitSystem: UnitSystem = profile.units === "imperial" ? "imperial" : "metric";
 
-  const { data: items, error } = await supabase
-    .from("shopping_list_items")
-    .select("*")
-    .eq("household_id", household.id)
-    .order("ingredient_name");
+  const [{ data: items, error }, { data: priceRows }] = await Promise.all([
+    supabase
+      .from("shopping_list_items")
+      .select("*")
+      .eq("household_id", household.id)
+      .order("ingredient_name"),
+    supabase
+      .from("ingredient_prices")
+      .select("ingredient_name, price, updated_at")
+      .eq("household_id", household.id),
+  ]);
   if (error) throw new Error(error.message);
+
+  const priceByName = new Map(
+    (priceRows ?? []).map((p) => [normalizeIngredientName(p.ingredient_name), p]),
+  );
 
   const toBuy = items?.filter((i) => i.to_buy_qty > 0 || i.is_manual) ?? [];
   const covered = items?.filter((i) => i.to_buy_qty <= 0 && !i.is_manual) ?? [];
+
+  const estimatedTotal = toBuy.reduce((sum, item) => {
+    const known = priceByName.get(normalizeIngredientName(item.ingredient_name));
+    return known ? sum + Number(known.price) : sum;
+  }, 0);
+  const estimatedCount = toBuy.filter((item) =>
+    priceByName.has(normalizeIngredientName(item.ingredient_name)),
+  ).length;
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -56,10 +75,22 @@ export default async function ShoppingListPage() {
         <AddManualItemForm unitSystem={unitSystem} />
       </div>
 
+      {estimatedCount > 0 && (
+        <p className="mb-3 text-sm text-muted">
+          Estimated cost: <span className="font-medium text-foreground">£{estimatedTotal.toFixed(2)}</span>{" "}
+          ({estimatedCount} of {toBuy.length} items priced from past receipts)
+        </p>
+      )}
+
       {toBuy.length > 0 ? (
         <div className="mb-6 divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
           {toBuy.map((item) => (
-            <ShoppingListRow key={item.id} item={item} supermarketName={household.default_supermarket} />
+            <ShoppingListRow
+              key={item.id}
+              item={item}
+              supermarketName={household.default_supermarket}
+              knownPrice={priceByName.get(normalizeIngredientName(item.ingredient_name)) ?? null}
+            />
           ))}
         </div>
       ) : (

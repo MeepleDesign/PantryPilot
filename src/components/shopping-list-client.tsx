@@ -89,9 +89,11 @@ export function ClearTickedButton() {
 export function ShoppingListRow({
   item,
   supermarketName,
+  knownPrice,
 }: {
   item: ShoppingListItem;
   supermarketName: string | null;
+  knownPrice?: { price: number; updated_at: string } | null;
 }) {
   const [pending, startTransition] = useTransition();
   const [ticked, setTicked] = useState(item.ticked);
@@ -125,6 +127,11 @@ export function ShoppingListRow({
       </span>
       {item.pantry_qty > 0 && (
         <span className="text-xs text-success">have {item.pantry_qty}</span>
+      )}
+      {knownPrice && (
+        <span className="text-xs text-muted" title={`Last priced ${new Date(knownPrice.updated_at).toLocaleDateString()}`}>
+          est. £{knownPrice.price.toFixed(2)}
+        </span>
       )}
       <a
         href={buildSupermarketSearchUrl(supermarketName, item.ingredient_name)}
