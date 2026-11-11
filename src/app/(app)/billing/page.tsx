@@ -8,6 +8,7 @@ const FEATURES: { label: string; free: boolean; pro: boolean }[] = [
   { label: "Import recipes from any website", free: true, pro: true },
   { label: "AI recipe photo import", free: false, pro: true },
   { label: "AI pantry photo scan", free: false, pro: true },
+  { label: "AI receipt scan & spend tracking", free: false, pro: true },
   { label: "Community recipe library (coming soon)", free: false, pro: true },
 ];
 

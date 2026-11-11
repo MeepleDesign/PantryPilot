@@ -7,6 +7,7 @@ import {
   CalendarClock,
   Snowflake,
   Trash2,
+  Receipt,
 } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
@@ -29,7 +30,7 @@ export default async function DashboardPage() {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const [todayMeals, upcomingMeals, pantryItems, shoppingItems, batches, wasteRows] =
+  const [todayMeals, upcomingMeals, pantryItems, shoppingItems, batches, wasteRows, spendRows] =
     await Promise.all([
     supabase
       .from("meal_plan_entries")
@@ -63,12 +64,20 @@ export default async function DashboardPage() {
       .eq("household_id", household.id)
       .eq("change_type", "waste")
       .gte("created_at", monthStart.toISOString()),
+    supabase
+      .from("receipt_scans")
+      .select("receipt_items(price)")
+      .eq("household_id", household.id)
+      .gte("purchased_at", monthStart.toISOString().slice(0, 10)),
   ]);
 
   const allPantryItems = (pantryItems.data as PantryItem[] | null) ?? [];
   const expiredItems = allPantryItems.filter((p) => expiryStatus(p.expiry_date) === "expired");
   const soonItems = allPantryItems.filter((p) => expiryStatus(p.expiry_date) === "soon");
   const wastedThisMonth = wasteRows.data?.length ?? 0;
+  const spentThisMonth = (
+    (spendRows.data as { receipt_items: { price: number }[] }[] | null) ?? []
+  ).reduce((sum, scan) => sum + scan.receipt_items.reduce((s, i) => s + Number(i.price), 0), 0);
 
   return (
     <div>
@@ -165,6 +174,16 @@ export default async function DashboardPage() {
             </p>
           ) : (
             <EmptyState icon={Trash2} title="No waste logged this month" compact />
+          )}
+        </Card>
+
+        <Card title="Spending" href="/shopping-list/spending" icon={Receipt}>
+          {spentThisMonth > 0 ? (
+            <p className="text-sm">
+              <span className="font-medium">£{spentThisMonth.toFixed(2)}</span> spent this month
+            </p>
+          ) : (
+            <EmptyState icon={Receipt} title="No spend tracked this month" body="Scan a receipt to start." compact />
           )}
         </Card>
       </div>

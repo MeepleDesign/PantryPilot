@@ -1,4 +1,5 @@
-import { PackageCheck, ShoppingCart } from "lucide-react";
+import Link from "next/link";
+import { PackageCheck, ShoppingCart, Receipt } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -38,6 +39,13 @@ export default async function ShoppingListPage() {
           </p>
         </div>
         <div className="flex gap-2 print:hidden">
+          <Link
+            href="/shopping-list/spending"
+            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-surface"
+          >
+            <Receipt className="h-4 w-4" />
+            Spending
+          </Link>
           <PrintButton label="Print" />
           <RegenerateButton />
           <ResetButton />
