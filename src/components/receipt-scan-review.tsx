@@ -52,11 +52,18 @@ export function ReceiptScanReview({
     })),
   );
   const [knownPrices, setKnownPrices] = useState<Record<string, KnownPrice>>({});
+  const [pricesLoaded, setPricesLoaded] = useState(false);
+  const [pricesFailed, setPricesFailed] = useState(false);
   const [pending, startTransition] = useTransition();
   const showToast = useToast();
 
   useEffect(() => {
-    getKnownPrices().then(setKnownPrices).catch(() => {});
+    getKnownPrices()
+      .then((prices) => {
+        setKnownPrices(prices);
+        setPricesLoaded(true);
+      })
+      .catch(() => setPricesFailed(true));
   }, []);
 
   function updateRow(id: string, patch: Partial<ReviewRow>) {
@@ -177,7 +184,13 @@ export function ReceiptScanReview({
                   Please check: {row.uncertain_fields.join(", ")}
                 </p>
               )}
-              {priceChanged && (
+              {!pricesLoaded && !pricesFailed && (
+                <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
+                  <Spinner className="h-3 w-3" />
+                  Checking remembered price…
+                </p>
+              )}
+              {pricesLoaded && priceChanged && (
                 <label className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
                   <input
                     type="checkbox"
@@ -189,8 +202,13 @@ export function ReceiptScanReview({
                   price to {money(row.price)}?
                 </label>
               )}
-              {!known && (
+              {pricesLoaded && !known && (
                 <p className="mt-1.5 text-xs text-muted">New price — will be remembered for your shopping list.</p>
+              )}
+              {pricesFailed && (
+                <p className="mt-1.5 text-xs text-warn">
+                  Couldn&apos;t check remembered prices — this price won&apos;t overwrite anything saved.
+                </p>
               )}
             </div>
           );
@@ -209,11 +227,11 @@ export function ReceiptScanReview({
         <button
           type="button"
           onClick={handleConfirm}
-          disabled={pending || includedRows.length === 0}
+          disabled={pending || includedRows.length === 0 || (!pricesLoaded && !pricesFailed)}
           className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
         >
-          {pending && <Spinner className="h-4 w-4" />}
-          {pending ? "Saving…" : "Save spend"}
+          {(pending || (!pricesLoaded && !pricesFailed)) && <Spinner className="h-4 w-4" />}
+          {pending ? "Saving…" : !pricesLoaded && !pricesFailed ? "Checking prices…" : "Save spend"}
         </button>
       </div>
     </div>
