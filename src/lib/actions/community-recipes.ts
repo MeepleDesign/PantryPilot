@@ -10,10 +10,13 @@ export async function shareRecipe(recipeId: string) {
 
   const { data: recipe, error: fetchError } = await supabase
     .from("recipes")
-    .select("id, community_origin_id")
+    .select("id, community_origin_id, image_url")
     .eq("id", recipeId)
     .single();
   if (fetchError || !recipe) throw new Error(fetchError?.message ?? "Recipe not found");
+  if (!recipe.image_url) {
+    throw new Error("Add a photo to this recipe before sharing it to the community.");
+  }
 
   const { error } = await supabase
     .from("recipes")

@@ -22,7 +22,7 @@ export default async function CommunityRecipesPage({
 
   let query = supabase
     .from("recipes")
-    .select("id, name, cuisine, course, household_id, community_origin_id")
+    .select("id, name, cuisine, course, household_id, community_origin_id, image_url")
     .eq("is_shared", true)
     .order("name");
   if (cuisine) query = query.eq("cuisine", cuisine);
@@ -55,6 +55,7 @@ export default async function CommunityRecipesPage({
       sharedByName: r.household_id ? (namesMap[r.household_id] ?? null) : null,
       rating: ratingsMap[originId] ?? null,
       importCount: importCountsMap[originId] ?? 0,
+      imageUrl: r.image_url,
     };
   });
 

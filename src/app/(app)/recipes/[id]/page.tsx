@@ -115,7 +115,12 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
       )}
 
       <div className="mb-3 print:hidden">
-        <ShareRecipeControl recipeId={id} isOwner={isOwner} isShared={recipe.is_shared} />
+        <ShareRecipeControl
+          recipeId={id}
+          isOwner={isOwner}
+          isShared={recipe.is_shared}
+          hasImage={!!recipe.image_url}
+        />
       </div>
 
       {recipe.tags?.length > 0 && (

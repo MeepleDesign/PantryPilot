@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Share2, Flag, Download } from "lucide-react";
+import Link from "next/link";
+import { Share2, Flag, Download, Camera } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import {
   shareRecipe,
@@ -14,10 +15,12 @@ export function ShareRecipeControl({
   recipeId,
   isOwner,
   isShared,
+  hasImage,
 }: {
   recipeId: string;
   isOwner: boolean;
   isShared: boolean;
+  hasImage: boolean;
 }) {
   const [pending, startTransition] = useTransition();
   const [confirming, setConfirming] = useState(false);
@@ -77,6 +80,18 @@ export function ShareRecipeControl({
             </button>
           </div>
         </div>
+      );
+    }
+
+    if (!hasImage) {
+      return (
+        <Link
+          href={`/recipes/${recipeId}/edit`}
+          className="flex items-center gap-1.5 text-sm font-medium text-muted hover:text-foreground print:hidden"
+        >
+          <Camera className="h-4 w-4" />
+          Add a photo to share this to the community
+        </Link>
       );
     }
 

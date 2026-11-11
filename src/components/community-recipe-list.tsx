@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
-import { Download, Flag } from "lucide-react";
+import { Download, Flag, UtensilsCrossed } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import { importCommunityRecipe, reportCommunityRecipe, unshareRecipe } from "@/lib/actions/community-recipes";
 
@@ -15,6 +16,7 @@ export type CommunityRecipeCard = {
   sharedByName: string | null;
   rating: { avg: number; count: number } | null;
   importCount: number;
+  imageUrl: string | null;
 };
 
 export function CommunityRecipeList({ recipes }: { recipes: CommunityRecipeCard[] }) {
@@ -43,22 +45,33 @@ function CommunityRecipeRow({ recipe }: { recipe: CommunityRecipeCard }) {
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
-      <div className="min-w-0">
-        <Link href={`/recipes/${recipe.id}`} className="font-medium hover:text-brand">
-          {recipe.name}
-        </Link>
-        <p className="text-xs text-muted">
-          {[recipe.course[0].toUpperCase() + recipe.course.slice(1), recipe.cuisine]
-            .filter(Boolean)
-            .join(" · ")}
-          {recipe.rating && recipe.rating.count > 0
-            ? ` · ${recipe.rating.avg.toFixed(1)}★ (${recipe.rating.count})`
-            : " · No ratings yet"}
-          {recipe.importCount > 0
-            ? ` · Imported ${recipe.importCount} time${recipe.importCount === 1 ? "" : "s"}`
-            : ""}
-          {recipe.isOwn ? " · Your recipe" : recipe.sharedByName ? ` · Shared by ${recipe.sharedByName}` : ""}
-        </p>
+      <div className="flex min-w-0 items-center gap-3">
+        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-background">
+          {recipe.imageUrl ? (
+            <Image src={recipe.imageUrl} alt={recipe.name} fill className="object-cover" sizes="48px" />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-muted">
+              <UtensilsCrossed className="h-5 w-5" strokeWidth={1.5} />
+            </div>
+          )}
+        </div>
+        <div className="min-w-0">
+          <Link href={`/recipes/${recipe.id}`} className="font-medium hover:text-brand">
+            {recipe.name}
+          </Link>
+          <p className="text-xs text-muted">
+            {[recipe.course[0].toUpperCase() + recipe.course.slice(1), recipe.cuisine]
+              .filter(Boolean)
+              .join(" · ")}
+            {recipe.rating && recipe.rating.count > 0
+              ? ` · ${recipe.rating.avg.toFixed(1)}★ (${recipe.rating.count})`
+              : " · No ratings yet"}
+            {recipe.importCount > 0
+              ? ` · Imported ${recipe.importCount} time${recipe.importCount === 1 ? "" : "s"}`
+              : ""}
+            {recipe.isOwn ? " · Your recipe" : recipe.sharedByName ? ` · Shared by ${recipe.sharedByName}` : ""}
+          </p>
+        </div>
       </div>
 
       {recipe.isOwn ? (
