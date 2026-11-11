@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { Sparkles } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { HouseholdSettingsForm, JoinHouseholdForm } from "@/components/settings-forms";
+import { LinkButton } from "@/components/link-button";
 
 const FREE_INCLUDES = [
   "Unlimited recipes, pantry & shopping list",
@@ -53,12 +53,12 @@ export default async function SettingsPage() {
             <li key={item}>· {item}</li>
           ))}
         </ul>
-        <Link
+        <LinkButton
           href="/billing"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark"
+          className="inline-flex rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark"
         >
           See plans & billing
-        </Link>
+        </LinkButton>
       </section>
     </div>
   );

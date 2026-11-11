@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { LinkButton } from "@/components/link-button";
 import {
   ChefHat,
   BookOpen,
@@ -95,12 +96,12 @@ export default function LandingPage() {
               built for households who are fed up with wasted food and last-minute takeaways.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link
+              <LinkButton
                 href="/login?mode=signup"
                 className="rounded-lg bg-brand px-6 py-3 text-sm font-medium text-brand-foreground shadow-sm hover:bg-brand-dark"
               >
                 Create a free account
-              </Link>
+              </LinkButton>
               <Link
                 href="/login"
                 className="rounded-lg border border-border px-6 py-3 text-sm font-medium hover:bg-surface"
@@ -206,12 +207,12 @@ export default function LandingPage() {
         </p>
 
         <div className="mt-8 text-center">
-          <Link
+          <LinkButton
             href="/login?mode=signup"
             className="inline-block rounded-lg bg-brand px-6 py-3 text-sm font-medium text-brand-foreground shadow-sm hover:bg-brand-dark"
           >
             Create a free account
-          </Link>
+          </LinkButton>
         </div>
       </section>
 

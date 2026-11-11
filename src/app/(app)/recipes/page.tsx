@@ -5,6 +5,7 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { RecipeBrowser } from "@/components/recipe-views";
 import { RecipeViewTabs } from "@/components/recipe-view-tabs";
 import { EmptyState } from "@/components/empty-state";
+import { LinkButton } from "@/components/link-button";
 import { computeRecipeMatches } from "@/lib/pantry-match";
 
 export default async function RecipesPage({
@@ -99,13 +100,13 @@ export default async function RecipesPage({
             {visibleRecipes.length} recipe{visibleRecipes.length === 1 ? "" : "s"}
           </p>
         </div>
-        <Link
+        <LinkButton
           href="/recipes/new"
-          className="flex items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground shadow-sm transition-colors hover:bg-brand-dark"
+          className="rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground shadow-sm transition-colors hover:bg-brand-dark"
         >
           <Plus className="h-4 w-4" />
           Add recipe
-        </Link>
+        </LinkButton>
       </div>
 
       <RecipeViewTabs active="mine" />
