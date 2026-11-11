@@ -2,7 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import Image from "next/image";
-import { Camera } from "lucide-react";
+import { Camera, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
@@ -255,9 +255,12 @@ export function RecipeForm({
       )}
 
       {reviewFields && reviewFields.length > 0 && (
-        <div className="rounded-lg border border-warn/40 bg-warn/5 px-3 py-2 text-sm">
-          <p className="font-medium text-warn">AI-extracted, please double-check:</p>
-          <p className="text-muted">{reviewFields.join(", ")}</p>
+        <div className="flex items-start gap-2 rounded-lg border border-brand/30 bg-brand/5 px-3 py-2 text-sm">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-brand-dark" />
+          <div>
+            <p className="font-medium text-brand-dark">AI-filled — worth a quick double-check:</p>
+            <p className="text-muted">{reviewFields.join(", ")}</p>
+          </div>
         </div>
       )}
 

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Camera, Receipt, X } from "lucide-react";
+import { Camera, Images, Receipt, X } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import type { ExtractedReceiptScan } from "@/lib/actions/receipt-import";
 
@@ -134,18 +134,32 @@ export function ReceiptScanImport({
 
       <div className="flex flex-wrap items-center gap-2">
         {photos.length < MAX_PHOTOS && (
-          <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-background">
-            <Camera className="h-4 w-4" />
-            {photos.length === 0 ? "Choose photo(s)" : "Add another"}
-            <input
-              type="file"
-              accept="image/*"
-              multiple
-              disabled={pending}
-              onChange={(e) => handleFiles(e.target.files)}
-              className="hidden"
-            />
-          </label>
+          <>
+            <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-background">
+              <Camera className="h-4 w-4" />
+              Take photo
+              <input
+                type="file"
+                accept="image/*"
+                capture="environment"
+                disabled={pending}
+                onChange={(e) => handleFiles(e.target.files)}
+                className="hidden"
+              />
+            </label>
+            <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-background">
+              <Images className="h-4 w-4" />
+              {photos.length === 0 ? "Choose photo(s)" : "Add another"}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                disabled={pending}
+                onChange={(e) => handleFiles(e.target.files)}
+                className="hidden"
+              />
+            </label>
+          </>
         )}
         {photos.length > 0 && (
           <button
