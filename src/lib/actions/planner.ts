@@ -29,7 +29,7 @@ export async function addMealPlanEntry(input: {
   if (error) throw new Error(error.message);
 
   revalidatePath("/planner");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/shopping-list");
 }
 
@@ -49,7 +49,7 @@ export async function removeMealPlanEntry(id: string) {
   const { error } = await supabase.from("meal_plan_entries").delete().eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/planner");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/shopping-list");
 }
 
@@ -123,5 +123,5 @@ export async function confirmCooked(entryId: string) {
 
   revalidatePath("/planner");
   revalidatePath("/pantry");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }

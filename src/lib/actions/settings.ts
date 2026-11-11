@@ -18,7 +18,7 @@ export async function updateHouseholdSettings(input: {
   if (error) throw new Error(error.message);
 
   revalidatePath("/settings");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function updateProfileSettings(input: {
@@ -41,7 +41,7 @@ export async function updateProfileSettings(input: {
   if (error) throw new Error(error.message);
 
   revalidatePath("/settings");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function joinHousehold(code: string) {
@@ -49,5 +49,5 @@ export async function joinHousehold(code: string) {
   const { error } = await supabase.rpc("join_household_by_code", { code });
   if (error) throw new Error(error.message);
   revalidatePath("/settings");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }

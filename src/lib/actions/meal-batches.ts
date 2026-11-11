@@ -34,7 +34,7 @@ export async function logMealBatch(input: LogMealBatchInput) {
 
   revalidatePath("/batches");
   revalidatePath("/planner");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function consumeBatchPortion(id: string, count: number = 1) {
@@ -56,7 +56,7 @@ export async function consumeBatchPortion(id: string, count: number = 1) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/batches");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export type UpdateMealBatchInput = {
@@ -84,7 +84,7 @@ export async function updateMealBatch(id: string, input: UpdateMealBatchInput) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/batches");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteMealBatch(id: string) {
@@ -93,5 +93,5 @@ export async function deleteMealBatch(id: string) {
   if (error) throw new Error(error.message);
 
   revalidatePath("/batches");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }

@@ -229,7 +229,7 @@ export async function confirmWeekPlan(proposals: PlanProposal[]): Promise<Confir
   }
 
   revalidatePath("/planner");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
   revalidatePath("/shopping-list");
 
   return { confirmed, conflicted };

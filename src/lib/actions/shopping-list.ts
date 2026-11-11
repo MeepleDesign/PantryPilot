@@ -219,7 +219,7 @@ export async function toggleShoppingItem(id: string, ticked: boolean) {
     }
 
     revalidatePath("/pantry");
-    revalidatePath("/");
+    revalidatePath("/dashboard");
   }
 
   revalidatePath("/shopping-list");

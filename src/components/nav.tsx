@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 
 const ITEMS = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/recipes", label: "Recipes", icon: BookOpen },
   { href: "/planner", label: "Planner", icon: CalendarDays },
   { href: "/pantry", label: "Pantry", icon: Archive },
@@ -51,8 +51,7 @@ export function Nav({
         </div>
         <nav className="flex flex-col gap-1">
           {items.map((item) => {
-            const active =
-              item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            const active = pathname.startsWith(item.href);
             const Icon = item.icon;
             const badge = item.href === "/pantry" ? expiringCount : 0;
             return (
@@ -81,8 +80,7 @@ export function Nav({
       {/* Mobile bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-border bg-surface/95 shadow-[0_-2px_8px_rgba(0,0,0,0.04)] backdrop-blur md:hidden print:hidden">
         {items.map((item) => {
-          const active =
-            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          const active = pathname.startsWith(item.href);
           const Icon = item.icon;
           const badge = item.href === "/pantry" ? expiringCount : 0;
           return (

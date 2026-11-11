@@ -52,7 +52,7 @@ export async function addPantryItem(
   });
 
   revalidatePath("/pantry");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function updatePantryItem(id: string, input: PantryItemInput) {
@@ -96,7 +96,7 @@ export async function updatePantryItem(id: string, input: PantryItemInput) {
   }
 
   revalidatePath("/pantry");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }
 
 export async function deletePantryItem(id: string, reason: "used" | "wasted" = "used") {
@@ -127,5 +127,5 @@ export async function deletePantryItem(id: string, reason: "used" | "wasted" = "
   }
 
   revalidatePath("/pantry");
-  revalidatePath("/");
+  revalidatePath("/dashboard");
 }

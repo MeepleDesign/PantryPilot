@@ -13,7 +13,7 @@ export async function signIn(formData: FormData) {
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
-  redirect("/");
+  redirect("/dashboard");
 }
 
 export async function signUp(formData: FormData) {
@@ -37,7 +37,7 @@ export async function signUp(formData: FormData) {
     await supabase.rpc("join_household_by_code", { code: inviteCode });
   }
 
-  redirect("/");
+  redirect("/dashboard");
 }
 
 export async function signOut() {

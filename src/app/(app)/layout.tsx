@@ -4,7 +4,7 @@ import { expiryStatus } from "@/lib/expiry";
 import { Nav } from "@/components/nav";
 import { AccountMenu } from "@/components/account-menu";
 
-export default async function AppLayout({ children }: LayoutProps<"/">) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { household, profile } = await getCurrentHousehold();
   const supabase = await createClient();
 
