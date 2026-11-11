@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { RefreshCw, X } from "lucide-react";
+import { RefreshCw, Search, X } from "lucide-react";
 import {
   regenerateShoppingList,
   toggleShoppingItem,
@@ -12,6 +12,7 @@ import {
 } from "@/lib/actions/shopping-list";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
+import { buildSupermarketSearchUrl } from "@/lib/supermarket-links";
 import type { UnitSystem } from "@/lib/units";
 import type { ShoppingListItem } from "@/lib/types";
 
@@ -85,7 +86,13 @@ export function ClearTickedButton() {
   );
 }
 
-export function ShoppingListRow({ item }: { item: ShoppingListItem }) {
+export function ShoppingListRow({
+  item,
+  supermarketName,
+}: {
+  item: ShoppingListItem;
+  supermarketName: string | null;
+}) {
   const [pending, startTransition] = useTransition();
   const [ticked, setTicked] = useState(item.ticked);
 
@@ -119,6 +126,16 @@ export function ShoppingListRow({ item }: { item: ShoppingListItem }) {
       {item.pantry_qty > 0 && (
         <span className="text-xs text-success">have {item.pantry_qty}</span>
       )}
+      <a
+        href={buildSupermarketSearchUrl(supermarketName, item.ingredient_name)}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => e.stopPropagation()}
+        title={supermarketName ? `Search for this on ${supermarketName}` : "Search for this online"}
+        className="text-muted hover:text-brand print:hidden"
+      >
+        <Search className="h-4 w-4" />
+      </a>
       <button
         disabled={pending}
         onClick={() => startTransition(() => removeShoppingItem(item.id))}

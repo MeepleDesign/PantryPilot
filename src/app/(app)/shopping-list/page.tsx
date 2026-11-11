@@ -59,7 +59,7 @@ export default async function ShoppingListPage() {
       {toBuy.length > 0 ? (
         <div className="mb-6 divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
           {toBuy.map((item) => (
-            <ShoppingListRow key={item.id} item={item} />
+            <ShoppingListRow key={item.id} item={item} supermarketName={household.default_supermarket} />
           ))}
         </div>
       ) : (
