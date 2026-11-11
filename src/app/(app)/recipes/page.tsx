@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, BookOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { RecipeBrowser } from "@/components/recipe-views";
 import { RecipeViewTabs } from "@/components/recipe-view-tabs";
+import { EmptyState } from "@/components/empty-state";
 import { computeRecipeMatches } from "@/lib/pantry-match";
 
 export default async function RecipesPage({
@@ -177,7 +178,7 @@ export default async function RecipesPage({
       </form>
 
       {!visibleRecipes.length ? (
-        <EmptyState />
+        <RecipesEmptyState />
       ) : (
         <RecipeBrowser recipes={visibleRecipes} ratings={ratingsByRecipe} pantryMatch={pantryMatch} />
       )}
@@ -185,13 +186,18 @@ export default async function RecipesPage({
   );
 }
 
-function EmptyState() {
+function RecipesEmptyState() {
   return (
-    <div className="rounded-xl border border-dashed border-border py-16 text-center">
-      <p className="mb-3 text-muted">No recipes match yet.</p>
-      <Link href="/recipes/new" className="font-medium text-brand">
-        Add your first recipe →
-      </Link>
+    <div className="rounded-xl border border-dashed border-border">
+      <EmptyState
+        icon={BookOpen}
+        title="No recipes match yet"
+        action={
+          <Link href="/recipes/new" className="mt-1 text-sm font-medium text-brand">
+            Add your first recipe →
+          </Link>
+        }
+      />
     </div>
   );
 }

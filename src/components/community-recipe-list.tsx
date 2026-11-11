@@ -3,8 +3,9 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Download, Flag, UtensilsCrossed } from "lucide-react";
+import { Download, Flag, UtensilsCrossed, Users } from "lucide-react";
 import { Spinner } from "@/components/spinner";
+import { EmptyState } from "@/components/empty-state";
 import { importCommunityRecipe, reportCommunityRecipe, unshareRecipe } from "@/lib/actions/community-recipes";
 
 export type CommunityRecipeCard = {
@@ -22,8 +23,8 @@ export type CommunityRecipeCard = {
 export function CommunityRecipeList({ recipes }: { recipes: CommunityRecipeCard[] }) {
   if (!recipes.length) {
     return (
-      <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted">
-        No community recipes match yet.
+      <div className="rounded-xl border border-dashed border-border">
+        <EmptyState icon={Users} title="No community recipes match yet" />
       </div>
     );
   }

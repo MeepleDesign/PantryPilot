@@ -3,6 +3,7 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { PantryItemForm, PantryItemRow } from "@/components/pantry-item-form";
 import { PantryPhotoSection } from "@/components/pantry-photo-section";
+import { EmptyState } from "@/components/empty-state";
 import type { PantryItem, StorageLocation } from "@/lib/types";
 import type { UnitSystem } from "@/lib/units";
 
@@ -64,8 +65,12 @@ export default async function PantryPage() {
       })}
 
       {!items?.length && (
-        <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted">
-          Your pantry is empty. Scan a photo or add what you already have above.
+        <div className="rounded-xl border border-dashed border-border">
+          <EmptyState
+            icon={Archive}
+            title="Your pantry is empty"
+            body="Scan a photo or add what you already have above."
+          />
         </div>
       )}
     </div>

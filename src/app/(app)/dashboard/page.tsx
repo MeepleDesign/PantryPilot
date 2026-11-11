@@ -11,6 +11,7 @@ import {
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { expiryStatus } from "@/lib/expiry";
+import { EmptyState } from "@/components/empty-state";
 import type { MealBatch, MealPlanEntry, PantryItem } from "@/lib/types";
 
 function todayIso() {
@@ -88,7 +89,7 @@ export default async function DashboardPage() {
               ))}
             </ul>
           ) : (
-            <EmptyLine text="Nothing planned for today" />
+            <EmptyState icon={Utensils} title="Nothing planned for today" body="Add a meal from the planner." compact />
           )}
         </Card>
 
@@ -99,7 +100,7 @@ export default async function DashboardPage() {
               {shoppingItems.data.length === 1 ? "" : "s"} still to buy
             </p>
           ) : (
-            <EmptyLine text="Shopping list is clear" />
+            <EmptyState icon={ShoppingCart} title="Shopping list is clear" compact />
           )}
         </Card>
 
@@ -120,7 +121,7 @@ export default async function DashboardPage() {
               ))}
             </ul>
           ) : (
-            <EmptyLine text="Nothing expiring soon" />
+            <EmptyState icon={AlertTriangle} title="Nothing expiring soon" compact />
           )}
         </Card>
 
@@ -135,7 +136,7 @@ export default async function DashboardPage() {
               ))}
             </ul>
           ) : (
-            <EmptyLine text="Plan your next few days" />
+            <EmptyState icon={CalendarClock} title="Plan your next few days" compact />
           )}
         </Card>
 
@@ -152,7 +153,7 @@ export default async function DashboardPage() {
               ))}
             </ul>
           ) : (
-            <EmptyLine text="Nothing batch-cooked yet" />
+            <EmptyState icon={Snowflake} title="Nothing batch-cooked yet" compact />
           )}
         </Card>
 
@@ -163,7 +164,7 @@ export default async function DashboardPage() {
               {wastedThisMonth === 1 ? "" : "s"} wasted this month
             </p>
           ) : (
-            <EmptyLine text="No waste logged this month" />
+            <EmptyState icon={Trash2} title="No waste logged this month" compact />
           )}
         </Card>
       </div>
@@ -202,8 +203,4 @@ function Card({
       {children}
     </div>
   );
-}
-
-function EmptyLine({ text }: { text: string }) {
-  return <p className="text-sm text-muted">{text}</p>;
 }

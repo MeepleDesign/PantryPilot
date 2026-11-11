@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Plus } from "lucide-react";
 import { Spinner } from "@/components/spinner";
+import { useToast } from "@/components/toast";
 import { logMealBatch } from "@/lib/actions/meal-batches";
 import type { MealBatchStorage } from "@/lib/types";
 
@@ -13,6 +14,7 @@ export function LogBatchManual({ recipes }: { recipes: { id: string; name: strin
   const [portionsInput, setPortionsInput] = useState("4");
   const [storage, setStorage] = useState<MealBatchStorage>("freezer");
   const [pending, startTransition] = useTransition();
+  const showToast = useToast();
 
   if (!open) {
     return (
@@ -41,6 +43,7 @@ export function LogBatchManual({ recipes }: { recipes: { id: string; name: strin
             storage_location: storage,
             notes: null,
           });
+          showToast(`${name.trim()} logged`);
           setOpen(false);
           setName("");
           setRecipeId("");

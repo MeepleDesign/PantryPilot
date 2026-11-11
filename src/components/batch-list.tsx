@@ -4,6 +4,8 @@ import { useState, useTransition } from "react";
 import { Minus, Snowflake, Refrigerator, Layers } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import { LogBatchManual } from "@/components/log-batch-manual";
+import { EmptyState } from "@/components/empty-state";
+import { useToast } from "@/components/toast";
 import {
   consumeBatchPortion,
   deleteMealBatch,
@@ -36,10 +38,12 @@ export function BatchList({
       </h2>
 
       {batches.length === 0 ? (
-        <p className="mb-3 text-sm text-muted">
-          No batch-cooked meals logged yet. Mark a planner entry as cooked to log portions, or
-          add one manually below.
-        </p>
+        <EmptyState
+          icon={Snowflake}
+          title="No batch-cooked meals logged yet"
+          body="Mark a planner entry as cooked to log portions, or add one manually below."
+          compact
+        />
       ) : (
         <>
           <div className="mb-4 grid grid-cols-2 gap-3">
@@ -89,6 +93,7 @@ function BatchRow({ batch }: { batch: MealBatch }) {
   const [totalInput, setTotalInput] = useState(String(batch.portions_total));
   const [remainingInput, setRemainingInput] = useState(String(batch.portions_remaining));
   const [location, setLocation] = useState<MealBatchStorage>(batch.storage_location);
+  const showToast = useToast();
 
   const usedPct = Math.round(
     ((batch.portions_total - batch.portions_remaining) / batch.portions_total) * 100,
@@ -160,6 +165,7 @@ function BatchRow({ batch }: { batch: MealBatch }) {
                   storage_location: location,
                 });
                 setEditing(false);
+                showToast("Batch updated");
               })
             }
             className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-brand-foreground disabled:cursor-not-allowed disabled:opacity-50"

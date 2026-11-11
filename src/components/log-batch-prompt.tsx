@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { PackagePlus } from "lucide-react";
 import { Spinner } from "@/components/spinner";
+import { useToast } from "@/components/toast";
 import { logMealBatch } from "@/lib/actions/meal-batches";
 import type { MealBatchStorage } from "@/lib/types";
 
@@ -24,6 +25,7 @@ export function LogBatchPrompt({
   const [storage, setStorage] = useState<MealBatchStorage>("freezer");
   const [pending, startTransition] = useTransition();
   const [logged, setLogged] = useState(existingBatch);
+  const showToast = useToast();
 
   if (logged) {
     return (
@@ -80,6 +82,7 @@ export function LogBatchPrompt({
               notes: null,
             });
             setLogged({ portions_total: portionsTotal, storage_location: storage });
+            showToast("Batch logged");
           })
         }
         className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1 text-xs font-medium text-brand-foreground disabled:cursor-wait disabled:opacity-60"

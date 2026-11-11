@@ -92,7 +92,7 @@ export default async function PlannerPage() {
             month: "short",
           });
           return (
-            <div key={date} className="rounded-xl border border-border bg-surface shadow-sm">
+            <div key={date} className="animate-fade-in-up rounded-xl border border-border bg-surface shadow-sm">
               <div className="border-b border-border px-3 py-2 text-sm font-medium">
                 {label}
               </div>

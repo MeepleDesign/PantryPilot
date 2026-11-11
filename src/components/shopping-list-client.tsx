@@ -87,19 +87,30 @@ export function ClearTickedButton() {
 
 export function ShoppingListRow({ item }: { item: ShoppingListItem }) {
   const [pending, startTransition] = useTransition();
+  const [ticked, setTicked] = useState(item.ticked);
 
   return (
-    <label className="flex items-center gap-3 px-4 py-3 text-sm">
+    <label
+      className={`animate-fade-in-up flex items-center gap-3 px-4 py-3 text-sm transition-colors duration-200 ${
+        ticked ? "bg-background/60" : ""
+      }`}
+    >
       <input
         type="checkbox"
-        checked={item.ticked}
+        checked={ticked}
         disabled={pending}
-        onChange={(e) =>
-          startTransition(() => toggleShoppingItem(item.id, e.target.checked))
-        }
-        className="h-4 w-4 accent-brand"
+        onChange={(e) => {
+          const next = e.target.checked;
+          setTicked(next);
+          startTransition(() => toggleShoppingItem(item.id, next));
+        }}
+        className="h-4 w-4 accent-brand transition-transform duration-150 active:scale-90"
       />
-      <span className={`flex-1 ${item.ticked ? "text-muted line-through" : ""}`}>
+      <span
+        className={`flex-1 transition-all duration-300 ${
+          ticked ? "text-muted line-through opacity-60" : "opacity-100"
+        }`}
+      >
         {item.ingredient_name}
       </span>
       <span className="tabular-nums text-muted">

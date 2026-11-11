@@ -141,7 +141,7 @@ function ListView({
           <Link
             key={recipe.id}
             href={`/recipes/${recipe.id}`}
-            className="flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-background"
+            className="animate-fade-in-up flex items-center justify-between gap-3 px-4 py-2.5 text-sm transition-colors hover:bg-background"
           >
             <div className="flex min-w-0 flex-1 items-center gap-2">
               <span className="min-w-0 truncate font-medium">{recipe.name}</span>
@@ -188,7 +188,7 @@ function ListDetailsView({
           <Link
             key={recipe.id}
             href={`/recipes/${recipe.id}`}
-            className="flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-background"
+            className="animate-fade-in-up flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-background"
           >
             <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-background">
               {recipe.image_url ? (
@@ -276,7 +276,7 @@ function TilesView({
           <Link
             key={recipe.id}
             href={`/recipes/${recipe.id}`}
-            className="block overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
+            className="animate-fade-in-up block overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
           >
             {recipe.image_url ? (
               <div className={`relative w-full ${imgHeight}`}>

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { addPantryItem, updatePantryItem, deletePantryItem } from "@/lib/actions/pantry";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
+import { useToast } from "@/components/toast";
 import { expiryStatus } from "@/lib/expiry";
 import type { UnitSystem } from "@/lib/units";
 import type { PantryItem, StorageLocation } from "@/lib/types";
@@ -19,13 +20,15 @@ export function PantryItemForm({
 }) {
   const [pending, startTransition] = useTransition();
   const [unit, setUnit] = useState("");
+  const showToast = useToast();
 
   return (
     <form
       action={(formData) => {
         startTransition(async () => {
+          const name = String(formData.get("ingredient_name"));
           await addPantryItem({
-            ingredient_name: String(formData.get("ingredient_name")),
+            ingredient_name: name,
             storage_location: String(formData.get("storage_location")) as StorageLocation,
             quantity: Number(formData.get("quantity")) || 0,
             unit: unit || null,
@@ -33,6 +36,7 @@ export function PantryItemForm({
             notes: null,
           });
           setUnit("");
+          showToast(`${name} added to pantry`);
           onDone?.();
         });
       }}

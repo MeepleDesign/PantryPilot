@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { Spinner } from "@/components/spinner";
 import { SelectWithOther } from "@/components/select-with-other";
+import { useToast } from "@/components/toast";
 import { PROFILE_DIETS } from "@/lib/taxonomies";
 import {
   updateHouseholdSettings,
@@ -14,6 +15,7 @@ import type { Household, Profile } from "@/lib/types";
 export function HouseholdSettingsForm({ household }: { household: Household }) {
   const [pending, startTransition] = useTransition();
   const [saved, setSaved] = useState(false);
+  const showToast = useToast();
 
   return (
     <form
@@ -25,6 +27,7 @@ export function HouseholdSettingsForm({ household }: { household: Household }) {
             default_supermarket: String(formData.get("default_supermarket")),
           });
           setSaved(true);
+          showToast("Household settings saved");
         });
       }}
       className="space-y-4"
@@ -46,6 +49,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
   const [dietaryPreference, setDietaryPreference] = useState(
     profile.dietary_preference ?? "Vegetarian",
   );
+  const showToast = useToast();
 
   return (
     <form
@@ -58,6 +62,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
             units: String(formData.get("units")),
           });
           setSaved(true);
+          showToast("Profile saved");
         });
       }}
       className="space-y-4"
@@ -92,6 +97,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
 export function JoinHouseholdForm() {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const showToast = useToast();
 
   return (
     <form
@@ -100,6 +106,7 @@ export function JoinHouseholdForm() {
         startTransition(async () => {
           try {
             await joinHousehold(String(formData.get("code")).trim());
+            showToast("Joined household");
           } catch (e) {
             setError(e instanceof Error ? e.message : "Could not join household");
           }

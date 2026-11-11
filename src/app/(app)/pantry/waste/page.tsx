@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Trash2 } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
+import { EmptyState } from "@/components/empty-state";
 
 function startOfMonthIso() {
   const d = new Date();
@@ -70,8 +71,8 @@ export default async function WasteTrackerPage() {
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border border-dashed border-border py-12 text-center text-muted">
-          No waste logged this month, nice work.
+        <div className="rounded-xl border border-dashed border-border">
+          <EmptyState icon={Trash2} title="No waste logged this month" body="Nice work." />
         </div>
       )}
     </div>

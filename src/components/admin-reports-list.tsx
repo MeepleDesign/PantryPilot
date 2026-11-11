@@ -2,7 +2,9 @@
 
 import { useTransition } from "react";
 import Link from "next/link";
+import { ShieldCheck } from "lucide-react";
 import { Spinner } from "@/components/spinner";
+import { EmptyState } from "@/components/empty-state";
 import { adminDismissReport, adminUnshareRecipe } from "@/lib/actions/community-recipes";
 
 export type AdminReportRow = {
@@ -16,8 +18,8 @@ export type AdminReportRow = {
 export function AdminReportsList({ reports }: { reports: AdminReportRow[] }) {
   if (!reports.length) {
     return (
-      <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted">
-        No open reports. All clear.
+      <div className="rounded-xl border border-dashed border-border">
+        <EmptyState icon={ShieldCheck} title="No open reports" body="All clear." />
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { PackageCheck } from "lucide-react";
+import { PackageCheck, ShoppingCart } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -9,6 +9,7 @@ import {
   AddManualItemForm,
 } from "@/components/shopping-list-client";
 import { PrintButton } from "@/components/print-button";
+import { EmptyState } from "@/components/empty-state";
 import type { UnitSystem } from "@/lib/units";
 
 export default async function ShoppingListPage() {
@@ -54,8 +55,12 @@ export default async function ShoppingListPage() {
           ))}
         </div>
       ) : (
-        <div className="mb-6 rounded-xl border border-dashed border-border py-10 text-center text-muted">
-          Nothing to buy yet. Plan some meals, then recalculate.
+        <div className="mb-6 rounded-xl border border-dashed border-border">
+          <EmptyState
+            icon={ShoppingCart}
+            title="Nothing to buy yet"
+            body="Plan some meals, then recalculate."
+          />
         </div>
       )}
 

@@ -61,7 +61,7 @@ function EntryLine({
   const [action, setAction] = useState<"cook" | "remove" | null>(null);
 
   return (
-    <div className="flex items-center justify-between gap-3 py-1 text-sm">
+    <div className="flex items-center justify-between gap-3 py-1 text-sm transition-opacity duration-200">
       <div className="min-w-0">
         <Link href={`/recipes/${entry.recipe_id}`} className="font-medium hover:text-brand">
           {isSide && <span className="mr-1 text-muted">↳</span>}
