@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   ChefHat,
@@ -29,10 +30,42 @@ const PLAN_FEATURES: { label: string; free: boolean; pro: boolean }[] = [
   { label: "Community recipe library", free: false, pro: true },
 ];
 
+const SHOWCASE: {
+  title: string;
+  body: string;
+  image: string;
+  alt: string;
+}[] = [
+  {
+    title: "Plan your week, then let it cook",
+    body: "Generate a full week from your preferences, preview every meal before it's saved, and swap out anything that doesn't appeal — one day at a time.",
+    image: "/screenshots/planner.png",
+    alt: "PantryPilot meal planner showing a week of planned dinners and lunches",
+  },
+  {
+    title: "Know what's in your kitchen",
+    body: "Track every shelf, get warned before things expire, and turn your plan into a shopping list that already accounts for what you've got.",
+    image: "/screenshots/pantry.png",
+    alt: "PantryPilot pantry view grouped by cupboard, fridge and freezer",
+  },
+  {
+    title: "Build your recipe library",
+    body: "Save your own recipes, pull one in from any website, or photograph a cookbook page — then filter by cuisine, diet or what you can make right now.",
+    image: "/screenshots/recipes.png",
+    alt: "PantryPilot recipes page with filters and a grid of saved recipes",
+  },
+  {
+    title: "Batch cook without losing track",
+    body: "Log portions as you freeze or fridge them, and watch the count come down as your household works through them.",
+    image: "/screenshots/batches.png",
+    alt: "PantryPilot batch-cooked meals view with portions remaining",
+  },
+];
+
 export default function LandingPage() {
   return (
-    <div className="min-h-screen">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5 md:px-8">
+    <div className="min-h-screen overflow-x-hidden">
+      <header className="mx-auto flex max-w-6xl items-center justify-between px-4 py-5 md:px-8">
         <div className="flex items-center gap-2.5">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-sm">
             <ChefHat className="h-5 w-5" />
@@ -47,27 +80,43 @@ export default function LandingPage() {
         </Link>
       </header>
 
-      <section className="mx-auto max-w-3xl px-4 py-14 text-center md:px-8 md:py-20">
-        <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
-          Meal planning that actually fits in your fridge
-        </h1>
-        <p className="mx-auto mt-4 max-w-xl text-muted md:text-lg">
-          Plan your week, track your pantry, and generate a shopping list automatically —
-          built for households who are fed up with wasted food and last-minute takeaways.
-        </p>
-        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/login?mode=signup"
-            className="rounded-lg bg-brand px-6 py-3 text-sm font-medium text-brand-foreground shadow-sm hover:bg-brand-dark"
-          >
-            Create a free account
-          </Link>
-          <Link
-            href="/login"
-            className="rounded-lg border border-border px-6 py-3 text-sm font-medium hover:bg-surface"
-          >
-            Sign in
-          </Link>
+      <section className="relative">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[32rem] bg-[radial-gradient(ellipse_at_top,theme(colors.brand/12%),transparent_65%)]"
+        />
+        <div className="mx-auto max-w-6xl px-4 pb-16 pt-10 md:px-8 md:pb-24 md:pt-16">
+          <div className="mx-auto max-w-2xl text-center">
+            <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">
+              Meal planning that actually fits in your fridge
+            </h1>
+            <p className="mx-auto mt-4 max-w-xl text-muted md:text-lg">
+              Plan your week, track your pantry, and generate a shopping list automatically —
+              built for households who are fed up with wasted food and last-minute takeaways.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/login?mode=signup"
+                className="rounded-lg bg-brand px-6 py-3 text-sm font-medium text-brand-foreground shadow-sm hover:bg-brand-dark"
+              >
+                Create a free account
+              </Link>
+              <Link
+                href="/login"
+                className="rounded-lg border border-border px-6 py-3 text-sm font-medium hover:bg-surface"
+              >
+                Sign in
+              </Link>
+            </div>
+          </div>
+
+          <div className="mx-auto mt-14 max-w-4xl">
+            <BrowserFrame
+              src="/screenshots/dashboard.png"
+              alt="PantryPilot dashboard showing today's meals, use-soon pantry items, shopping list and batch-cooked meals"
+              priority
+            />
+          </div>
         </div>
       </section>
 
@@ -83,6 +132,32 @@ export default function LandingPage() {
               </span>
               <h3 className="mb-1 font-medium">{f.title}</h3>
               <p className="text-sm text-muted">{f.body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-4 pb-20 md:px-8">
+        <div className="mb-10 text-center">
+          <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">See it in action</h2>
+          <p className="mt-2 text-sm text-muted md:text-base">
+            A quick look at the screens your household will actually use.
+          </p>
+        </div>
+
+        <div className="space-y-16 md:space-y-24">
+          {SHOWCASE.map((item, i) => (
+            <div
+              key={item.title}
+              className={`grid grid-cols-1 items-center gap-8 md:grid-cols-2 md:gap-12 ${
+                i % 2 === 1 ? "md:[&>*:first-child]:order-2" : ""
+              }`}
+            >
+              <BrowserFrame src={item.image} alt={item.alt} />
+              <div className={i % 2 === 1 ? "md:text-right" : ""}>
+                <h3 className="mb-2 text-xl font-semibold tracking-tight">{item.title}</h3>
+                <p className="text-muted">{item.body}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -129,11 +204,49 @@ export default function LandingPage() {
         <p className="mt-4 text-center text-sm text-muted">
           Pro plan pricing is coming soon — everything is free to use while we finish it.
         </p>
+
+        <div className="mt-8 text-center">
+          <Link
+            href="/login?mode=signup"
+            className="inline-block rounded-lg bg-brand px-6 py-3 text-sm font-medium text-brand-foreground shadow-sm hover:bg-brand-dark"
+          >
+            Create a free account
+          </Link>
+        </div>
       </section>
 
       <footer className="border-t border-border px-4 py-6 text-center text-xs text-muted md:px-8">
         © {new Date().getFullYear()} PantryPilot
       </footer>
+    </div>
+  );
+}
+
+function BrowserFrame({
+  src,
+  alt,
+  priority,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+}) {
+  return (
+    <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-lg">
+      <div className="flex items-center gap-1.5 border-b border-border bg-background px-3 py-2.5">
+        <span className="h-2.5 w-2.5 rounded-full bg-danger/40" />
+        <span className="h-2.5 w-2.5 rounded-full bg-warn/40" />
+        <span className="h-2.5 w-2.5 rounded-full bg-success/40" />
+      </div>
+      <Image
+        src={src}
+        alt={alt}
+        width={1440}
+        height={900}
+        priority={priority}
+        className="h-auto w-full"
+        sizes="(min-width: 768px) 50vw, 100vw"
+      />
     </div>
   );
 }
