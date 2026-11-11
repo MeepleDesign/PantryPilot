@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState } from "react";
 import Image from "next/image";
+import { unstable_rethrow } from "next/navigation";
 import { Camera, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Spinner } from "@/components/spinner";
@@ -241,6 +242,7 @@ export function RecipeForm({
 
       await onSubmit(input);
     } catch (e) {
+      unstable_rethrow(e);
       setError(e instanceof Error ? e.message : "Something went wrong");
       setPending(false);
     }
