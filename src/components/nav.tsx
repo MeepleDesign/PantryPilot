@@ -10,6 +10,7 @@ import {
   Archive,
   ShoppingCart,
   Snowflake,
+  ShieldCheck,
 } from "lucide-react";
 
 const ITEMS = [
@@ -24,11 +25,16 @@ const ITEMS = [
 export function Nav({
   householdName,
   expiringCount = 0,
+  isAdmin = false,
 }: {
   householdName: string;
   expiringCount?: number;
+  isAdmin?: boolean;
 }) {
   const pathname = usePathname();
+  const items = isAdmin
+    ? [...ITEMS, { href: "/admin/reports", label: "Admin", icon: ShieldCheck }]
+    : ITEMS;
 
   return (
     <>
@@ -44,7 +50,7 @@ export function Nav({
           </div>
         </div>
         <nav className="flex flex-col gap-1">
-          {ITEMS.map((item) => {
+          {items.map((item) => {
             const active =
               item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
             const Icon = item.icon;
@@ -74,7 +80,7 @@ export function Nav({
 
       {/* Mobile bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-20 flex border-t border-border bg-surface/95 shadow-[0_-2px_8px_rgba(0,0,0,0.04)] backdrop-blur md:hidden print:hidden">
-        {ITEMS.map((item) => {
+        {items.map((item) => {
           const active =
             item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           const Icon = item.icon;

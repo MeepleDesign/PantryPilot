@@ -128,3 +128,20 @@ export async function reportCommunityRecipe(recipeId: string, reason: string) {
   });
   if (error) throw new Error(error.message);
 }
+
+export async function adminUnshareRecipe(recipeId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_unshare_recipe", { target_recipe_id: recipeId });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/reports");
+  revalidatePath("/recipes/community");
+}
+
+export async function adminDismissReport(reportId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_dismiss_report", { target_report_id: reportId });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/admin/reports");
+}

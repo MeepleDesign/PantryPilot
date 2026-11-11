@@ -2,7 +2,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { RecipeViewTabs } from "@/components/recipe-view-tabs";
 import { CommunityRecipeList, type CommunityRecipeCard } from "@/components/community-recipe-list";
-import { getCommunityRatings, getCommunityHouseholdNames } from "@/lib/community-data";
+import {
+  getCommunityRatings,
+  getCommunityHouseholdNames,
+  getCommunityImportCounts,
+} from "@/lib/community-data";
 
 export default async function CommunityRecipesPage({
   searchParams,
@@ -11,6 +15,7 @@ export default async function CommunityRecipesPage({
   const cuisine = typeof params.cuisine === "string" ? params.cuisine : "";
   const minRating = typeof params.minRating === "string" ? Number(params.minRating) : 0;
   const mineOnly = params.mine === "1";
+  const sort = typeof params.sort === "string" ? params.sort : "name";
 
   const supabase = await createClient();
   const { household } = await getCurrentHousehold();
@@ -33,9 +38,10 @@ export default async function CommunityRecipesPage({
     new Set((shared ?? []).map((r) => r.household_id).filter((id): id is string => !!id)),
   );
 
-  const [ratingsMap, namesMap] = await Promise.all([
+  const [ratingsMap, namesMap, importCountsMap] = await Promise.all([
     getCommunityRatings(originIds),
     getCommunityHouseholdNames(householdIds),
+    getCommunityImportCounts(originIds),
   ]);
 
   let cards: CommunityRecipeCard[] = (shared ?? []).map((r) => {
@@ -48,12 +54,23 @@ export default async function CommunityRecipesPage({
       isOwn: r.household_id === household.id,
       sharedByName: r.household_id ? (namesMap[r.household_id] ?? null) : null,
       rating: ratingsMap[originId] ?? null,
+      importCount: importCountsMap[originId] ?? 0,
     };
   });
 
   if (minRating > 0) {
     cards = cards.filter((c) => c.rating && c.rating.avg >= minRating);
   }
+
+  if (sort === "imports") {
+    cards = [...cards].sort((a, b) => b.importCount - a.importCount);
+  } else if (sort === "rating") {
+    cards = [...cards].sort((a, b) => (b.rating?.avg ?? 0) - (a.rating?.avg ?? 0));
+  }
+
+  const totalMyImports = mineOnly
+    ? cards.filter((c) => c.isOwn).reduce((sum, c) => sum + c.importCount, 0)
+    : 0;
 
   const cuisines = Array.from(
     new Set((shared ?? []).map((r) => r.cuisine).filter((c): c is string => !!c)),
@@ -75,7 +92,24 @@ export default async function CommunityRecipesPage({
         especially for allergies.
       </p>
 
+      {mineOnly && (
+        <p className="mb-4 rounded-lg border border-border bg-background px-3 py-2 text-sm">
+          Your shared recipes have been imported{" "}
+          <span className="font-medium">{totalMyImports}</span> time
+          {totalMyImports === 1 ? "" : "s"} total.
+        </p>
+      )}
+
       <form className="mb-6 flex flex-wrap gap-3" method="get">
+        <select
+          name="sort"
+          defaultValue={sort}
+          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+        >
+          <option value="name">Sort: A–Z</option>
+          <option value="imports">Sort: Most imported</option>
+          <option value="rating">Sort: Top rated</option>
+        </select>
         <select
           name="cuisine"
           defaultValue={cuisine}

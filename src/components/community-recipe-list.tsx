@@ -14,6 +14,7 @@ export type CommunityRecipeCard = {
   isOwn: boolean;
   sharedByName: string | null;
   rating: { avg: number; count: number } | null;
+  importCount: number;
 };
 
 export function CommunityRecipeList({ recipes }: { recipes: CommunityRecipeCard[] }) {
@@ -53,6 +54,9 @@ function CommunityRecipeRow({ recipe }: { recipe: CommunityRecipeCard }) {
           {recipe.rating && recipe.rating.count > 0
             ? ` · ${recipe.rating.avg.toFixed(1)}★ (${recipe.rating.count})`
             : " · No ratings yet"}
+          {recipe.importCount > 0
+            ? ` · Imported ${recipe.importCount} time${recipe.importCount === 1 ? "" : "s"}`
+            : ""}
           {recipe.isOwn ? " · Your recipe" : recipe.sharedByName ? ` · Shared by ${recipe.sharedByName}` : ""}
         </p>
       </div>

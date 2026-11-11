@@ -112,6 +112,17 @@ export type Profile = {
   dietary_preference: string | null;
   disliked_ingredients: string[];
   units: string;
+  is_admin: boolean;
+};
+
+export type CommunityRecipeReport = {
+  id: string;
+  recipe_id: string;
+  reporter_user_id: string;
+  reporter_household_id: string;
+  reason: string;
+  created_at: string;
+  resolved: boolean;
 };
 
 export type Household = {
