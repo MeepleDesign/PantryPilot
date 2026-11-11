@@ -36,3 +36,17 @@ export const RECIPE_DIETS = [
 export const PROFILE_DIETS = RECIPE_DIETS;
 
 export const PROTEIN_TAGS = ["High protein", "Low protein", "Vegetarian", "Vegan"];
+
+export const SUPERMARKETS = [
+  "Tesco",
+  "Sainsbury's",
+  "Asda",
+  "Morrisons",
+  "Waitrose",
+  "Aldi",
+  "Lidl",
+  "Co-op",
+  "Iceland",
+  "Ocado",
+  "Marks & Spencer",
+];
