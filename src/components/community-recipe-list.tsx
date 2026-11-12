@@ -49,7 +49,14 @@ function CommunityRecipeRow({ recipe }: { recipe: CommunityRecipeCard }) {
       <div className="flex min-w-0 items-center gap-3">
         <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-background">
           {recipe.imageUrl ? (
-            <Image src={recipe.imageUrl} alt={recipe.name} fill className="object-cover" sizes="48px" />
+            <Image
+              src={recipe.imageUrl}
+              alt={recipe.name}
+              fill
+              className="object-cover"
+              sizes="48px"
+              unoptimized
+            />
           ) : (
             <div className="flex h-full w-full items-center justify-center text-muted">
               <UtensilsCrossed className="h-5 w-5" strokeWidth={1.5} />
