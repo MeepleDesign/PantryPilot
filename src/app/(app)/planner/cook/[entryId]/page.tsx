@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MarkCookedButton } from "@/components/cook-view-actions";
 import { LogBatchPrompt } from "@/components/log-batch-prompt";
+import { RecipePhotoPrompt } from "@/components/recipe-photo-prompt";
 import type { MealBatchStorage } from "@/lib/types";
 
 function round(n: number) {
@@ -105,6 +106,8 @@ function RecipeBlock({
       servings: number;
       prep_note: string | null;
       method: string | null;
+      image_url: string | null;
+      image_is_stock: boolean;
       recipe_ingredients: {
         id: string;
         ingredient_name: string;
@@ -140,13 +143,16 @@ function RecipeBlock({
       </div>
 
       {entry.cooked && (
-        <LogBatchPrompt
-          entryId={entry.id}
-          recipeId={entry.recipe_id}
-          recipeName={recipe.name}
-          defaultPortions={servings}
-          existingBatch={existingBatch}
-        />
+        <>
+          <RecipePhotoPrompt recipeId={entry.recipe_id} isStockPhoto={recipe.image_is_stock} />
+          <LogBatchPrompt
+            entryId={entry.id}
+            recipeId={entry.recipe_id}
+            recipeName={recipe.name}
+            defaultPortions={servings}
+            existingBatch={existingBatch}
+          />
+        </>
       )}
 
       {recipe.prep_note && (

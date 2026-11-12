@@ -13,6 +13,7 @@ import {
   Flame,
 } from "lucide-react";
 import { StaticStars } from "@/components/star-rating";
+import { StockPhotoBadge } from "@/components/stock-photo-badge";
 import type { RecipeMatch } from "@/lib/pantry-match";
 import type { Recipe } from "@/lib/types";
 
@@ -287,6 +288,7 @@ function TilesView({
                   className="object-cover"
                   unoptimized
                 />
+                {recipe.image_is_stock && <StockPhotoBadge />}
               </div>
             ) : (
               <div className={`flex w-full items-center justify-center bg-background text-muted ${imgHeight}`}>

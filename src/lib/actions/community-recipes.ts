@@ -82,6 +82,7 @@ export async function importCommunityRecipe(recipeId: string) {
       fibre_g: original.fibre_g,
       nutrition_note: original.nutrition_note,
       image_url: original.image_url,
+      image_is_stock: original.image_is_stock,
       tags: original.tags,
       prep_note: original.prep_note,
       community_origin_id: original.community_origin_id ?? original.id,

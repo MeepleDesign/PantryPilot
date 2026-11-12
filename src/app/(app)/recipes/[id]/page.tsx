@@ -9,6 +9,7 @@ import { DeleteRecipeButton } from "@/components/delete-recipe-button";
 import { StaticStars, InteractiveStars } from "@/components/star-rating";
 import { PrintButton } from "@/components/print-button";
 import { ShareRecipeControl } from "@/components/share-recipe-control";
+import { StockPhotoBadge } from "@/components/stock-photo-badge";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { getCommunityRatings, getCommunityHouseholdNames } from "@/lib/community-data";
 
@@ -88,6 +89,7 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
             className="object-cover"
             unoptimized
           />
+          {recipe.image_is_stock && <StockPhotoBadge withLabel />}
         </div>
       )}
 

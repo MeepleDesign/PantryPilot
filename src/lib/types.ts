@@ -25,6 +25,7 @@ export type Recipe = {
   fibre_g: number | null;
   nutrition_note: string | null;
   image_url: string | null;
+  image_is_stock: boolean;
   tags: string[];
   prep_note: string | null;
   created_at: string;

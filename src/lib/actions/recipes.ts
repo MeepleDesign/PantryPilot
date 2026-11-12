@@ -157,3 +157,16 @@ export async function deleteRecipe(recipeId: string) {
   revalidatePath("/recipes");
   redirect("/recipes");
 }
+
+export async function updateRecipePhoto(recipeId: string, imageUrl: string) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("recipes")
+    .update({ image_url: imageUrl, image_is_stock: false })
+    .eq("id", recipeId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/recipes");
+  revalidatePath(`/recipes/${recipeId}`);
+  revalidatePath("/planner");
+}
