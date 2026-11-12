@@ -2,6 +2,7 @@ import { Sparkles } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { HouseholdSettingsForm, JoinHouseholdForm } from "@/components/settings-forms";
 import { LinkButton } from "@/components/link-button";
+import { AppearanceSettings } from "@/components/appearance-settings";
 
 const FREE_INCLUDES = [
   "Unlimited recipes, pantry & shopping list",
@@ -15,6 +16,11 @@ export default async function SettingsPage() {
   return (
     <div className="mx-auto max-w-xl space-y-8">
       <h1 className="text-2xl font-semibold tracking-tight">Settings</h1>
+
+      <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
+        <h2 className="mb-4 font-medium">Appearance</h2>
+        <AppearanceSettings />
+      </section>
 
       <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h2 className="mb-4 font-medium">Household</h2>
