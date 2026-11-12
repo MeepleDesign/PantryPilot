@@ -103,32 +103,35 @@ export async function extractReceiptItemsFromPhotos(
       ? `These ${photos.length} files are of the same receipt or order. `
       : "Look at this photo or PDF of a supermarket receipt or online order confirmation. ";
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-5-5",
-    max_tokens: 8000,
-    tools: [EXTRACT_RECEIPT_TOOL],
-    messages: [
-      {
-        role: "user",
-        content: [
-          ...contentBlocks,
-          {
-            type: "text",
-            text:
-              instructionText +
-              "Call the extract_receipt_items tool listing every purchased item with its price. " +
-              "The items array is required and must always be populated — even for a very long receipt " +
-              "with 100+ lines, list every single purchased item; never leave items empty or omit it in " +
-              "favour of a summary in notes. Skip subtotal, VAT, loyalty-points, delivery-fee and " +
-              "total-summary lines — only list actual purchased items, each with its own price. If a line " +
-              "shows a discount (e.g. 'was £3.00, now £2.00'), use the final price charged. Always respond " +
-              "with a tool call, never plain text. Flag anything uncertain (like an abbreviated item name) " +
-              "in uncertain_fields so the user can confirm it before saving.",
-          },
-        ],
-      },
-    ],
-  });
+  const response = await client.messages
+    .stream({
+      model: "claude-sonnet-5-5",
+      max_tokens: 32000,
+      output_config: { effort: "low" },
+      tools: [EXTRACT_RECEIPT_TOOL],
+      messages: [
+        {
+          role: "user",
+          content: [
+            ...contentBlocks,
+            {
+              type: "text",
+              text:
+                instructionText +
+                "Call the extract_receipt_items tool listing every purchased item with its price. " +
+                "The items array is required and must always be populated — even for a very long receipt " +
+                "with 100+ lines, list every single purchased item; never leave items empty or omit it in " +
+                "favour of a summary in notes. Skip subtotal, VAT, loyalty-points, delivery-fee and " +
+                "total-summary lines — only list actual purchased items, each with its own price. If a line " +
+                "shows a discount (e.g. 'was £3.00, now £2.00'), use the final price charged. Always respond " +
+                "with a tool call, never plain text. Flag anything uncertain (like an abbreviated item name) " +
+                "in uncertain_fields so the user can confirm it before saving.",
+            },
+          ],
+        },
+      ],
+    })
+    .finalMessage();
 
   await logAiUsage("receipt_scan", response.model, response.usage);
 
