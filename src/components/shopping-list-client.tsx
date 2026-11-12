@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { RefreshCw, Search, X } from "lucide-react";
+import { Globe, RefreshCw, Search, X } from "lucide-react";
 import {
   regenerateShoppingList,
   toggleShoppingItem,
@@ -12,7 +12,7 @@ import {
 } from "@/lib/actions/shopping-list";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
-import { buildSupermarketSearchUrl } from "@/lib/supermarket-links";
+import { buildSupermarketSearchUrl, hasDirectSearch } from "@/lib/supermarket-links";
 import type { UnitSystem } from "@/lib/units";
 import type { ShoppingListItem } from "@/lib/types";
 
@@ -138,10 +138,20 @@ export function ShoppingListRow({
         target="_blank"
         rel="noopener noreferrer"
         onClick={(e) => e.stopPropagation()}
-        title={supermarketName ? `Search for this on ${supermarketName}` : "Search for this online"}
+        title={
+          hasDirectSearch(supermarketName)
+            ? `Search for this on ${supermarketName}`
+            : supermarketName
+              ? `No direct search for ${supermarketName} — opens a general web search instead`
+              : "Search for this online"
+        }
         className="text-muted hover:text-brand print:hidden"
       >
-        <Search className="h-4 w-4" />
+        {hasDirectSearch(supermarketName) ? (
+          <Search className="h-4 w-4" />
+        ) : (
+          <Globe className="h-4 w-4" />
+        )}
       </a>
       <button
         disabled={pending}

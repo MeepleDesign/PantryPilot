@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { CheckCircle2, Info } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import { SelectWithOther } from "@/components/select-with-other";
 import { useToast } from "@/components/toast";
+import { DIRECT_SEARCH_SUPERMARKETS, hasDirectSearch } from "@/lib/supermarket-links";
 import { PROFILE_DIETS, SUPERMARKETS } from "@/lib/taxonomies";
 import {
   updateHouseholdSettings,
@@ -44,6 +46,26 @@ export function HouseholdSettingsForm({ household }: { household: Household }) {
           placeholder="Select…"
           className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
         />
+        {defaultSupermarket ? (
+          hasDirectSearch(defaultSupermarket) ? (
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-success">
+              <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+              Shopping list search icons jump straight to {defaultSupermarket} results.
+            </p>
+          ) : (
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
+              <Info className="h-3.5 w-3.5 shrink-0" />
+              No direct search for {defaultSupermarket} yet — search icons open a general web
+              search instead. Direct search works for {DIRECT_SEARCH_SUPERMARKETS.join(", ")}.
+            </p>
+          )
+        ) : (
+          <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted">
+            <Info className="h-3.5 w-3.5 shrink-0" />
+            Direct search is available for {DIRECT_SEARCH_SUPERMARKETS.join(", ")}. Other stores
+            fall back to a general web search.
+          </p>
+        )}
       </label>
       <SaveButton pending={pending} saved={saved} />
     </form>
