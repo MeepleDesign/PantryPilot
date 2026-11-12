@@ -1,5 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { StorageLocation } from "@/lib/types";
+import { logAiUsage } from "@/lib/ai-usage";
 
 export type PhotoInput = { base64Data: string; mediaType: "image/jpeg" | "image/png" | "image/webp" };
 
@@ -102,6 +103,8 @@ export async function extractPantryItemsFromPhotos(photos: PhotoInput[]): Promis
       },
     ],
   });
+
+  await logAiUsage("pantry_scan", response.model, response.usage);
 
   const toolUse = response.content.find(
     (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "extract_pantry_items",

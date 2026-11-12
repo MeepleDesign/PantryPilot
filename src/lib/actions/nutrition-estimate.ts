@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { logAiUsage } from "@/lib/ai-usage";
 
 export type NutritionEstimate = {
   calories: number | null;
@@ -61,6 +62,8 @@ export async function estimateNutrition(input: {
       },
     ],
   });
+
+  await logAiUsage("nutrition_estimate", response.model, response.usage);
 
   const toolUse = response.content.find(
     (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "estimate_nutrition",

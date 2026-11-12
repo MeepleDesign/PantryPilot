@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { logAiUsage } from "@/lib/ai-usage";
 
 export type PhotoInput = {
   base64Data: string;
@@ -128,6 +129,8 @@ export async function extractReceiptItemsFromPhotos(
       },
     ],
   });
+
+  await logAiUsage("receipt_scan", response.model, response.usage);
 
   const toolUse = response.content.find(
     (b): b is Anthropic.ToolUseBlock => b.type === "tool_use" && b.name === "extract_receipt_items",

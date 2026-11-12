@@ -1,6 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { AdminReportsList, type AdminReportRow } from "@/components/admin-reports-list";
+import { CollapsibleSection } from "@/components/collapsible-section";
+import { AdminPlatformStatsView } from "@/components/admin-platform-stats";
+import { getAdminPlatformStats, getAdminHouseholdList } from "@/lib/actions/admin-stats";
 
 export default async function AdminReportsPage() {
   const { profile } = await getCurrentHousehold();
@@ -13,6 +16,11 @@ export default async function AdminReportsPage() {
   }
 
   const supabase = await createClient();
+
+  const [stats, households] = await Promise.all([
+    getAdminPlatformStats(),
+    getAdminHouseholdList(),
+  ]);
 
   const { data: reports, error } = await supabase
     .from("community_recipe_reports")
@@ -37,14 +45,22 @@ export default async function AdminReportsPage() {
 
   return (
     <div>
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold tracking-tight">Community recipe reports</h1>
-        <p className="text-sm text-muted">
-          {rows.length} open report{rows.length === 1 ? "" : "s"}
-        </p>
-      </div>
+      <h1 className="mb-6 text-2xl font-semibold tracking-tight">Admin</h1>
 
-      <AdminReportsList reports={rows} />
+      <CollapsibleSection
+        title="Platform stats & usage"
+        subtitle="Users, households, Claude API usage, and supermarket spend"
+        defaultOpen
+      >
+        <AdminPlatformStatsView stats={stats} households={households} />
+      </CollapsibleSection>
+
+      <CollapsibleSection
+        title="Community recipe reports"
+        subtitle={`${rows.length} open report${rows.length === 1 ? "" : "s"}`}
+      >
+        <AdminReportsList reports={rows} />
+      </CollapsibleSection>
     </div>
   );
 }
