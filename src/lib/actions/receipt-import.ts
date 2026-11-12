@@ -45,7 +45,15 @@ const EXTRACT_RECEIPT_TOOL: Anthropic.Tool = {
         items: {
           type: "object",
           properties: {
-            ingredient_name: { type: "string" },
+            ingredient_name: {
+              type: "string",
+              description:
+                "The generic product name WITHOUT the brand — e.g. 'Soy sauce' not 'Amoy Soy Sauce, Dark', " +
+                "'Cheddar cheese' not \"Sainsbury's British Extra Mature Cheddar Cheese\", 'Fizzy cola' not " +
+                "'Coca-Cola Classic'. Keep genuinely distinguishing detail that affects what it is or how it's " +
+                "used (e.g. 'dark soy sauce', 'semi-skimmed milk', 'wholemeal bread', 'extra mature cheddar'), " +
+                "but drop the brand/manufacturer name and marketing flourishes.",
+            },
             price: {
               type: "number",
               description: "The final price charged for this item (after any discount shown)",
@@ -125,7 +133,9 @@ export async function extractReceiptItemsFromPhotos(
                 "total-summary lines — only list actual purchased items, each with its own price. If a line " +
                 "shows a discount (e.g. 'was £3.00, now £2.00'), use the final price charged. Always respond " +
                 "with a tool call, never plain text. Flag anything uncertain (like an abbreviated item name) " +
-                "in uncertain_fields so the user can confirm it before saving.",
+                "in uncertain_fields so the user can confirm it before saving. For ingredient_name, use a " +
+                "generic product name with the brand removed (see that field's own description) — this " +
+                "matters so repeat purchases of the same thing from different brands line up together.",
             },
           ],
         },

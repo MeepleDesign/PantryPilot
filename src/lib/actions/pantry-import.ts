@@ -29,7 +29,14 @@ const EXTRACT_PANTRY_TOOL: Anthropic.Tool = {
         items: {
           type: "object",
           properties: {
-            ingredient_name: { type: "string" },
+            ingredient_name: {
+              type: "string",
+              description:
+                "The generic product name WITHOUT the brand — e.g. 'Soy sauce' not 'Amoy Soy Sauce, Dark', " +
+                "'Cheddar cheese' not \"Sainsbury's British Extra Mature Cheddar Cheese\". Keep genuinely " +
+                "distinguishing detail that affects what it is or how it's used (e.g. 'dark soy sauce', " +
+                "'semi-skimmed milk', 'extra mature cheddar'), but drop the brand/manufacturer name.",
+            },
             quantity: {
               type: ["number", "null"],
               description:
@@ -97,7 +104,8 @@ export async function extractPantryItemsFromPhotos(photos: PhotoInput[]): Promis
             text:
               instructionText +
               "Call the extract_pantry_items tool listing every distinct food item you can identify. Always respond with a tool call, never plain text. " +
-              "For each item, guess quantity/unit/storage_location where you reasonably can, and flag anything uncertain (like pack size or how much is left) in uncertain_fields so the user can confirm it before saving.",
+              "For each item, guess quantity/unit/storage_location where you reasonably can, and flag anything uncertain (like pack size or how much is left) in uncertain_fields so the user can confirm it before saving. " +
+              "For ingredient_name, use a generic product name with the brand removed (see that field's own description) — this matters so the same ingredient from different brands is recognised as one thing.",
           },
         ],
       },
