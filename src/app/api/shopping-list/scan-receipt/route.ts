@@ -5,7 +5,7 @@ import { extractReceiptItemsFromPhotos, type PhotoInput } from "@/lib/actions/re
 export const maxDuration = 60;
 
 const MAX_PHOTOS = 4;
-const VALID_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const VALID_MEDIA_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
 
 export async function POST(request: Request) {
   const supabase = await createClient();

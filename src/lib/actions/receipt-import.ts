@@ -1,6 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 
-export type PhotoInput = { base64Data: string; mediaType: "image/jpeg" | "image/png" | "image/webp" };
+export type PhotoInput = {
+  base64Data: string;
+  mediaType: "image/jpeg" | "image/png" | "image/webp" | "application/pdf";
+};
 
 export type ExtractedReceiptItem = {
   ingredient_name: string;
@@ -81,15 +84,23 @@ export async function extractReceiptItemsFromPhotos(
 
   const client = new Anthropic();
 
-  const imageBlocks: Anthropic.ImageBlockParam[] = photos.map((p) => ({
-    type: "image",
-    source: { type: "base64", media_type: p.mediaType, data: p.base64Data },
-  }));
+  const contentBlocks: (Anthropic.ImageBlockParam | Anthropic.DocumentBlockParam)[] = photos.map(
+    (p) =>
+      p.mediaType === "application/pdf"
+        ? {
+            type: "document",
+            source: { type: "base64", media_type: "application/pdf", data: p.base64Data },
+          }
+        : {
+            type: "image",
+            source: { type: "base64", media_type: p.mediaType, data: p.base64Data },
+          },
+  );
 
   const instructionText =
     photos.length > 1
-      ? `These ${photos.length} photos are of the same receipt or order. `
-      : "Look at this photo of a supermarket receipt or online order confirmation. ";
+      ? `These ${photos.length} files are of the same receipt or order. `
+      : "Look at this photo or PDF of a supermarket receipt or online order confirmation. ";
 
   const response = await client.messages.create({
     model: "claude-sonnet-5-5",
@@ -99,7 +110,7 @@ export async function extractReceiptItemsFromPhotos(
       {
         role: "user",
         content: [
-          ...imageBlocks,
+          ...contentBlocks,
           {
             type: "text",
             text:

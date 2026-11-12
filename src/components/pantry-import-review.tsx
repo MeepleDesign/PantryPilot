@@ -1,14 +1,22 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { UnitSelect } from "@/components/unit-select";
 import { Spinner } from "@/components/spinner";
-import { addPantryItem } from "@/lib/actions/pantry";
+import {
+  addPantryItem,
+  getPantryMatchCandidates,
+  increasePantryItem,
+  type PantryMatchCandidate,
+} from "@/lib/actions/pantry";
+import { normalizeIngredientName, similarIngredientNames } from "@/lib/ingredient-name";
 import type { ExtractedPantryScan } from "@/lib/actions/pantry-import";
 import type { StorageLocation } from "@/lib/types";
 import type { UnitSystem } from "@/lib/units";
 
 const LOCATIONS: StorageLocation[] = ["cupboard", "fridge", "freezer", "other"];
+
+type Match = { candidate: PantryMatchCandidate; exact: boolean };
 
 type ReviewRow = {
   id: string;
@@ -18,7 +26,22 @@ type ReviewRow = {
   storage_location: StorageLocation;
   uncertain_fields: string[];
   include: boolean;
+  match: Match | null;
+  mergeChoice: "merge" | "new";
 };
+
+function findMatch(name: string, candidates: PantryMatchCandidate[]): Match | null {
+  const normalized = normalizeIngredientName(name);
+  const exact = candidates.find((c) => normalizeIngredientName(c.ingredient_name) === normalized);
+  if (exact) return { candidate: exact, exact: true };
+  const similar = candidates.find((c) => similarIngredientNames(c.ingredient_name, name));
+  if (similar) return { candidate: similar, exact: false };
+  return null;
+}
+
+function qtyLabel(candidate: PantryMatchCandidate) {
+  return `${candidate.quantity}${candidate.unit ? ` ${candidate.unit}` : ""}`;
+}
 
 export function PantryImportReview({
   scan,
@@ -26,6 +49,7 @@ export function PantryImportReview({
   onDone,
   source = "photo",
   title = "Review scanned items",
+  subtitle,
   emptyMessage = "Didn't spot any items in that photo.",
 }: {
   scan: ExtractedPantryScan;
@@ -33,6 +57,7 @@ export function PantryImportReview({
   onDone: () => void;
   source?: "photo" | "receipt";
   title?: string;
+  subtitle?: string;
   emptyMessage?: string;
 }) {
   const [rows, setRows] = useState<ReviewRow[]>(() =>
@@ -44,9 +69,26 @@ export function PantryImportReview({
       storage_location: item.storage_location ?? "cupboard",
       uncertain_fields: item.uncertain_fields,
       include: true,
+      match: null,
+      mergeChoice: "new",
     })),
   );
   const [pending, startTransition] = useTransition();
+
+  useEffect(() => {
+    getPantryMatchCandidates()
+      .then((candidates) => {
+        setRows((prev) =>
+          prev.map((row) => {
+            const match = findMatch(row.ingredient_name, candidates);
+            return match ? { ...row, match, mergeChoice: match.exact ? "merge" : "new" } : row;
+          }),
+        );
+      })
+      .catch(() => {
+        // Non-critical: matching just won't be offered this time.
+      });
+  }, []);
 
   function updateRow(id: string, patch: Partial<ReviewRow>) {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
@@ -58,17 +100,21 @@ export function PantryImportReview({
     startTransition(async () => {
       const toAdd = rows.filter((r) => r.include && r.ingredient_name.trim());
       for (const row of toAdd) {
-        await addPantryItem(
-          {
-            ingredient_name: row.ingredient_name.trim(),
-            storage_location: row.storage_location,
-            quantity: row.quantity ?? 1,
-            unit: row.unit,
-            expiry_date: null,
-            notes: null,
-          },
-          source,
-        );
+        if (row.mergeChoice === "merge" && row.match) {
+          await increasePantryItem(row.match.candidate.id, row.quantity ?? 1, source);
+        } else {
+          await addPantryItem(
+            {
+              ingredient_name: row.ingredient_name.trim(),
+              storage_location: row.storage_location,
+              quantity: row.quantity ?? 1,
+              unit: row.unit,
+              expiry_date: null,
+              notes: null,
+            },
+            source,
+          );
+        }
       }
       onDone();
     });
@@ -88,13 +134,16 @@ export function PantryImportReview({
   return (
     <div className="mb-8 rounded-xl border border-border bg-surface p-4 shadow-sm">
       <div className="mb-1 flex items-center justify-between">
-        <h2 className="font-medium">{title}</h2>
+        <div>
+          <h2 className="font-medium">{title}</h2>
+          {subtitle && <p className="text-xs text-muted">{subtitle}</p>}
+        </div>
         <button
           type="button"
           onClick={onDone}
-          className="text-sm text-muted hover:text-foreground"
+          className="shrink-0 text-sm text-muted hover:text-foreground"
         >
-          Dismiss
+          Skip
         </button>
       </div>
       {scan.notes && <p className="mb-3 text-xs text-muted">{scan.notes}</p>}
@@ -130,29 +179,71 @@ export function PantryImportReview({
                 placeholder="Qty"
                 className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
               />
-              <UnitSelect
-                value={row.unit ?? ""}
-                onChange={(unit) => updateRow(row.id, { unit })}
-                unitSystem={unitSystem}
-                className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-              />
-              <select
-                value={row.storage_location}
-                onChange={(e) =>
-                  updateRow(row.id, { storage_location: e.target.value as StorageLocation })
-                }
-                className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-              >
-                {LOCATIONS.map((l) => (
-                  <option key={l} value={l}>
-                    {l[0].toUpperCase() + l.slice(1)}
-                  </option>
-                ))}
-              </select>
+              {row.mergeChoice === "merge" && row.match ? (
+                <span className="col-span-2 flex items-center px-2 text-xs text-muted sm:col-span-2">
+                  will be added to existing
+                </span>
+              ) : (
+                <>
+                  <UnitSelect
+                    value={row.unit ?? ""}
+                    onChange={(unit) => updateRow(row.id, { unit })}
+                    unitSystem={unitSystem}
+                    className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                  />
+                  <select
+                    value={row.storage_location}
+                    onChange={(e) =>
+                      updateRow(row.id, { storage_location: e.target.value as StorageLocation })
+                    }
+                    className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                  >
+                    {LOCATIONS.map((l) => (
+                      <option key={l} value={l}>
+                        {l[0].toUpperCase() + l.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              )}
             </div>
             {row.uncertain_fields.length > 0 && (
               <p className="mt-1.5 text-xs text-warn">
                 Please check: {row.uncertain_fields.join(", ")}
+              </p>
+            )}
+            {row.match && row.match.exact && (
+              <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-muted">
+                Already in pantry: &quot;{row.match.candidate.ingredient_name}&quot; (
+                {qtyLabel(row.match.candidate)}). This will top it up instead of creating a
+                duplicate.
+                <button
+                  type="button"
+                  onClick={() => updateRow(row.id, { mergeChoice: "new" })}
+                  className="font-medium text-brand hover:text-brand-dark"
+                >
+                  Add as new item instead
+                </button>
+              </p>
+            )}
+            {row.match && !row.match.exact && (
+              <p className="mt-1.5 flex flex-wrap items-center gap-1.5 text-xs text-warn">
+                Similar to existing &quot;{row.match.candidate.ingredient_name}&quot; (
+                {qtyLabel(row.match.candidate)}). Merge into it, or add as a new item?
+                <button
+                  type="button"
+                  onClick={() => updateRow(row.id, { mergeChoice: "merge" })}
+                  className={`font-medium ${row.mergeChoice === "merge" ? "underline" : "text-brand hover:text-brand-dark"}`}
+                >
+                  Merge
+                </button>
+                <button
+                  type="button"
+                  onClick={() => updateRow(row.id, { mergeChoice: "new" })}
+                  className={`font-medium ${row.mergeChoice === "new" ? "underline" : "text-brand hover:text-brand-dark"}`}
+                >
+                  Add as new
+                </button>
               </p>
             )}
           </div>

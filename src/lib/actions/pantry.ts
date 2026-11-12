@@ -60,6 +60,67 @@ export async function addPantryItem(
   revalidatePath("/dashboard");
 }
 
+export type PantryMatchCandidate = {
+  id: string;
+  ingredient_name: string;
+  quantity: number;
+  unit: string | null;
+  storage_location: StorageLocation;
+};
+
+export async function getPantryMatchCandidates(): Promise<PantryMatchCandidate[]> {
+  const supabase = await createClient();
+  const { household } = await getCurrentHousehold();
+
+  const { data, error } = await supabase
+    .from("pantry_items")
+    .select("id, ingredient_name, quantity, unit, storage_location")
+    .eq("household_id", household.id);
+  if (error) throw new Error(error.message);
+
+  return data ?? [];
+}
+
+export async function increasePantryItem(
+  id: string,
+  quantityDelta: number,
+  source: "manual" | "photo" | "receipt" = "manual",
+) {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const { household } = await getCurrentHousehold();
+
+  const { data: existing, error: fetchError } = await supabase
+    .from("pantry_items")
+    .select("ingredient_name, quantity, unit")
+    .eq("id", id)
+    .single();
+  if (fetchError || !existing) throw new Error(fetchError?.message ?? "Pantry item not found");
+
+  const { error } = await supabase
+    .from("pantry_items")
+    .update({
+      quantity: existing.quantity + quantityDelta,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+
+  await supabase.from("pantry_stock_history").insert({
+    household_id: household.id,
+    pantry_item_id: id,
+    ingredient_name: existing.ingredient_name,
+    change_type: "add",
+    quantity_delta: quantityDelta,
+    unit: existing.unit,
+    reason: source === "photo" ? "Added via photo scan" : source === "receipt" ? "Added via receipt scan" : "Added manually",
+    created_by: auth.user?.id,
+  });
+
+  revalidatePath("/pantry");
+  revalidatePath("/dashboard");
+}
+
 export async function updatePantryItem(id: string, input: PantryItemInput) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();

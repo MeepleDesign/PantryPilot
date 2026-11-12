@@ -2,16 +2,22 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Camera, Images, Receipt, X } from "lucide-react";
+import { Camera, Images, Receipt, FileText, X } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import type { ExtractedReceiptScan } from "@/lib/actions/receipt-import";
 
 const MAX_DIMENSION = 1568;
 const MAX_PHOTOS = 4;
 
-type StagedPhoto = { id: string; base64: string; mediaType: "image/jpeg"; previewUrl: string };
+type StagedFile = {
+  id: string;
+  base64: string;
+  mediaType: "image/jpeg" | "application/pdf";
+  name: string;
+  previewUrl: string | null;
+};
 
-async function fileToResizedBase64(
+async function fileToResizedImageBase64(
   file: File,
 ): Promise<{ base64: string; mediaType: "image/jpeg" }> {
   const dataUrl = await new Promise<string>((resolve, reject) => {
@@ -43,43 +49,58 @@ async function fileToResizedBase64(
   return { base64: resizedDataUrl.split(",")[1], mediaType: "image/jpeg" };
 }
 
+async function fileToPdfBase64(file: File): Promise<{ base64: string; mediaType: "application/pdf" }> {
+  const dataUrl = await new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+  return { base64: dataUrl.split(",")[1], mediaType: "application/pdf" };
+}
+
 export function ReceiptScanImport({
   onScanned,
 }: {
   onScanned: (scan: ExtractedReceiptScan) => void;
 }) {
-  const [photos, setPhotos] = useState<StagedPhoto[]>([]);
+  const [files, setFiles] = useState<StagedFile[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleFiles(fileList: FileList | null) {
     if (!fileList || fileList.length === 0) return;
     setError(null);
-    const files = Array.from(fileList).slice(0, MAX_PHOTOS - photos.length);
+    const picked = Array.from(fileList).slice(0, MAX_PHOTOS - files.length);
     try {
       const staged = await Promise.all(
-        files.map(async (file) => {
-          const { base64, mediaType } = await fileToResizedBase64(file);
+        picked.map(async (file) => {
+          if (file.type === "application/pdf") {
+            const { base64, mediaType } = await fileToPdfBase64(file);
+            return { id: crypto.randomUUID(), base64, mediaType, name: file.name, previewUrl: null };
+          }
+          const { base64, mediaType } = await fileToResizedImageBase64(file);
           return {
             id: crypto.randomUUID(),
             base64,
             mediaType,
+            name: file.name,
             previewUrl: `data:${mediaType};base64,${base64}`,
           };
         }),
       );
-      setPhotos((prev) => [...prev, ...staged].slice(0, MAX_PHOTOS));
+      setFiles((prev) => [...prev, ...staged].slice(0, MAX_PHOTOS));
     } catch {
-      setError("Couldn't process one of those photos.");
+      setError("Couldn't process one of those files.");
     }
   }
 
-  function removePhoto(id: string) {
-    setPhotos((prev) => prev.filter((p) => p.id !== id));
+  function removeFile(id: string) {
+    setFiles((prev) => prev.filter((p) => p.id !== id));
   }
 
   async function handleScan() {
-    if (photos.length === 0) return;
+    if (files.length === 0) return;
     setError(null);
     setPending(true);
     try {
@@ -87,13 +108,13 @@ export function ReceiptScanImport({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          images: photos.map((p) => ({ base64: p.base64, mediaType: p.mediaType })),
+          images: files.map((f) => ({ base64: f.base64, mediaType: f.mediaType })),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error ?? "Something went wrong reading that receipt.");
       onScanned(data as ExtractedReceiptScan);
-      setPhotos([]);
+      setFiles([]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong reading that receipt.");
     } finally {
@@ -108,22 +129,33 @@ export function ReceiptScanImport({
         <div>
           <p className="text-sm font-medium">Scan a receipt</p>
           <p className="text-xs text-muted">
-            Photograph a till receipt or an online order confirmation and we&apos;ll list what
-            was bought and for how much, for you to review before saving.
+            Photograph a till receipt, or add a photo or PDF of an online order confirmation,
+            and we&apos;ll list what was bought and for how much, for you to review before
+            saving.
           </p>
         </div>
       </div>
 
-      {photos.length > 0 && (
+      {files.length > 0 && (
         <div className="mb-3 flex flex-wrap gap-2">
-          {photos.map((p) => (
-            <div key={p.id} className="relative h-16 w-16 overflow-hidden rounded-lg border border-border">
-              <Image src={p.previewUrl} alt="" fill className="object-cover" unoptimized />
+          {files.map((f) => (
+            <div
+              key={f.id}
+              className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-lg border border-border bg-surface"
+            >
+              {f.previewUrl ? (
+                <Image src={f.previewUrl} alt="" fill className="object-cover" unoptimized />
+              ) : (
+                <div className="flex flex-col items-center gap-1 px-1 text-center">
+                  <FileText className="h-5 w-5 text-muted" />
+                  <span className="w-full truncate text-[9px] text-muted">{f.name}</span>
+                </div>
+              )}
               <button
                 type="button"
-                onClick={() => removePhoto(p.id)}
+                onClick={() => removeFile(f.id)}
                 className="absolute right-0 top-0 flex h-5 w-5 items-center justify-center rounded-bl-lg bg-background/80 text-foreground"
-                aria-label="Remove photo"
+                aria-label="Remove file"
               >
                 <X className="h-3 w-3" />
               </button>
@@ -133,7 +165,7 @@ export function ReceiptScanImport({
       )}
 
       <div className="flex flex-wrap items-center gap-2">
-        {photos.length < MAX_PHOTOS && (
+        {files.length < MAX_PHOTOS && (
           <>
             <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-background">
               <Camera className="h-4 w-4" />
@@ -149,10 +181,10 @@ export function ReceiptScanImport({
             </label>
             <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-background">
               <Images className="h-4 w-4" />
-              {photos.length === 0 ? "Choose photo(s)" : "Add another"}
+              {files.length === 0 ? "Choose file(s)" : "Add another"}
               <input
                 type="file"
-                accept="image/*"
+                accept="image/*,.pdf,application/pdf"
                 multiple
                 disabled={pending}
                 onChange={(e) => handleFiles(e.target.files)}
@@ -161,7 +193,7 @@ export function ReceiptScanImport({
             </label>
           </>
         )}
-        {photos.length > 0 && (
+        {files.length > 0 && (
           <button
             type="button"
             onClick={handleScan}
@@ -169,7 +201,7 @@ export function ReceiptScanImport({
             className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
           >
             {pending && <Spinner className="h-4 w-4" />}
-            {pending ? "Reading…" : `Scan ${photos.length} photo${photos.length > 1 ? "s" : ""}`}
+            {pending ? "Reading…" : `Scan ${files.length} file${files.length > 1 ? "s" : ""}`}
           </button>
         )}
       </div>

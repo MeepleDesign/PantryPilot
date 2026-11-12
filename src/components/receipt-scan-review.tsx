@@ -114,6 +114,7 @@ export function ReceiptScanReview({
         onDone={onDone}
         source="receipt"
         title="Add these to your pantry?"
+        subtitle="Optional — skip if you'd rather add them yourself, or not at all."
         emptyMessage="No items to add."
       />
     );
