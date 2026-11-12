@@ -6,7 +6,10 @@ import { useToast } from "@/components/toast";
 import { saveReceiptScan } from "@/lib/actions/receipts";
 import { getKnownPrices, type KnownPrice } from "@/lib/actions/ingredient-prices";
 import { normalizeIngredientName } from "@/lib/ingredient-name";
+import { PantryImportReview } from "@/components/pantry-import-review";
 import type { ExtractedReceiptScan } from "@/lib/actions/receipt-import";
+import type { ExtractedPantryScan } from "@/lib/actions/pantry-import";
+import type { UnitSystem } from "@/lib/units";
 
 type ReviewRow = {
   id: string;
@@ -31,11 +34,14 @@ function daysAgo(iso: string): string {
 
 export function ReceiptScanReview({
   scan,
+  unitSystem,
   onDone,
 }: {
   scan: ExtractedReceiptScan;
+  unitSystem: UnitSystem;
   onDone: () => void;
 }) {
+  const [pantryScan, setPantryScan] = useState<ExtractedPantryScan | null>(null);
   const [storeName, setStoreName] = useState(scan.store_name ?? "");
   const [purchasedAt, setPurchasedAt] = useState(
     scan.purchased_at ?? new Date().toISOString().slice(0, 10),
@@ -87,8 +93,30 @@ export function ReceiptScanReview({
         })),
       });
       showToast(`Saved ${includedRows.length} item${includedRows.length === 1 ? "" : "s"} · ${money(includedTotal)}`);
-      onDone();
+      setPantryScan({
+        items: includedRows.map((r) => ({
+          ingredient_name: r.ingredient_name.trim(),
+          quantity: r.quantity,
+          unit: null,
+          storage_location: null,
+          uncertain_fields: [],
+        })),
+        notes: null,
+      });
     });
+  }
+
+  if (pantryScan) {
+    return (
+      <PantryImportReview
+        scan={pantryScan}
+        unitSystem={unitSystem}
+        onDone={onDone}
+        source="receipt"
+        title="Add these to your pantry?"
+        emptyMessage="No items to add."
+      />
+    );
   }
 
   if (!rows.length) {

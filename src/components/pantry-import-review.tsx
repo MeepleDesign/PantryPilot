@@ -24,10 +24,16 @@ export function PantryImportReview({
   scan,
   unitSystem,
   onDone,
+  source = "photo",
+  title = "Review scanned items",
+  emptyMessage = "Didn't spot any items in that photo.",
 }: {
   scan: ExtractedPantryScan;
   unitSystem: UnitSystem;
   onDone: () => void;
+  source?: "photo" | "receipt";
+  title?: string;
+  emptyMessage?: string;
 }) {
   const [rows, setRows] = useState<ReviewRow[]>(() =>
     scan.items.map((item, i) => ({
@@ -61,7 +67,7 @@ export function PantryImportReview({
             expiry_date: null,
             notes: null,
           },
-          "photo",
+          source,
         );
       }
       onDone();
@@ -71,7 +77,7 @@ export function PantryImportReview({
   if (!rows.length) {
     return (
       <div className="mb-8 rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted">
-        Didn&apos;t spot any items in that photo.{" "}
+        {emptyMessage}{" "}
         <button type="button" onClick={onDone} className="font-medium text-brand">
           Dismiss
         </button>
@@ -82,7 +88,7 @@ export function PantryImportReview({
   return (
     <div className="mb-8 rounded-xl border border-border bg-surface p-4 shadow-sm">
       <div className="mb-1 flex items-center justify-between">
-        <h2 className="font-medium">Review scanned items</h2>
+        <h2 className="font-medium">{title}</h2>
         <button
           type="button"
           onClick={onDone}

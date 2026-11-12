@@ -16,7 +16,7 @@ export type PantryItemInput = {
 
 export async function addPantryItem(
   input: PantryItemInput,
-  source: "manual" | "photo" = "manual",
+  source: "manual" | "photo" | "receipt" = "manual",
 ) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -47,7 +47,12 @@ export async function addPantryItem(
     change_type: "add",
     quantity_delta: input.quantity,
     unit: input.unit,
-    reason: source === "photo" ? "Added via photo scan" : "Added manually",
+    reason:
+      source === "photo"
+        ? "Added via photo scan"
+        : source === "receipt"
+          ? "Added via receipt scan"
+          : "Added manually",
     created_by: auth.user?.id,
   });
 

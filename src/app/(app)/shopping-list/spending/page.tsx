@@ -4,6 +4,7 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { ReceiptScanSection } from "@/components/receipt-scan-section";
 import { EmptyState } from "@/components/empty-state";
+import type { UnitSystem } from "@/lib/units";
 
 function startOfMonthIso() {
   const d = new Date();
@@ -25,7 +26,8 @@ type ReceiptScanWithItems = {
 };
 
 export default async function SpendingPage() {
-  const { household } = await getCurrentHousehold();
+  const { household, profile } = await getCurrentHousehold();
+  const unitSystem: UnitSystem = profile.units === "imperial" ? "imperial" : "metric";
   const supabase = await createClient();
 
   const { data: scans, error } = await supabase
@@ -72,7 +74,7 @@ export default async function SpendingPage() {
         </div>
       </div>
 
-      <ReceiptScanSection />
+      <ReceiptScanSection unitSystem={unitSystem} />
 
       {allScans.length > 0 ? (
         <div className="space-y-4">
