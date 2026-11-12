@@ -9,6 +9,7 @@ export type SaveReceiptItemInput = {
   ingredient_name: string;
   price: number;
   quantity: number | null;
+  unit: string | null;
   update_price?: boolean;
 };
 
@@ -44,6 +45,7 @@ export async function saveReceiptScan(input: SaveReceiptScanInput) {
     ingredient_name: item.ingredient_name,
     price: item.price,
     quantity: item.quantity,
+    unit: item.unit,
     sort_order: i,
   }));
   const { error: itemsError } = await supabase.from("receipt_items").insert(rows);

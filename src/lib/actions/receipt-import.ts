@@ -10,6 +10,7 @@ export type ExtractedReceiptItem = {
   ingredient_name: string;
   price: number;
   quantity: number | null;
+  unit: string | null;
   uncertain_fields: string[];
 };
 
@@ -48,11 +49,12 @@ const EXTRACT_RECEIPT_TOOL: Anthropic.Tool = {
             ingredient_name: {
               type: "string",
               description:
-                "The generic product name WITHOUT the brand — e.g. 'Soy sauce' not 'Amoy Soy Sauce, Dark', " +
-                "'Cheddar cheese' not \"Sainsbury's British Extra Mature Cheddar Cheese\", 'Fizzy cola' not " +
-                "'Coca-Cola Classic'. Keep genuinely distinguishing detail that affects what it is or how it's " +
-                "used (e.g. 'dark soy sauce', 'semi-skimmed milk', 'wholemeal bread', 'extra mature cheddar'), " +
-                "but drop the brand/manufacturer name and marketing flourishes.",
+                "The generic product name WITHOUT the brand and WITHOUT any pack size/weight/volume — e.g. " +
+                "'Soy sauce' not 'Amoy Soy Sauce, Dark 150ml', 'Cheddar cheese' not \"Sainsbury's British Extra " +
+                "Mature Cheddar Cheese 400g\", 'Fizzy cola' not 'Coca-Cola Classic 2L'. Keep genuinely " +
+                "distinguishing detail that affects what it is or how it's used (e.g. 'dark soy sauce', " +
+                "'semi-skimmed milk', 'wholemeal bread', 'extra mature cheddar'), but drop the brand/manufacturer " +
+                "name and any size — size goes in quantity/unit instead.",
             },
             price: {
               type: "number",
@@ -60,7 +62,18 @@ const EXTRACT_RECEIPT_TOOL: Anthropic.Tool = {
             },
             quantity: {
               type: ["number", "null"],
-              description: "How many units/packs were bought, if shown. Null if unclear.",
+              description:
+                "The TOTAL amount of this item being added to stock, in `unit`'s units — not a pack count. " +
+                "E.g. a 150ml bottle: quantity 150, unit 'ml'. Two packs of 250g: quantity 500, unit 'g' " +
+                "(combine same-unit multi-buys into one total). A pack of 10 eggs: quantity 10, unit 'each'. " +
+                "Null if no sensible amount can be read (and leave unit null too).",
+            },
+            unit: {
+              type: ["string", "null"],
+              description:
+                "One of: g, kg, ml, l, tsp, tbsp, cup, clove, pinch, slice, can, pack, bunch, each — pick the " +
+                "closest match to the pack size shown. Use 'each' for items counted as whole units (eggs, " +
+                "apples, a cauliflower) with no printed weight. Null if quantity is null.",
             },
             uncertain_fields: {
               type: "array",
@@ -134,8 +147,11 @@ export async function extractReceiptItemsFromPhotos(
                 "shows a discount (e.g. 'was £3.00, now £2.00'), use the final price charged. Always respond " +
                 "with a tool call, never plain text. Flag anything uncertain (like an abbreviated item name) " +
                 "in uncertain_fields so the user can confirm it before saving. For ingredient_name, use a " +
-                "generic product name with the brand removed (see that field's own description) — this " +
-                "matters so repeat purchases of the same thing from different brands line up together.",
+                "generic product name with the brand AND the pack size removed (see that field's own " +
+                "description) — this matters so repeat purchases of the same thing from different brands or " +
+                "pack sizes line up together. Put the size in quantity + unit instead, following their " +
+                "descriptions — these items may be added straight to a pantry, which tracks a plain amount " +
+                "and unit per ingredient, not a brand-labelled pack.",
             },
           ],
         },

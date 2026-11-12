@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { Spinner } from "@/components/spinner";
+import { UnitSelect } from "@/components/unit-select";
 import { useToast } from "@/components/toast";
 import { saveReceiptScan } from "@/lib/actions/receipts";
 import { getKnownPrices, type KnownPrice } from "@/lib/actions/ingredient-prices";
@@ -16,6 +17,7 @@ type ReviewRow = {
   ingredient_name: string;
   price: number;
   quantity: number | null;
+  unit: string | null;
   uncertain_fields: string[];
   include: boolean;
   updatePrice: boolean;
@@ -52,6 +54,7 @@ export function ReceiptScanReview({
       ingredient_name: item.ingredient_name,
       price: item.price,
       quantity: item.quantity,
+      unit: item.unit,
       uncertain_fields: item.uncertain_fields,
       include: true,
       updatePrice: false,
@@ -89,6 +92,7 @@ export function ReceiptScanReview({
           ingredient_name: r.ingredient_name.trim(),
           price: r.price,
           quantity: r.quantity,
+          unit: r.unit,
           update_price: r.updatePrice,
         })),
       });
@@ -97,7 +101,7 @@ export function ReceiptScanReview({
         items: includedRows.map((r) => ({
           ingredient_name: r.ingredient_name.trim(),
           quantity: r.quantity,
-          unit: null,
+          unit: r.unit,
           storage_location: null,
           uncertain_fields: [],
         })),
@@ -196,6 +200,12 @@ export function ReceiptScanReview({
                   }
                   placeholder="Qty"
                   className="w-20 shrink-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                />
+                <UnitSelect
+                  value={row.unit ?? ""}
+                  onChange={(unit) => updateRow(row.id, { unit })}
+                  unitSystem={unitSystem}
+                  className="w-24 shrink-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
                 />
                 <div className="flex shrink-0 items-center gap-1">
                   <span className="text-sm text-muted">£</span>
