@@ -1,7 +1,29 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Star } from "lucide-react";
 import { rateRecipe, clearRating } from "@/lib/actions/ratings";
+
+function StarGlyph({ fill, size }: { fill: number; size: "sm" | "md" | "lg" }) {
+  const px = size === "lg" ? 24 : size === "md" ? 18 : 14;
+  const clamped = Math.max(0, Math.min(1, fill));
+  return (
+    <span className="relative inline-block shrink-0" style={{ width: px, height: px }}>
+      <Star className="absolute inset-0 text-border" width={px} height={px} />
+      <span
+        className="absolute inset-0 overflow-hidden"
+        style={{ width: `${clamped * 100}%` }}
+      >
+        <Star
+          className="text-accent"
+          width={px}
+          height={px}
+          fill="currentColor"
+        />
+      </span>
+    </span>
+  );
+}
 
 export function StaticStars({
   value,
@@ -12,12 +34,12 @@ export function StaticStars({
   count?: number;
   size?: "sm" | "md";
 }) {
-  const textSize = size === "md" ? "text-base" : "text-xs";
+  const textSize = size === "md" ? "text-sm" : "text-xs";
   return (
     <span className={`inline-flex items-center gap-1 ${textSize}`}>
-      <span className="tracking-tight text-accent">
-        {[1, 2, 3, 4, 5].map((n) => (
-          <span key={n}>{n <= Math.round(value) ? "★" : "☆"}</span>
+      <span className="flex items-center gap-0.5">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <StarGlyph key={i} fill={value - i} size={size} />
         ))}
       </span>
       {count != null && <span className="text-muted">({count})</span>}
@@ -49,27 +71,28 @@ export function InteractiveStars({
     startTransition(() => rateRecipe(recipeId, n));
   }
 
+  function valueFromPointer(e: React.MouseEvent<HTMLDivElement>, starIndex: number) {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const fraction = (e.clientX - rect.left) / rect.width;
+    return starIndex + (fraction < 0.5 ? 0.5 : 1);
+  }
+
   return (
     <div className="flex items-center gap-2">
       <span className="text-sm text-muted">Your rating:</span>
-      <div
-        className="flex gap-0.5 text-xl leading-none"
-        onMouseLeave={() => setHovered(null)}
-      >
-        {[1, 2, 3, 4, 5].map((n) => (
-          <button
-            key={n}
-            type="button"
-            disabled={pending}
-            onMouseEnter={() => setHovered(n)}
-            onClick={() => handleClick(n)}
-            className={`transition disabled:opacity-60 ${
-              n <= display ? "text-accent" : "text-border"
-            }`}
-            aria-label={`Rate ${n} star${n === 1 ? "" : "s"}`}
+      <div className="flex gap-0.5" onMouseLeave={() => setHovered(null)}>
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            role="button"
+            tabIndex={0}
+            aria-label={`Rate ${i + 1} star${i === 0 ? "" : "s"}`}
+            onMouseMove={(e) => !pending && setHovered(valueFromPointer(e, i))}
+            onClick={(e) => !pending && handleClick(valueFromPointer(e, i))}
+            className="cursor-pointer disabled:opacity-60"
           >
-            ★
-          </button>
+            <StarGlyph fill={display - i} size="lg" />
+          </div>
         ))}
       </div>
       {rating > 0 && (

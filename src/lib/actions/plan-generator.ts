@@ -72,7 +72,7 @@ async function getAvgRatings(householdId: string) {
   const sums = new Map<string, { sum: number; count: number }>();
   for (const r of ratingRows ?? []) {
     const entry = sums.get(r.recipe_id) ?? { sum: 0, count: 0 };
-    entry.sum += r.rating;
+    entry.sum += Number(r.rating);
     entry.count += 1;
     sums.set(r.recipe_id, entry);
   }

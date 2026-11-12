@@ -84,7 +84,7 @@ export default async function RecipesPage({
   const ratingsByRecipe: Record<string, number[]> = {};
   for (const r of ratingRows ?? []) {
     const list = ratingsByRecipe[r.recipe_id] ?? [];
-    list.push(r.rating);
+    list.push(Number(r.rating));
     ratingsByRecipe[r.recipe_id] = list;
   }
 

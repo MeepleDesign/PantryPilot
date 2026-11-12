@@ -5,7 +5,9 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { revalidatePath } from "next/cache";
 
 export async function rateRecipe(recipeId: string, rating: number) {
-  if (rating < 1 || rating > 5) throw new Error("Rating must be between 1 and 5");
+  if (rating < 1 || rating > 5 || (rating * 2) % 1 !== 0) {
+    throw new Error("Rating must be between 1 and 5, in half-star steps");
+  }
 
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();

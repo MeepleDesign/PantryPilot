@@ -49,9 +49,9 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
 
   const ratingCount = ratings?.length ?? 0;
   const avgRating = ratingCount
-    ? ratings!.reduce((sum, r) => sum + r.rating, 0) / ratingCount
+    ? ratings!.reduce((sum, r) => sum + Number(r.rating), 0) / ratingCount
     : 0;
-  const myRating = ratings?.find((r) => r.user_id === auth.user?.id)?.rating ?? 0;
+  const myRating = Number(ratings?.find((r) => r.user_id === auth.user?.id)?.rating ?? 0);
 
   const isOwner = recipe.household_id === household.id;
 
