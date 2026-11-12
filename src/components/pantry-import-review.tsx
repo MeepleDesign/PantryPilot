@@ -74,6 +74,8 @@ export function PantryImportReview({
     })),
   );
   const [pending, startTransition] = useTransition();
+  const [matchesLoaded, setMatchesLoaded] = useState(false);
+  const [matchesFailed, setMatchesFailed] = useState(false);
 
   useEffect(() => {
     getPantryMatchCandidates()
@@ -84,10 +86,9 @@ export function PantryImportReview({
             return match ? { ...row, match, mergeChoice: match.exact ? "merge" : "new" } : row;
           }),
         );
+        setMatchesLoaded(true);
       })
-      .catch(() => {
-        // Non-critical: matching just won't be offered this time.
-      });
+      .catch(() => setMatchesFailed(true));
   }, []);
 
   function updateRow(id: string, patch: Partial<ReviewRow>) {
@@ -252,13 +253,15 @@ export function PantryImportReview({
       <button
         type="button"
         onClick={handleConfirm}
-        disabled={pending || includedCount === 0}
+        disabled={pending || includedCount === 0 || (!matchesLoaded && !matchesFailed)}
         className="mt-4 flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
       >
-        {pending && <Spinner className="h-4 w-4" />}
+        {(pending || (!matchesLoaded && !matchesFailed)) && <Spinner className="h-4 w-4" />}
         {pending
           ? "Adding…"
-          : `Add ${includedCount} item${includedCount === 1 ? "" : "s"} to pantry`}
+          : !matchesLoaded && !matchesFailed
+            ? "Checking existing pantry…"
+            : `Add ${includedCount} item${includedCount === 1 ? "" : "s"} to pantry`}
       </button>
     </div>
   );
