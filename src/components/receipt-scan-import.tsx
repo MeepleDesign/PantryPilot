@@ -111,9 +111,36 @@ export function ReceiptScanImport({
           images: files.map((f) => ({ base64: f.base64, mediaType: f.mediaType })),
         }),
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.error ?? "Something went wrong reading that receipt.");
-      onScanned(data as ExtractedReceiptScan);
+
+      if (!res.ok || !res.body) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error ?? "Something went wrong reading that receipt.");
+      }
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let scan: ExtractedReceiptScan | null = null;
+      let streamError: string | null = null;
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        let newlineIndex: number;
+        while ((newlineIndex = buffer.indexOf("\n")) >= 0) {
+          const line = buffer.slice(0, newlineIndex);
+          buffer = buffer.slice(newlineIndex + 1);
+          if (!line.trim()) continue;
+          const msg = JSON.parse(line);
+          if (msg.type === "result") scan = msg.scan;
+          else if (msg.type === "error") streamError = msg.error;
+        }
+      }
+
+      if (streamError) throw new Error(streamError);
+      if (!scan) throw new Error("Something went wrong reading that receipt.");
+      onScanned(scan);
       setFiles([]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong reading that receipt.");
