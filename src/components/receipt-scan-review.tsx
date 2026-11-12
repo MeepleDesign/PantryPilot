@@ -81,21 +81,30 @@ export function ReceiptScanReview({
 
   const includedRows = rows.filter((r) => r.include && r.ingredient_name.trim());
   const includedTotal = includedRows.reduce((sum, r) => sum + (r.price || 0), 0);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   function handleConfirm() {
+    setSaveError(null);
     startTransition(async () => {
-      await saveReceiptScan({
-        store_name: storeName.trim() || null,
-        purchased_at: purchasedAt || null,
-        total: scan.total,
-        items: includedRows.map((r) => ({
-          ingredient_name: r.ingredient_name.trim(),
-          price: r.price,
-          quantity: r.quantity,
-          unit: r.unit,
-          update_price: r.updatePrice,
-        })),
-      });
+      try {
+        await saveReceiptScan({
+          store_name: storeName.trim() || null,
+          purchased_at: purchasedAt || null,
+          total: scan.total,
+          items: includedRows.map((r) => ({
+            ingredient_name: r.ingredient_name.trim(),
+            price: r.price,
+            quantity: r.quantity,
+            unit: r.unit,
+            update_price: r.updatePrice,
+          })),
+        });
+      } catch {
+        setSaveError(
+          "Couldn't confirm the save went through — your connection may have dropped. Check your spending history before retrying, to avoid saving this twice.",
+        );
+        return;
+      }
       showToast(`Saved ${includedRows.length} item${includedRows.length === 1 ? "" : "s"} · ${money(includedTotal)}`);
       setPantryScan({
         items: includedRows.map((r) => ({
@@ -254,6 +263,11 @@ export function ReceiptScanReview({
         })}
       </div>
 
+      {saveError && (
+        <p className="mt-4 rounded-lg border border-warn bg-warn/10 p-3 text-sm text-warn">
+          {saveError}
+        </p>
+      )}
       <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm">
           <span className="font-medium">{includedRows.length}</span> item
@@ -270,7 +284,13 @@ export function ReceiptScanReview({
           className="flex items-center gap-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-wait disabled:opacity-60"
         >
           {(pending || (!pricesLoaded && !pricesFailed)) && <Spinner className="h-4 w-4" />}
-          {pending ? "Saving…" : !pricesLoaded && !pricesFailed ? "Checking prices…" : "Save spend"}
+          {pending
+            ? "Saving…"
+            : !pricesLoaded && !pricesFailed
+              ? "Checking prices…"
+              : saveError
+                ? "Retry save"
+                : "Save spend"}
         </button>
       </div>
     </div>
