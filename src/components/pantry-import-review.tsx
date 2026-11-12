@@ -154,20 +154,20 @@ export function PantryImportReview({
             key={row.id}
             className={`rounded-lg border p-3 ${row.include ? "border-border" : "border-border opacity-50"}`}
           >
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-6 sm:items-center">
-              <label className="col-span-2 flex items-center gap-2 sm:col-span-2">
-                <input
-                  type="checkbox"
-                  checked={row.include}
-                  onChange={(e) => updateRow(row.id, { include: e.target.checked })}
-                  className="h-4 w-4 shrink-0 accent-brand"
-                />
-                <input
-                  value={row.ingredient_name}
-                  onChange={(e) => updateRow(row.id, { ingredient_name: e.target.value })}
-                  className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-                />
-              </label>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={row.include}
+                onChange={(e) => updateRow(row.id, { include: e.target.checked })}
+                className="h-4 w-4 shrink-0 accent-brand"
+              />
+              <input
+                value={row.ingredient_name}
+                onChange={(e) => updateRow(row.id, { ingredient_name: e.target.value })}
+                className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+              />
+            </div>
+            <div className="mt-2 grid grid-cols-3 gap-2 sm:flex sm:items-center">
               <input
                 type="number"
                 step="any"
@@ -178,10 +178,10 @@ export function PantryImportReview({
                   })
                 }
                 placeholder="Qty"
-                className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                className="min-w-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm sm:w-20 sm:shrink-0"
               />
               {row.mergeChoice === "merge" && row.match ? (
-                <span className="col-span-2 flex items-center px-2 text-xs text-muted sm:col-span-2">
+                <span className="col-span-2 flex items-center px-2 text-xs text-muted sm:flex-1">
                   will be added to existing
                 </span>
               ) : (
@@ -190,14 +190,14 @@ export function PantryImportReview({
                     value={row.unit ?? ""}
                     onChange={(unit) => updateRow(row.id, { unit })}
                     unitSystem={unitSystem}
-                    className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                    className="min-w-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm sm:w-24 sm:shrink-0"
                   />
                   <select
                     value={row.storage_location}
                     onChange={(e) =>
                       updateRow(row.id, { storage_location: e.target.value as StorageLocation })
                     }
-                    className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                    className="min-w-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm sm:flex-1"
                   >
                     {LOCATIONS.map((l) => (
                       <option key={l} value={l}>

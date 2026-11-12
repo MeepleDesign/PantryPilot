@@ -175,20 +175,20 @@ export function ReceiptScanReview({
               key={row.id}
               className={`rounded-lg border p-3 ${row.include ? "border-border" : "border-border opacity-50"}`}
             >
-              <div className="flex flex-wrap items-center gap-2">
-                <label className="flex min-w-0 flex-1 items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={row.include}
-                    onChange={(e) => updateRow(row.id, { include: e.target.checked })}
-                    className="h-4 w-4 shrink-0 accent-brand"
-                  />
-                  <input
-                    value={row.ingredient_name}
-                    onChange={(e) => updateRow(row.id, { ingredient_name: e.target.value })}
-                    className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
-                  />
-                </label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={row.include}
+                  onChange={(e) => updateRow(row.id, { include: e.target.checked })}
+                  className="h-4 w-4 shrink-0 accent-brand"
+                />
+                <input
+                  value={row.ingredient_name}
+                  onChange={(e) => updateRow(row.id, { ingredient_name: e.target.value })}
+                  className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                />
+              </div>
+              <div className="mt-2 grid grid-cols-3 gap-2 sm:flex sm:items-center">
                 <input
                   type="number"
                   step="any"
@@ -199,22 +199,22 @@ export function ReceiptScanReview({
                     })
                   }
                   placeholder="Qty"
-                  className="w-20 shrink-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                  className="min-w-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm sm:w-20 sm:shrink-0"
                 />
                 <UnitSelect
                   value={row.unit ?? ""}
                   onChange={(unit) => updateRow(row.id, { unit })}
                   unitSystem={unitSystem}
-                  className="w-24 shrink-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                  className="min-w-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm sm:w-24 sm:shrink-0"
                 />
-                <div className="flex shrink-0 items-center gap-1">
+                <div className="flex min-w-0 items-center gap-1 rounded-lg border border-border bg-background px-2 py-1.5 sm:w-24 sm:shrink-0 sm:border-0 sm:bg-transparent sm:p-0">
                   <span className="text-sm text-muted">£</span>
                   <input
                     type="number"
                     step="0.01"
                     value={row.price}
                     onChange={(e) => updateRow(row.id, { price: Number(e.target.value) || 0 })}
-                    className="w-20 rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                    className="min-w-0 flex-1 rounded-lg border-0 bg-transparent text-sm sm:w-20 sm:flex-none sm:border sm:border-border sm:bg-background sm:px-2 sm:py-1.5"
                   />
                 </div>
               </div>
