@@ -160,11 +160,29 @@ export async function deleteRecipe(recipeId: string) {
 
 export async function updateRecipePhoto(recipeId: string, imageUrl: string) {
   const supabase = await createClient();
-  const { error } = await supabase
+  const { household } = await getCurrentHousehold();
+
+  const { data: recipe, error: fetchError } = await supabase
     .from("recipes")
-    .update({ image_url: imageUrl, image_is_stock: false })
-    .eq("id", recipeId);
-  if (error) throw new Error(error.message);
+    .select("household_id")
+    .eq("id", recipeId)
+    .single();
+  if (fetchError || !recipe) throw new Error(fetchError?.message ?? "Recipe not found");
+
+  if (recipe.household_id === household.id) {
+    const { error } = await supabase
+      .from("recipes")
+      .update({ image_url: imageUrl, image_is_stock: false })
+      .eq("id", recipeId);
+    if (error) throw new Error(error.message);
+  } else {
+    // Global/shared recipe: store the photo as a per-household override
+    // instead of overwriting the shared row for every household.
+    const { error } = await supabase
+      .from("household_recipe_photos")
+      .upsert({ household_id: household.id, recipe_id: recipeId, image_url: imageUrl });
+    if (error) throw new Error(error.message);
+  }
 
   revalidatePath("/recipes");
   revalidatePath(`/recipes/${recipeId}`);

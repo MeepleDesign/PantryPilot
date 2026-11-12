@@ -37,6 +37,26 @@ export default async function CookViewPage({
     .select("*, recipes(*, recipe_ingredients(*))")
     .eq("side_of", entryId);
 
+  const { data: photoOverrides } = await supabase
+    .from("household_recipe_photos")
+    .select("recipe_id, image_url")
+    .eq("household_id", mainEntry.household_id);
+  const overrideByRecipe = Object.fromEntries(
+    (photoOverrides ?? []).map((p) => [p.recipe_id, p.image_url]),
+  );
+  function applyPhotoOverride<T extends { recipe_id: string; recipes: { image_url: string | null; image_is_stock: boolean } | null }>(
+    entry: T,
+  ): T {
+    const override = overrideByRecipe[entry.recipe_id];
+    if (!override || !entry.recipes) return entry;
+    return {
+      ...entry,
+      recipes: { ...entry.recipes, image_url: override, image_is_stock: false },
+    };
+  }
+  const mainEntryWithPhoto = applyPhotoOverride(mainEntry);
+  const sideEntriesWithPhoto = (sideEntries ?? []).map(applyPhotoOverride);
+
   const allEntryIds = [mainEntry.id, ...(sideEntries ?? []).map((s) => s.id)];
   const { data: batches } = await supabase
     .from("meal_batches")
@@ -74,11 +94,11 @@ export default async function CookViewPage({
 
       <RecipeBlock
         label="Main"
-        entry={mainEntry}
+        entry={mainEntryWithPhoto}
         existingBatch={batchByEntry[mainEntry.id] ?? null}
       />
 
-      {(sideEntries ?? []).map((side) => (
+      {sideEntriesWithPhoto.map((side) => (
         <RecipeBlock
           key={side.id}
           label="Side"

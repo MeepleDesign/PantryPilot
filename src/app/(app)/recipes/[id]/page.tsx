@@ -17,19 +17,29 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
   const { id } = await params;
   const supabase = await createClient();
 
-  const { data: recipe, error } = await supabase
+  const { data: rawRecipe, error } = await supabase
     .from("recipes")
     .select("*, recipe_ingredients(*)")
     .eq("id", id)
     .single();
 
-  if (error || !recipe) notFound();
+  if (error || !rawRecipe) notFound();
+
+  const { household } = await getCurrentHousehold();
+
+  const { data: photoOverride } = await supabase
+    .from("household_recipe_photos")
+    .select("image_url")
+    .eq("household_id", household.id)
+    .eq("recipe_id", id)
+    .maybeSingle();
+  const recipe = photoOverride
+    ? { ...rawRecipe, image_url: photoOverride.image_url, image_is_stock: false }
+    : rawRecipe;
 
   const ingredients = [...recipe.recipe_ingredients].sort(
     (a, b) => a.sort_order - b.sort_order,
   );
-
-  const { household } = await getCurrentHousehold();
   const { data: auth } = await supabase.auth.getUser();
   const { data: ratings } = await supabase
     .from("recipe_ratings")

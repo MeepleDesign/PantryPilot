@@ -32,8 +32,21 @@ export default async function RecipesPage({
   if (tag) query = query.contains("tags", [tag]);
   if (course) query = query.eq("course", course);
 
-  const { data: recipes, error } = await query;
+  const { data: rawRecipes, error } = await query;
   if (error) throw new Error(error.message);
+
+  const { data: photoOverrides } = await supabase
+    .from("household_recipe_photos")
+    .select("recipe_id, image_url")
+    .eq("household_id", household.id);
+  const overrideByRecipe = Object.fromEntries(
+    (photoOverrides ?? []).map((p) => [p.recipe_id, p.image_url]),
+  );
+  const recipes = (rawRecipes ?? []).map((r) =>
+    overrideByRecipe[r.id]
+      ? { ...r, image_url: overrideByRecipe[r.id], image_is_stock: false }
+      : r,
+  );
 
   const recipeIds = (recipes ?? []).map((r) => r.id);
   const [{ data: recipeIngredients }, { data: pantryItems }] = await Promise.all([
