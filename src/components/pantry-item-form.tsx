@@ -114,6 +114,8 @@ export function PantryItemRow({
 }) {
   const [editing, setEditing] = useState(false);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
+  const [adjustingQty, setAdjustingQty] = useState(false);
+  const [qtyDraft, setQtyDraft] = useState("");
   const [pending, startTransition] = useTransition();
   const [unit, setUnit] = useState(item.unit ?? "");
 
@@ -230,7 +232,62 @@ export function PantryItemRow({
           )}
         </p>
       </div>
-      {confirmingRemove ? (
+      {adjustingQty ? (
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            const used = Number(qtyDraft) || 0;
+            if (used <= 0) {
+              setAdjustingQty(false);
+              return;
+            }
+            startTransition(async () => {
+              const newQty = Math.max(0, item.quantity - used);
+              if (newQty <= 0) {
+                await deletePantryItem(item.id, "used");
+              } else {
+                await updatePantryItem(item.id, {
+                  ingredient_name: item.ingredient_name,
+                  storage_location: item.storage_location,
+                  quantity: newQty,
+                  unit: item.unit,
+                  expiry_date: item.expiry_date,
+                  notes: item.notes,
+                });
+              }
+              setAdjustingQty(false);
+            });
+          }}
+          className="flex shrink-0 items-center gap-1.5"
+        >
+          <span className="text-xs text-muted">Used</span>
+          <input
+            autoFocus
+            type="number"
+            step="any"
+            min="0"
+            placeholder={`of ${item.quantity}`}
+            value={qtyDraft}
+            onChange={(e) => setQtyDraft(e.target.value)}
+            className="w-20 rounded-lg border border-border bg-background px-2 py-1 text-sm"
+          />
+          {item.unit && <span className="text-xs text-muted">{item.unit}</span>}
+          <button
+            type="submit"
+            disabled={pending}
+            className="rounded-lg bg-brand px-2 py-1 text-xs font-medium text-brand-foreground disabled:cursor-wait disabled:opacity-60"
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            onClick={() => setAdjustingQty(false)}
+            className="text-xs text-muted hover:text-foreground"
+          >
+            Cancel
+          </button>
+        </form>
+      ) : confirmingRemove ? (
         <div className="flex shrink-0 items-center gap-2 text-xs">
           <span className="text-muted">Used it or wasted?</span>
           <button
@@ -267,6 +324,15 @@ export function PantryItemRow({
         </div>
       ) : (
         <div className="flex shrink-0 gap-3">
+          <button
+            onClick={() => {
+              setQtyDraft("");
+              setAdjustingQty(true);
+            }}
+            className="font-medium text-brand"
+          >
+            Use some
+          </button>
           <button onClick={() => setEditing(true)} className="font-medium text-brand">
             Edit
           </button>

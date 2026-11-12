@@ -3,6 +3,7 @@ import { Receipt } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { ReceiptScanSection } from "@/components/receipt-scan-section";
+import { AddReceiptToPantryButton } from "@/components/add-receipt-to-pantry";
 import { EmptyState } from "@/components/empty-state";
 import type { UnitSystem } from "@/lib/units";
 
@@ -22,7 +23,13 @@ type ReceiptScanWithItems = {
   store_name: string | null;
   purchased_at: string;
   total: number | null;
-  receipt_items: { id: string; ingredient_name: string; price: number; quantity: number | null }[];
+  receipt_items: {
+    id: string;
+    ingredient_name: string;
+    price: number;
+    quantity: number | null;
+    unit: string | null;
+  }[];
 };
 
 export default async function SpendingPage() {
@@ -32,7 +39,9 @@ export default async function SpendingPage() {
 
   const { data: scans, error } = await supabase
     .from("receipt_scans")
-    .select("id, store_name, purchased_at, total, receipt_items(id, ingredient_name, price, quantity)")
+    .select(
+      "id, store_name, purchased_at, total, receipt_items(id, ingredient_name, price, quantity, unit)",
+    )
     .eq("household_id", household.id)
     .order("purchased_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -97,6 +106,14 @@ export default async function SpendingPage() {
                     </div>
                   ))}
                 </div>
+                <AddReceiptToPantryButton
+                  items={scan.receipt_items.map((item) => ({
+                    ingredient_name: item.ingredient_name,
+                    quantity: item.quantity,
+                    unit: item.unit,
+                  }))}
+                  unitSystem={unitSystem}
+                />
               </div>
             );
           })}
