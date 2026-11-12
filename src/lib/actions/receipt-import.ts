@@ -104,7 +104,7 @@ export async function extractReceiptItemsFromPhotos(
 
   const response = await client.messages.create({
     model: "claude-sonnet-5-5",
-    max_tokens: 4000,
+    max_tokens: 8000,
     tools: [EXTRACT_RECEIPT_TOOL],
     messages: [
       {
@@ -116,11 +116,13 @@ export async function extractReceiptItemsFromPhotos(
             text:
               instructionText +
               "Call the extract_receipt_items tool listing every purchased item with its price. " +
-              "Skip subtotal, VAT, loyalty-points, delivery-fee and total-summary lines — only list actual " +
-              "purchased items, each with its own price. If a line shows a discount (e.g. 'was £3.00, now " +
-              "£2.00'), use the final price charged. Always respond with a tool call, never plain text. " +
-              "Flag anything uncertain (like an abbreviated item name) in uncertain_fields so the user can " +
-              "confirm it before saving.",
+              "The items array is required and must always be populated — even for a very long receipt " +
+              "with 100+ lines, list every single purchased item; never leave items empty or omit it in " +
+              "favour of a summary in notes. Skip subtotal, VAT, loyalty-points, delivery-fee and " +
+              "total-summary lines — only list actual purchased items, each with its own price. If a line " +
+              "shows a discount (e.g. 'was £3.00, now £2.00'), use the final price charged. Always respond " +
+              "with a tool call, never plain text. Flag anything uncertain (like an abbreviated item name) " +
+              "in uncertain_fields so the user can confirm it before saving.",
           },
         ],
       },
@@ -137,5 +139,24 @@ export async function extractReceiptItemsFromPhotos(
     );
   }
 
-  return toolUse.input as ExtractedReceiptScan;
+  const input = toolUse.input as Partial<ExtractedReceiptScan>;
+
+  if (response.stop_reason === "max_tokens") {
+    throw new Error(
+      "That receipt has too many items to read in one go. Try splitting it into smaller photos, or add spend manually.",
+    );
+  }
+  if (!Array.isArray(input.items)) {
+    throw new Error(
+      "Couldn't list the items on that receipt — it may be too long or unclear. Try a clearer photo, split a long receipt into parts, or add spend manually.",
+    );
+  }
+
+  return {
+    store_name: input.store_name ?? null,
+    purchased_at: input.purchased_at ?? null,
+    total: input.total ?? null,
+    items: input.items,
+    notes: input.notes ?? null,
+  };
 }

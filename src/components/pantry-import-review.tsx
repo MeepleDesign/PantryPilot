@@ -61,7 +61,7 @@ export function PantryImportReview({
   emptyMessage?: string;
 }) {
   const [rows, setRows] = useState<ReviewRow[]>(() =>
-    scan.items.map((item, i) => ({
+    (scan.items ?? []).map((item, i) => ({
       id: `${i}`,
       ingredient_name: item.ingredient_name,
       quantity: item.quantity,

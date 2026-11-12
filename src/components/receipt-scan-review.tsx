@@ -47,7 +47,7 @@ export function ReceiptScanReview({
     scan.purchased_at ?? new Date().toISOString().slice(0, 10),
   );
   const [rows, setRows] = useState<ReviewRow[]>(() =>
-    scan.items.map((item, i) => ({
+    (scan.items ?? []).map((item, i) => ({
       id: `${i}`,
       ingredient_name: item.ingredient_name,
       price: item.price,
