@@ -8,6 +8,7 @@ import {
   Snowflake,
   Trash2,
   Receipt,
+  Archive,
 } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
@@ -114,6 +115,17 @@ export default async function DashboardPage() {
             </p>
           ) : (
             <EmptyState icon={ShoppingCart} title="Shopping list is clear" compact />
+          )}
+        </Card>
+
+        <Card title="Pantry" href="/pantry" icon={Archive}>
+          {allPantryItems.length > 0 ? (
+            <p className="text-sm">
+              <span className="font-medium">{allPantryItems.length}</span> item
+              {allPantryItems.length === 1 ? "" : "s"} tracked
+            </p>
+          ) : (
+            <EmptyState icon={Archive} title="Your pantry is empty" body="Add what you have to get started." compact />
           )}
         </Card>
 
