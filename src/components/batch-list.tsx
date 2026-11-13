@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Minus, Snowflake, Refrigerator, Layers } from "lucide-react";
+import { Check, Snowflake, Refrigerator, Layers } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import { LogBatchManual } from "@/components/log-batch-manual";
 import { EmptyState } from "@/components/empty-state";
@@ -90,14 +90,10 @@ function BatchRow({ batch }: { batch: MealBatch }) {
   const [editing, setEditing] = useState(false);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
   const [name, setName] = useState(batch.recipe_name);
-  const [totalInput, setTotalInput] = useState(String(batch.portions_total));
-  const [remainingInput, setRemainingInput] = useState(String(batch.portions_remaining));
+  const [qtyInput, setQtyInput] = useState(String(batch.portions_remaining));
   const [location, setLocation] = useState<MealBatchStorage>(batch.storage_location);
   const showToast = useToast();
 
-  const usedPct = Math.round(
-    ((batch.portions_total - batch.portions_remaining) / batch.portions_total) * 100,
-  );
   const empty = batch.portions_remaining === 0;
 
   if (editing) {
@@ -111,29 +107,15 @@ function BatchRow({ batch }: { batch: MealBatch }) {
         />
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-1.5 text-xs text-muted">
-            Total
-            <input
-              type="number"
-              inputMode="numeric"
-              min={1}
-              value={totalInput}
-              onChange={(e) => setTotalInput(e.target.value)}
-              onBlur={() => {
-                if (!totalInput.trim() || Number(totalInput) < 1) setTotalInput("1");
-              }}
-              className="w-16 rounded-lg border border-border bg-background px-2 py-1 text-sm"
-            />
-          </label>
-          <label className="flex items-center gap-1.5 text-xs text-muted">
-            Left
+            Qty
             <input
               type="number"
               inputMode="numeric"
               min={0}
-              value={remainingInput}
-              onChange={(e) => setRemainingInput(e.target.value)}
+              value={qtyInput}
+              onChange={(e) => setQtyInput(e.target.value)}
               onBlur={() => {
-                if (!remainingInput.trim()) setRemainingInput("0");
+                if (!qtyInput.trim()) setQtyInput("0");
               }}
               className="w-16 rounded-lg border border-border bg-background px-2 py-1 text-sm"
             />
@@ -158,10 +140,11 @@ function BatchRow({ batch }: { batch: MealBatch }) {
             disabled={pending || !name.trim()}
             onClick={() =>
               startTransition(async () => {
+                const qty = Number(qtyInput) || 0;
                 await updateMealBatch(batch.id, {
                   recipe_name: name.trim(),
-                  portions_total: Number(totalInput) || 1,
-                  portions_remaining: Number(remainingInput) || 0,
+                  portions_total: Math.max(batch.portions_total, qty, 1),
+                  portions_remaining: qty,
                   storage_location: location,
                 });
                 setEditing(false);
@@ -222,42 +205,35 @@ function BatchRow({ batch }: { batch: MealBatch }) {
             <span className="text-muted">All used up</span>
           ) : (
             <>
-              <span className="font-medium text-foreground">{batch.portions_remaining}</span> of{" "}
-              {batch.portions_total} portions left
+              <span className="font-medium text-foreground">{batch.portions_remaining}</span>{" "}
+              portion{batch.portions_remaining === 1 ? "" : "s"} left
             </>
           )}
         </p>
       </div>
-      <div
-        className="mb-2 h-1.5 w-full overflow-hidden rounded-full bg-background"
-        role="progressbar"
-        aria-valuenow={usedPct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={`${batch.portions_remaining} of ${batch.portions_total} portions left`}
-      >
-        <div
-          className={`h-full rounded-full transition-all ${empty ? "bg-border" : "bg-brand"}`}
-          style={{ width: `${100 - usedPct}%` }}
-        />
-      </div>
-      <div className="flex items-center justify-between gap-3">
-        <button
-          disabled={pending || empty}
-          onClick={() => startTransition(() => consumeBatchPortion(batch.id, 1))}
-          className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-brand-foreground hover:bg-brand-dark disabled:cursor-not-allowed disabled:bg-border disabled:text-muted"
-        >
-          {pending ? <Spinner className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
-          Used a portion
-        </button>
-        <div className="flex shrink-0 gap-3 text-xs">
-          <button onClick={() => setEditing(true)} className="font-medium text-brand hover:text-brand-dark">
-            Edit
-          </button>
-          <button onClick={() => setConfirmingRemove(true)} className="font-medium text-danger">
-            Remove
-          </button>
+      {!empty && (
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {Array.from({ length: batch.portions_remaining }).map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              title="Tick off a used portion"
+              disabled={pending}
+              onClick={() => startTransition(() => consumeBatchPortion(batch.id, 1))}
+              className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-background text-muted hover:border-brand hover:bg-brand/10 hover:text-brand-dark disabled:cursor-wait disabled:opacity-60"
+            >
+              {pending ? <Spinner className="h-3 w-3" /> : <Check className="h-3.5 w-3.5" />}
+            </button>
+          ))}
         </div>
+      )}
+      <div className="flex items-center justify-end gap-3 text-xs">
+        <button onClick={() => setEditing(true)} className="font-medium text-brand hover:text-brand-dark">
+          Edit
+        </button>
+        <button onClick={() => setConfirmingRemove(true)} className="font-medium text-danger">
+          Remove
+        </button>
       </div>
     </div>
   );

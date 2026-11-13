@@ -125,3 +125,36 @@ export async function confirmCooked(entryId: string) {
   revalidatePath("/pantry");
   revalidatePath("/dashboard");
 }
+
+/**
+ * Mark a planned meal as cooked by eating from an existing batch, instead
+ * of cooking fresh — deducts portions from that batch rather than pantry
+ * ingredients.
+ */
+export async function confirmCookedFromBatch(entryId: string, batchId: string, qty: number) {
+  const supabase = await createClient();
+
+  const { data: batch, error: fetchError } = await supabase
+    .from("meal_batches")
+    .select("portions_remaining")
+    .eq("id", batchId)
+    .single();
+  if (fetchError || !batch) throw new Error(fetchError?.message ?? "Batch not found");
+
+  const deduct = Math.min(batch.portions_remaining, Math.max(1, qty));
+  const { error: batchError } = await supabase
+    .from("meal_batches")
+    .update({ portions_remaining: batch.portions_remaining - deduct })
+    .eq("id", batchId);
+  if (batchError) throw new Error(batchError.message);
+
+  const { error: updateError } = await supabase
+    .from("meal_plan_entries")
+    .update({ cooked: true, cooked_at: new Date().toISOString() })
+    .eq("id", entryId);
+  if (updateError) throw new Error(updateError.message);
+
+  revalidatePath("/planner");
+  revalidatePath("/batches");
+  revalidatePath("/dashboard");
+}

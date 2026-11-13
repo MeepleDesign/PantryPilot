@@ -156,7 +156,7 @@ export default async function DashboardPage() {
                 <li key={b.id} className="flex justify-between">
                   <span>{b.recipe_name}</span>
                   <span className="text-muted">
-                    {b.portions_remaining} of {b.portions_total} left
+                    {b.portions_remaining} portion{b.portions_remaining === 1 ? "" : "s"} left
                   </span>
                 </li>
               ))}

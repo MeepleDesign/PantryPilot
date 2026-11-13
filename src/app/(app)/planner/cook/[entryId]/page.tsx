@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MarkCookedButton } from "@/components/cook-view-actions";
 import { LogBatchPrompt } from "@/components/log-batch-prompt";
+import { BatchCookOption, type AvailableBatch } from "@/components/batch-cook-option";
 import { RecipePhotoPrompt } from "@/components/recipe-photo-prompt";
 import type { MealBatchStorage } from "@/lib/types";
 
@@ -71,6 +72,12 @@ export default async function CookViewPage({
     if (b.meal_plan_entry_id) batchByEntry[b.meal_plan_entry_id] = b;
   }
 
+  const { data: availableBatches } = await supabase
+    .from("meal_batches")
+    .select("id, recipe_id, recipe_name, portions_remaining, storage_location")
+    .eq("household_id", mainEntry.household_id)
+    .gt("portions_remaining", 0);
+
   const label = new Date(mainEntry.plan_date).toLocaleDateString("en-GB", {
     weekday: "long",
     day: "numeric",
@@ -96,6 +103,7 @@ export default async function CookViewPage({
         label="Main"
         entry={mainEntryWithPhoto}
         existingBatch={batchByEntry[mainEntry.id] ?? null}
+        availableBatches={availableBatches ?? []}
       />
 
       {sideEntriesWithPhoto.map((side) => (
@@ -104,6 +112,7 @@ export default async function CookViewPage({
           label="Side"
           entry={side}
           existingBatch={batchByEntry[side.id] ?? null}
+          availableBatches={availableBatches ?? []}
         />
       ))}
     </div>
@@ -114,6 +123,7 @@ function RecipeBlock({
   label,
   entry,
   existingBatch,
+  availableBatches,
 }: {
   label: "Main" | "Side";
   entry: {
@@ -138,6 +148,7 @@ function RecipeBlock({
     } | null;
   };
   existingBatch: { portions_total: number; storage_location: MealBatchStorage } | null;
+  availableBatches: AvailableBatch[];
 }) {
   const recipe = entry.recipes;
   if (!recipe) return null;
@@ -161,6 +172,14 @@ function RecipeBlock({
         </div>
         <MarkCookedButton entryId={entry.id} cooked={entry.cooked} />
       </div>
+
+      {!entry.cooked && (
+        <BatchCookOption
+          entryId={entry.id}
+          recipeId={entry.recipe_id}
+          batches={availableBatches}
+        />
+      )}
 
       {entry.cooked && (
         <>
