@@ -34,12 +34,16 @@ export default async function DashboardPage() {
     await Promise.all([
     supabase
       .from("meal_plan_entries")
-      .select("*, recipes(name)")
+      .select(
+        "*, recipes(name), batch:meal_batches!meal_plan_entries_batch_id_fkey(recipe_name)",
+      )
       .eq("household_id", household.id)
       .eq("plan_date", today),
     supabase
       .from("meal_plan_entries")
-      .select("*, recipes(name)")
+      .select(
+        "*, recipes(name), batch:meal_batches!meal_plan_entries_batch_id_fkey(recipe_name)",
+      )
       .eq("household_id", household.id)
       .gt("plan_date", today)
       .lte("plan_date", weekAhead.toISOString().slice(0, 10))
@@ -93,7 +97,7 @@ export default async function DashboardPage() {
               {(todayMeals.data as MealPlanEntry[]).map((m) => (
                 <li key={m.id}>
                   <span className="capitalize text-muted">{m.meal_slot}:</span>{" "}
-                  {m.recipes?.name}
+                  {m.recipes?.name ?? m.batch?.recipe_name}
                 </li>
               ))}
             </ul>
@@ -139,7 +143,7 @@ export default async function DashboardPage() {
             <ul className="space-y-1 text-sm">
               {(upcomingMeals.data as MealPlanEntry[]).map((m) => (
                 <li key={m.id} className="flex justify-between">
-                  <span>{m.recipes?.name}</span>
+                  <span>{m.recipes?.name ?? m.batch?.recipe_name}</span>
                   <span className="text-muted">{m.plan_date}</span>
                 </li>
               ))}

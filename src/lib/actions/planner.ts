@@ -33,6 +33,73 @@ export async function addMealPlanEntry(input: {
   revalidatePath("/shopping-list");
 }
 
+export async function addBatchMealPlanEntry(input: {
+  plan_date: string;
+  meal_slot: MealSlot;
+  batch_id: string;
+  batch_qty: number;
+}) {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const { household } = await getCurrentHousehold();
+
+  const { error } = await supabase.from("meal_plan_entries").insert({
+    household_id: household.id,
+    plan_date: input.plan_date,
+    meal_slot: input.meal_slot,
+    recipe_id: null,
+    batch_multiplier: 1,
+    batch_id: input.batch_id,
+    batch_qty: Math.max(1, input.batch_qty),
+    created_by: auth.user?.id,
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/planner");
+  revalidatePath("/dashboard");
+}
+
+/**
+ * Mark a planner entry that references a stored batch (rather than a
+ * recipe) as eaten, deducting the planned quantity from that batch.
+ */
+export async function confirmBatchEntryCooked(entryId: string) {
+  const supabase = await createClient();
+
+  const { data: entry, error: entryError } = await supabase
+    .from("meal_plan_entries")
+    .select("batch_id, batch_qty")
+    .eq("id", entryId)
+    .single();
+  if (entryError || !entry || !entry.batch_id) {
+    throw new Error(entryError?.message ?? "Entry not found");
+  }
+
+  const { data: batch, error: batchError } = await supabase
+    .from("meal_batches")
+    .select("portions_remaining")
+    .eq("id", entry.batch_id)
+    .single();
+  if (batchError || !batch) throw new Error(batchError?.message ?? "Batch not found");
+
+  const deduct = Math.min(batch.portions_remaining, entry.batch_qty ?? 1);
+  const { error: updateBatchError } = await supabase
+    .from("meal_batches")
+    .update({ portions_remaining: batch.portions_remaining - deduct })
+    .eq("id", entry.batch_id);
+  if (updateBatchError) throw new Error(updateBatchError.message);
+
+  const { error: updateEntryError } = await supabase
+    .from("meal_plan_entries")
+    .update({ cooked: true, cooked_at: new Date().toISOString() })
+    .eq("id", entryId);
+  if (updateEntryError) throw new Error(updateEntryError.message);
+
+  revalidatePath("/planner");
+  revalidatePath("/batches");
+  revalidatePath("/dashboard");
+}
+
 export async function updateMealPlanBatch(id: string, batch_multiplier: number) {
   const supabase = await createClient();
   const { error } = await supabase

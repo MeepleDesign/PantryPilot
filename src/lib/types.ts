@@ -55,12 +55,15 @@ export type MealPlanEntry = {
   household_id: string;
   plan_date: string;
   meal_slot: MealSlot;
-  recipe_id: string;
+  recipe_id: string | null;
   batch_multiplier: number;
   cooked: boolean;
   cooked_at: string | null;
   side_of: string | null;
+  batch_id: string | null;
+  batch_qty: number | null;
   recipes?: Recipe;
+  batch?: { recipe_name: string; portions_remaining: number } | null;
   sides?: MealPlanEntry[];
 };
 

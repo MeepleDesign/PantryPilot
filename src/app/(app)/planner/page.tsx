@@ -4,7 +4,7 @@ import { MealEntryRow } from "@/components/meal-entry-row";
 import { QuickAddMealForm } from "@/components/quick-add-meal-form";
 import { GenerateWeekForm } from "@/components/generate-week-form";
 import { PROTEIN_TAGS } from "@/lib/taxonomies";
-import type { MealPlanEntry, Recipe } from "@/lib/types";
+import type { MealPlanEntry } from "@/lib/types";
 
 function dateRange(days: number) {
   const dates: string[] = [];
@@ -25,7 +25,9 @@ export default async function PlannerPage() {
 
   const { data: entries, error } = await supabase
     .from("meal_plan_entries")
-    .select("*, recipes(name, servings, course)")
+    .select(
+      "*, recipes(name, servings, course), batch:meal_batches!meal_plan_entries_batch_id_fkey(recipe_name, portions_remaining)",
+    )
     .eq("household_id", household.id)
     .gte("plan_date", dates[0])
     .lte("plan_date", dates[dates.length - 1])
@@ -38,6 +40,14 @@ export default async function PlannerPage() {
     .or(`household_id.is.null,household_id.eq.${household.id}`)
     .order("name");
   if (recipesError) throw new Error(recipesError.message);
+
+  const { data: availableBatches, error: batchesError } = await supabase
+    .from("meal_batches")
+    .select("id, recipe_name, portions_remaining, storage_location")
+    .eq("household_id", household.id)
+    .gt("portions_remaining", 0)
+    .order("recipe_name");
+  if (batchesError) throw new Error(batchesError.message);
 
   const sideRecipes = (recipes ?? []).filter((r) => r.course === "side");
 
@@ -111,7 +121,7 @@ export default async function PlannerPage() {
                 <p className="px-3 py-2 text-xs text-muted">Nothing planned</p>
               )}
               <div className="border-t border-border">
-                <QuickAddMealForm date={date} recipes={recipes ?? []} />
+                <QuickAddMealForm date={date} recipes={recipes ?? []} batches={availableBatches ?? []} />
               </div>
             </div>
           );
