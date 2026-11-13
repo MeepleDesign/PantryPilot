@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { Check, Snowflake, Refrigerator, Layers } from "lucide-react";
 import { Spinner } from "@/components/spinner";
@@ -198,7 +199,16 @@ function BatchRow({ batch }: { batch: MealBatch }) {
   return (
     <div className="px-3 py-2.5 text-sm">
       <div className="mb-1.5">
-        <p className="truncate font-medium">{batch.recipe_name}</p>
+        {batch.recipe_id ? (
+          <Link
+            href={`/recipes/${batch.recipe_id}`}
+            className="block truncate font-medium text-brand hover:text-brand-dark hover:underline"
+          >
+            {batch.recipe_name}
+          </Link>
+        ) : (
+          <p className="truncate font-medium">{batch.recipe_name}</p>
+        )}
         <p className="flex items-center gap-1 text-xs text-muted">
           <Layers className="h-3 w-3" />
           {empty ? (
