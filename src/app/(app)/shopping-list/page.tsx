@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { PackageCheck, ShoppingCart, Receipt } from "lucide-react";
+import { PackageCheck, ShoppingCart, Receipt, ArrowRight } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -58,18 +58,28 @@ export default async function ShoppingListPage() {
           </p>
         </div>
         <div className="flex gap-2 print:hidden">
-          <Link
-            href="/shopping-list/spending"
-            className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-surface"
-          >
-            <Receipt className="h-4 w-4" />
-            Spending
-          </Link>
           <PrintButton label="Print" />
           <RegenerateButton />
           <ResetButton />
         </div>
       </div>
+
+      <Link
+        href="/shopping-list/spending"
+        className="mb-4 flex items-center justify-between gap-3 rounded-xl border border-dashed border-brand/40 bg-brand/5 p-4 transition-colors hover:bg-brand/10 print:hidden"
+      >
+        <div className="flex items-center gap-2">
+          <Receipt className="h-5 w-5 shrink-0 text-brand" />
+          <div>
+            <p className="text-sm font-medium">Spending &amp; receipts</p>
+            <p className="text-xs text-muted">
+              Track what you&apos;ve actually spent at the till, separate from this list, by
+              scanning your receipts here.
+            </p>
+          </div>
+        </div>
+        <ArrowRight className="h-4 w-4 shrink-0 text-muted" />
+      </Link>
 
       <div className="mb-4 print:hidden">
         <AddManualItemForm unitSystem={unitSystem} />

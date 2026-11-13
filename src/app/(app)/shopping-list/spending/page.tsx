@@ -3,8 +3,7 @@ import { Receipt } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { ReceiptScanSection } from "@/components/receipt-scan-section";
-import { AddReceiptToPantryButton } from "@/components/add-receipt-to-pantry";
-import { EmptyState } from "@/components/empty-state";
+import { ReceiptHistory } from "@/components/receipt-history";
 import type { UnitSystem } from "@/lib/units";
 
 function startOfMonthIso() {
@@ -69,7 +68,10 @@ export default async function SpendingPage() {
         Spending
       </h1>
       <p className="mb-6 text-sm text-muted">
-        Scan a receipt or order confirmation to track what you&apos;re actually spending.
+        This tracks what you&apos;ve actually spent at the till — separate from your shopping list,
+        which is what you still need to buy. Scan a receipt or order confirmation below each time
+        you shop, and it&apos;ll total up your spend here and (optionally) add the items to your
+        pantry.
       </p>
 
       <div className="mb-6 grid grid-cols-2 gap-4">
@@ -85,44 +87,7 @@ export default async function SpendingPage() {
 
       <ReceiptScanSection unitSystem={unitSystem} />
 
-      {allScans.length > 0 ? (
-        <div className="space-y-4">
-          {allScans.map((scan) => {
-            const scanTotal = scan.receipt_items.reduce((sum, i) => sum + Number(i.price), 0);
-            return (
-              <div key={scan.id} className="rounded-xl border border-border bg-surface shadow-sm">
-                <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-                  <div>
-                    <p className="text-sm font-medium">{scan.store_name ?? "Receipt"}</p>
-                    <p className="text-xs text-muted">{scan.purchased_at}</p>
-                  </div>
-                  <p className="text-sm font-medium">{money(scanTotal)}</p>
-                </div>
-                <div className="divide-y divide-border">
-                  {scan.receipt_items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between px-4 py-2 text-sm">
-                      <span>{item.ingredient_name}</span>
-                      <span className="text-muted">{money(Number(item.price))}</span>
-                    </div>
-                  ))}
-                </div>
-                <AddReceiptToPantryButton
-                  items={scan.receipt_items.map((item) => ({
-                    ingredient_name: item.ingredient_name,
-                    quantity: item.quantity,
-                    unit: item.unit,
-                  }))}
-                  unitSystem={unitSystem}
-                />
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div className="rounded-xl border border-dashed border-border">
-          <EmptyState icon={Receipt} title="No receipts scanned yet" body="Scan one above to start tracking your spend." />
-        </div>
-      )}
+      <ReceiptHistory scans={allScans} unitSystem={unitSystem} />
     </div>
   );
 }
