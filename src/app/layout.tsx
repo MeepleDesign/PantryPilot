@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { ToastProvider } from "@/components/toast";
 import { ThemeScript } from "@/components/theme-script";
@@ -14,9 +14,34 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
+  ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+  : "https://pantrypilot-five.vercel.app";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "PantryPilot",
   description: "Plan meals, track your pantry, and shop smarter.",
+  applicationName: "PantryPilot",
+  openGraph: {
+    title: "PantryPilot",
+    description: "Plan meals, track your pantry, and shop smarter.",
+    siteName: "PantryPilot",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PantryPilot",
+    description: "Plan meals, track your pantry, and shop smarter.",
+  },
+};
+
+// Tints the mobile browser bar to match the app's top bar (surface colour).
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#1c2024" },
+  ],
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
