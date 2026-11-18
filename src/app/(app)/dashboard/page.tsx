@@ -14,9 +14,11 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { expiryStatus } from "@/lib/expiry";
 import { formatMoney } from "@/lib/currency";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
+import { formatShortDate } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
 import { KitchenIllustration } from "@/components/illustrations";
+import { WelcomeCard } from "@/components/welcome-card";
 import type { MealBatch, MealPlanEntry, PantryItem } from "@/lib/types";
 
 function todayIso() {
@@ -87,6 +89,13 @@ export default async function DashboardPage() {
     (spendRows.data as { receipt_items: { price: number }[] }[] | null) ?? []
   ).reduce((sum, scan) => sum + scan.receipt_items.reduce((s, i) => s + Number(i.price), 0), 0);
 
+  const hasPlannedMeals = Boolean(todayMeals.data?.length || upcomingMeals.data?.length);
+  const showWelcome =
+    (allPantryItems.length === 0 || !hasPlannedMeals) &&
+    !batches.data?.length &&
+    spentThisMonth === 0 &&
+    !shoppingItems.data?.length;
+
   return (
     <div>
       <section className="relative mb-6 overflow-hidden rounded-2xl border border-brand/15 bg-gradient-to-br from-brand/10 via-surface to-accent/10 px-5 py-5 shadow-sm sm:px-6 sm:py-6">
@@ -99,6 +108,10 @@ export default async function DashboardPage() {
         <p className="relative mt-0.5 text-sm text-muted">{household.name}</p>
         <KitchenIllustration className="pointer-events-none absolute -bottom-1 right-1 h-14 w-24 opacity-90 sm:-bottom-2 sm:right-6 sm:h-28 sm:w-48 sm:opacity-100" />
       </section>
+
+      {showWelcome && (
+        <WelcomeCard pantryDone={allPantryItems.length > 0} planDone={hasPlannedMeals} />
+      )}
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card title="Today's meals" href="/planner" icon={Utensils}>
@@ -147,7 +160,7 @@ export default async function DashboardPage() {
                 <li key={p.id} className="flex items-center justify-between gap-3">
                   <span className="min-w-0 truncate">{p.ingredient_name}</span>
                   <span className="shrink-0 rounded-full bg-danger/10 px-2 py-0.5 text-xs font-medium text-danger">
-                    Expired {shortDate(p.expiry_date)}
+                    Expired {formatShortDate(p.expiry_date)}
                   </span>
                 </li>
               ))}
@@ -155,7 +168,7 @@ export default async function DashboardPage() {
                 <li key={p.id} className="flex items-center justify-between gap-3">
                   <span className="min-w-0 truncate">{p.ingredient_name}</span>
                   <span className="shrink-0 rounded-full bg-warn/10 px-2 py-0.5 text-xs font-medium text-warn">
-                    Use by {shortDate(p.expiry_date)}
+                    Use by {formatShortDate(p.expiry_date)}
                   </span>
                 </li>
               ))}
@@ -171,7 +184,7 @@ export default async function DashboardPage() {
               {(upcomingMeals.data as MealPlanEntry[]).map((m) => (
                 <li key={m.id} className="flex items-center justify-between gap-3">
                   <span className="min-w-0 truncate">{m.recipes?.name ?? m.batch?.recipe_name}</span>
-                  <span className="shrink-0 text-xs text-muted">{shortDate(m.plan_date, true)}</span>
+                  <span className="shrink-0 text-xs text-muted">{formatShortDate(m.plan_date, true)}</span>
                 </li>
               ))}
             </ul>
@@ -218,15 +231,6 @@ export default async function DashboardPage() {
       </div>
     </div>
   );
-}
-
-function shortDate(iso: string | null | undefined, withDay = false) {
-  if (!iso) return "";
-  try {
-    return format(parseISO(iso), withDay ? "EEE d MMM" : "d MMM");
-  } catch {
-    return iso;
-  }
 }
 
 function BigStat({ value, label }: { value: React.ReactNode; label: string }) {
