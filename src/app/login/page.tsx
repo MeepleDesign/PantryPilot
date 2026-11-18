@@ -1,6 +1,7 @@
 import { signIn, signUp } from "./actions";
 import Link from "next/link";
 import { ChefHat } from "lucide-react";
+import { GroceriesIllustration } from "@/components/illustrations";
 
 export default async function LoginPage({
   searchParams,
@@ -10,13 +11,20 @@ export default async function LoginPage({
   const error = typeof params.error === "string" ? params.error : null;
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-[28rem] bg-gradient-to-b from-brand/10 via-accent/5 to-transparent"
+      />
+      <div className="relative w-full max-w-sm">
+        <GroceriesIllustration className="mx-auto mb-4 h-24 w-48" />
         <div className="mb-8 text-center">
-          <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-sm">
-            <ChefHat className="h-6 w-6" />
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tight">PantryPilot</h1>
+          <h1 className="inline-flex items-center gap-2 text-2xl font-semibold tracking-tight">
+            <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-sm">
+              <ChefHat className="h-5 w-5" />
+            </span>
+            PantryPilot
+          </h1>
           <p className="mt-1 text-sm text-muted">
             Meal planning, pantry tracking and shopping lists for your household.
           </p>

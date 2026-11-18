@@ -14,7 +14,9 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { expiryStatus } from "@/lib/expiry";
 import { formatMoney } from "@/lib/currency";
+import { format, parseISO } from "date-fns";
 import { EmptyState } from "@/components/empty-state";
+import { KitchenIllustration } from "@/components/illustrations";
 import type { MealBatch, MealPlanEntry, PantryItem } from "@/lib/types";
 
 function todayIso() {
@@ -87,19 +89,27 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-semibold tracking-tight">
-        Hi {profile.display_name ?? "there"} 👋
-      </h1>
-      <p className="mb-6 text-sm text-muted">{household.name}</p>
+      <section className="relative mb-6 overflow-hidden rounded-2xl border border-brand/15 bg-gradient-to-br from-brand/10 via-surface to-accent/10 px-5 py-5 shadow-sm sm:px-6 sm:py-6">
+        <p className="text-xs font-semibold uppercase tracking-wider text-brand-dark">
+          {format(new Date(), "EEEE d MMMM")}
+        </p>
+        <h1 className="relative mt-1 max-w-[65%] text-2xl font-semibold tracking-tight sm:max-w-none">
+          Hi {profile.display_name ?? "there"} 👋
+        </h1>
+        <p className="relative mt-0.5 text-sm text-muted">{household.name}</p>
+        <KitchenIllustration className="pointer-events-none absolute -bottom-1 right-1 h-14 w-24 opacity-90 sm:-bottom-2 sm:right-6 sm:h-28 sm:w-48 sm:opacity-100" />
+      </section>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Card title="Today's meals" href="/planner" icon={Utensils}>
           {todayMeals.data?.length ? (
             <ul className="space-y-1 text-sm">
               {(todayMeals.data as MealPlanEntry[]).map((m) => (
-                <li key={m.id}>
-                  <span className="capitalize text-muted">{m.meal_slot}:</span>{" "}
-                  {m.recipes?.name ?? m.batch?.recipe_name}
+                <li key={m.id} className="flex items-center gap-2">
+                  <span className="rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium capitalize text-brand-dark">
+                    {m.meal_slot}
+                  </span>
+                  <span className="min-w-0 truncate">{m.recipes?.name ?? m.batch?.recipe_name}</span>
                 </li>
               ))}
             </ul>
@@ -110,10 +120,10 @@ export default async function DashboardPage() {
 
         <Card title="Shopping list" href="/shopping-list" icon={ShoppingCart}>
           {shoppingItems.data?.length ? (
-            <p className="text-sm">
-              <span className="font-medium">{shoppingItems.data.length}</span> item
-              {shoppingItems.data.length === 1 ? "" : "s"} still to buy
-            </p>
+            <BigStat
+              value={shoppingItems.data.length}
+              label={`item${shoppingItems.data.length === 1 ? "" : "s"} still to buy`}
+            />
           ) : (
             <EmptyState icon={ShoppingCart} title="Shopping list is clear" compact />
           )}
@@ -121,10 +131,10 @@ export default async function DashboardPage() {
 
         <Card title="Pantry" href="/pantry" icon={Archive}>
           {allPantryItems.length > 0 ? (
-            <p className="text-sm">
-              <span className="font-medium">{allPantryItems.length}</span> item
-              {allPantryItems.length === 1 ? "" : "s"} tracked
-            </p>
+            <BigStat
+              value={allPantryItems.length}
+              label={`item${allPantryItems.length === 1 ? "" : "s"} tracked`}
+            />
           ) : (
             <EmptyState icon={Archive} title="Your pantry is empty" body="Add what you have to get started." compact />
           )}
@@ -134,15 +144,19 @@ export default async function DashboardPage() {
           {expiredItems.length || soonItems.length ? (
             <ul className="space-y-1 text-sm">
               {expiredItems.slice(0, 5).map((p) => (
-                <li key={p.id} className="flex justify-between">
-                  <span>{p.ingredient_name}</span>
-                  <span className="font-medium text-danger">Expired {p.expiry_date}</span>
+                <li key={p.id} className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate">{p.ingredient_name}</span>
+                  <span className="shrink-0 rounded-full bg-danger/10 px-2 py-0.5 text-xs font-medium text-danger">
+                    Expired {shortDate(p.expiry_date)}
+                  </span>
                 </li>
               ))}
               {soonItems.slice(0, 5 - Math.min(expiredItems.length, 5)).map((p) => (
-                <li key={p.id} className="flex justify-between">
-                  <span>{p.ingredient_name}</span>
-                  <span className="text-warn">Use by {p.expiry_date}</span>
+                <li key={p.id} className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate">{p.ingredient_name}</span>
+                  <span className="shrink-0 rounded-full bg-warn/10 px-2 py-0.5 text-xs font-medium text-warn">
+                    Use by {shortDate(p.expiry_date)}
+                  </span>
                 </li>
               ))}
             </ul>
@@ -155,9 +169,9 @@ export default async function DashboardPage() {
           {upcomingMeals.data?.length ? (
             <ul className="space-y-1 text-sm">
               {(upcomingMeals.data as MealPlanEntry[]).map((m) => (
-                <li key={m.id} className="flex justify-between">
-                  <span>{m.recipes?.name ?? m.batch?.recipe_name}</span>
-                  <span className="text-muted">{m.plan_date}</span>
+                <li key={m.id} className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate">{m.recipes?.name ?? m.batch?.recipe_name}</span>
+                  <span className="shrink-0 text-xs text-muted">{shortDate(m.plan_date, true)}</span>
                 </li>
               ))}
             </ul>
@@ -170,9 +184,9 @@ export default async function DashboardPage() {
           {batches.data?.length ? (
             <ul className="space-y-1 text-sm">
               {(batches.data as MealBatch[]).slice(0, 5).map((b) => (
-                <li key={b.id} className="flex justify-between">
-                  <span>{b.recipe_name}</span>
-                  <span className="text-muted">
+                <li key={b.id} className="flex items-center justify-between gap-3">
+                  <span className="min-w-0 truncate">{b.recipe_name}</span>
+                  <span className="shrink-0 text-xs text-muted">
                     {b.portions_remaining} portion{b.portions_remaining === 1 ? "" : "s"} left
                   </span>
                 </li>
@@ -185,10 +199,10 @@ export default async function DashboardPage() {
 
         <Card title="Food waste" href="/pantry/waste" icon={Trash2}>
           {wastedThisMonth > 0 ? (
-            <p className="text-sm">
-              <span className="font-medium">{wastedThisMonth}</span> item
-              {wastedThisMonth === 1 ? "" : "s"} wasted this month
-            </p>
+            <BigStat
+              value={wastedThisMonth}
+              label={`item${wastedThisMonth === 1 ? "" : "s"} wasted this month`}
+            />
           ) : (
             <EmptyState icon={Trash2} title="No waste logged this month" compact />
           )}
@@ -196,15 +210,31 @@ export default async function DashboardPage() {
 
         <Card title="Spending" href="/shopping-list/spending" icon={Receipt}>
           {spentThisMonth > 0 ? (
-            <p className="text-sm">
-              <span className="font-medium">{formatMoney(spentThisMonth, profile.region)}</span> spent this month
-            </p>
+            <BigStat value={formatMoney(spentThisMonth, profile.region)} label="spent this month" />
           ) : (
             <EmptyState icon={Receipt} title="No spend tracked this month" body="Scan a receipt to start." compact />
           )}
         </Card>
       </div>
     </div>
+  );
+}
+
+function shortDate(iso: string | null | undefined, withDay = false) {
+  if (!iso) return "";
+  try {
+    return format(parseISO(iso), withDay ? "EEE d MMM" : "d MMM");
+  } catch {
+    return iso;
+  }
+}
+
+function BigStat({ value, label }: { value: React.ReactNode; label: string }) {
+  return (
+    <p className="flex items-baseline gap-2">
+      <span className="text-3xl font-semibold tracking-tight tabular-nums">{value}</span>
+      <span className="text-sm text-muted">{label}</span>
+    </p>
   );
 }
 
@@ -220,7 +250,7 @@ function Card({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md">
+    <div className="flex flex-col rounded-xl border border-border bg-surface p-4 shadow-sm transition-shadow hover:shadow-md">
       <div className="mb-3 flex items-center justify-between">
         <h2 className="flex items-center gap-2 font-medium">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand/10 text-brand-dark">
