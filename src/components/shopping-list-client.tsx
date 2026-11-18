@@ -24,10 +24,17 @@ export function RegenerateButton() {
     <button
       disabled={pending}
       onClick={() => startTransition(() => regenerateShoppingList())}
-      className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-background disabled:cursor-wait disabled:opacity-60"
+      className="flex items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium shadow-sm transition-colors hover:bg-background disabled:cursor-wait disabled:opacity-60 sm:px-4"
     >
       {pending ? <Spinner className="h-4 w-4" /> : <RefreshCw className="h-4 w-4" />}
-      {pending ? "Recalculating…" : "Recalculate from plan"}
+      {pending ? (
+        "Recalculating…"
+      ) : (
+        <>
+          <span className="sm:hidden">Recalculate</span>
+          <span className="hidden sm:inline">Recalculate from plan</span>
+        </>
+      )}
     </button>
   );
 }
@@ -38,7 +45,7 @@ export function ResetButton() {
 
   if (confirming) {
     return (
-      <div className="flex items-center gap-2 text-sm">
+      <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="text-muted">Delete everything on the list?</span>
         <button
           disabled={pending}
@@ -67,10 +74,11 @@ export function ResetButton() {
   return (
     <button
       onClick={() => setConfirming(true)}
-      className="flex items-center gap-2 rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-danger shadow-sm transition-colors hover:bg-background"
+      className="flex items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium text-danger shadow-sm transition-colors hover:bg-background sm:px-4"
     >
       <X className="h-4 w-4" />
-      Reset list
+      <span className="sm:hidden">Reset</span>
+      <span className="hidden sm:inline">Reset list</span>
     </button>
   );
 }

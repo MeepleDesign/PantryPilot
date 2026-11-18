@@ -57,7 +57,7 @@ export default async function ShoppingListPage() {
             after changing your meal plan
           </p>
         </div>
-        <div className="flex gap-2 print:hidden">
+        <div className="flex flex-wrap items-center gap-2 print:hidden">
           <PrintButton label="Print" />
           <RegenerateButton />
           <ResetButton />
