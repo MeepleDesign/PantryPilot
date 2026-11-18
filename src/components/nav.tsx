@@ -11,6 +11,9 @@ import {
   ShoppingCart,
   Snowflake,
   ShieldCheck,
+  Settings,
+  User,
+  CreditCard,
 } from "lucide-react";
 
 const ITEMS = [
@@ -105,5 +108,46 @@ export function Nav({
         })}
       </nav>
     </>
+  );
+}
+
+const EXTRA_SECTIONS = [
+  { href: "/admin", label: "Admin", icon: ShieldCheck },
+  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/profile", label: "Profile", icon: User },
+  { href: "/billing", label: "Billing", icon: CreditCard },
+];
+
+/**
+ * Left side of the top bar: the brand mark on mobile (where the sidebar is
+ * hidden) and a household / section breadcrumb on all sizes.
+ */
+export function TopBarTitle({ householdName }: { householdName: string }) {
+  const pathname = usePathname();
+  const section = [...ITEMS, ...EXTRA_SECTIONS].find((i) => pathname.startsWith(i.href));
+  const Icon = section?.icon;
+
+  return (
+    <div className="flex min-w-0 items-center gap-2.5">
+      <Link
+        href="/dashboard"
+        aria-label="PantryPilot home"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-foreground shadow-sm md:hidden"
+      >
+        <ChefHat className="h-4 w-4" />
+      </Link>
+      <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5 text-sm">
+        <span className="hidden truncate text-muted sm:inline">{householdName}</span>
+        {section && (
+          <>
+            <span aria-hidden className="hidden text-border sm:inline">/</span>
+            <span className="flex items-center gap-1.5 font-medium">
+              {Icon && <Icon className="h-4 w-4 text-brand" />}
+              {section.label}
+            </span>
+          </>
+        )}
+      </nav>
+    </div>
   );
 }

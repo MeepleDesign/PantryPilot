@@ -1,7 +1,7 @@
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { expiryStatus } from "@/lib/expiry";
-import { Nav } from "@/components/nav";
+import { Nav, TopBarTitle } from "@/components/nav";
 import { AccountMenu } from "@/components/account-menu";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -24,7 +24,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         isAdmin={profile.is_admin}
       />
       <main className="min-w-0 flex-1 pb-20 md:pb-0">
-        <div className="flex items-center justify-end border-b border-border bg-surface px-4 py-3 md:px-8 print:hidden">
+        <div className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-surface/90 px-4 py-2.5 backdrop-blur md:px-8 print:hidden">
+          <TopBarTitle householdName={household.name} />
           <AccountMenu
             displayName={profile.display_name ?? "You"}
             householdName={household.name}
