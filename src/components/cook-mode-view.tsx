@@ -55,14 +55,7 @@ export function CookModeView({
         <span className="text-sm font-medium text-muted">
           Step {stepIndex + 1} of {steps.length}
         </span>
-        <button
-          type="button"
-          onClick={() => setShowIngredients(true)}
-          className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-surface"
-        >
-          <ListChecks className="h-4 w-4" />
-          Ingredients
-        </button>
+        <span className="w-[72px]" aria-hidden />
       </div>
 
       <div className="flex flex-1 items-center justify-center overflow-y-auto p-6 sm:p-10">
@@ -71,7 +64,17 @@ export function CookModeView({
         </p>
       </div>
 
-      <div className="flex gap-3 border-t border-border p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+      <div className="flex flex-col gap-3 border-t border-border p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+        <button
+          type="button"
+          onClick={() => setShowIngredients(true)}
+          className="flex w-full items-center justify-center gap-2 rounded-xl border border-border py-4 text-base font-medium hover:bg-surface"
+        >
+          <ListChecks className="h-5 w-5" />
+          Ingredients
+        </button>
+
+        <div className="flex gap-3">
         <button
           type="button"
           disabled={isFirst}
@@ -90,6 +93,7 @@ export function CookModeView({
           Next
           <ChevronRight className="h-5 w-5" />
         </button>
+        </div>
       </div>
 
       {showIngredients && (
