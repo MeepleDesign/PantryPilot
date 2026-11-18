@@ -90,6 +90,10 @@ export default async function DashboardPage() {
   ).reduce((sum, scan) => sum + scan.receipt_items.reduce((s, i) => s + Number(i.price), 0), 0);
 
   const hasPlannedMeals = Boolean(todayMeals.data?.length || upcomingMeals.data?.length);
+  const todayMeal = (todayMeals.data as MealPlanEntry[] | null)?.[0];
+  const useSoonCount = expiredItems.length + soonItems.length;
+  const toBuyCount = shoppingItems.data?.length ?? 0;
+  const hasQuickFacts = Boolean(todayMeal) || useSoonCount > 0 || toBuyCount > 0;
   const showWelcome =
     (allPantryItems.length === 0 || !hasPlannedMeals) &&
     !batches.data?.length &&
@@ -106,6 +110,37 @@ export default async function DashboardPage() {
           Hi {profile.display_name ?? "there"} 👋
         </h1>
         <p className="relative mt-0.5 text-sm text-muted">{household.name}</p>
+        {hasQuickFacts && (
+          <div className="relative mt-3 flex max-w-[75%] flex-wrap gap-1.5 sm:max-w-[55%]">
+            {todayMeal && (
+              <Link
+                href="/planner"
+                className="flex items-center gap-1 rounded-full border border-brand/20 bg-surface/80 px-2.5 py-1 text-xs font-medium backdrop-blur-sm transition-colors hover:bg-surface"
+              >
+                <span className="capitalize text-muted">{todayMeal.meal_slot}:</span>
+                <span className="min-w-0 truncate">
+                  {todayMeal.recipes?.name ?? todayMeal.batch?.recipe_name}
+                </span>
+              </Link>
+            )}
+            {useSoonCount > 0 && (
+              <Link
+                href="/pantry"
+                className="flex items-center gap-1 rounded-full border border-warn/30 bg-warn/10 px-2.5 py-1 text-xs font-medium text-warn backdrop-blur-sm transition-colors hover:bg-warn/20"
+              >
+                {useSoonCount} to use soon
+              </Link>
+            )}
+            {toBuyCount > 0 && (
+              <Link
+                href="/shopping-list"
+                className="flex items-center gap-1 rounded-full border border-brand/20 bg-surface/80 px-2.5 py-1 text-xs font-medium backdrop-blur-sm transition-colors hover:bg-surface"
+              >
+                {toBuyCount} to buy
+              </Link>
+            )}
+          </div>
+        )}
         <KitchenIllustration className="pointer-events-none absolute -bottom-1 right-1 h-14 w-24 opacity-90 sm:-bottom-2 sm:right-6 sm:h-28 sm:w-48 sm:opacity-100" />
       </section>
 
