@@ -55,7 +55,7 @@ export function ResetButton() {
               setConfirming(false);
             });
           }}
-          className="flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 font-medium text-white disabled:cursor-wait disabled:opacity-60"
+          className="flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 font-medium text-danger-foreground disabled:cursor-wait disabled:opacity-60"
         >
           {pending && <Spinner className="h-4 w-4" />}
           {pending ? "Resetting…" : "Yes, delete all"}

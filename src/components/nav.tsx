@@ -70,7 +70,7 @@ export function Nav({
                 <Icon className="h-4 w-4" strokeWidth={2} />
                 {item.label}
                 {badge > 0 && (
-                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-[11px] font-semibold text-white">
+                  <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1 text-[11px] font-semibold text-danger-foreground">
                     {badge}
                   </span>
                 )}
@@ -97,7 +97,7 @@ export function Nav({
               <span className="relative">
                 <Icon className="h-5 w-5" strokeWidth={active ? 2.25 : 2} />
                 {badge > 0 && (
-                  <span className="absolute -right-1.5 -top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-danger text-[9px] font-semibold text-white">
+                  <span className="absolute -right-1.5 -top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-danger text-[9px] font-semibold text-danger-foreground">
                     {badge > 9 ? "9+" : badge}
                   </span>
                 )}

@@ -180,7 +180,7 @@ function BatchRow({ batch }: { batch: MealBatch }) {
           <button
             disabled={pending}
             onClick={() => startTransition(() => deleteMealBatch(batch.id))}
-            className="flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 text-xs font-medium text-white disabled:cursor-wait disabled:opacity-60"
+            className="flex items-center gap-1.5 rounded-lg bg-danger px-3 py-1.5 text-xs font-medium text-danger-foreground disabled:cursor-wait disabled:opacity-60"
           >
             {pending && <Spinner className="h-3.5 w-3.5" />}
             Yes, remove it

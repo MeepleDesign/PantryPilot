@@ -32,7 +32,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
             className={`animate-toast-in pointer-events-auto flex items-center gap-2 rounded-lg px-4 py-2.5 text-sm font-medium shadow-lg ${
               t.variant === "success"
                 ? "bg-foreground text-background"
-                : "bg-danger text-white"
+                : "bg-danger text-danger-foreground"
             }`}
           >
             {t.variant === "success" ? (

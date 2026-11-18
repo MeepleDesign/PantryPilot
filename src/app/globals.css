@@ -4,14 +4,15 @@
   --background: #f7f7f4;
   --surface: #ffffff;
   --foreground: #1b1f1a;
-  --muted: #65706a;
+  --muted: #5d6862;
   --border: #e4e3dc;
   --brand: #2f7a4f;
   --brand-dark: #245f3e;
   --brand-foreground: #ffffff;
   --accent: #d97a3f;
-  --warn: #b45309;
+  --warn: #a14a07;
   --danger: #b42318;
+  --danger-foreground: #ffffff;
   --success: #15803d;
 }
 
@@ -27,6 +28,7 @@
   --color-accent: var(--accent);
   --color-warn: var(--warn);
   --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
   --color-success: var(--success);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
@@ -40,9 +42,13 @@
     --muted: #9aa39c;
     --border: #2b3036;
     --brand: #4ca374;
-    --brand-dark: #3c8a60;
+    --brand-dark: #7cc49b;
     --brand-foreground: #0c140f;
     --accent: #e8935a;
+    --warn: #f0a050;
+    --danger: #f87171;
+    --danger-foreground: #1f0a0a;
+    --success: #5bc98a;
   }
 }
 
@@ -53,9 +59,13 @@
   --muted: #9aa39c;
   --border: #2b3036;
   --brand: #4ca374;
-  --brand-dark: #3c8a60;
+  --brand-dark: #7cc49b;
   --brand-foreground: #0c140f;
   --accent: #e8935a;
+  --warn: #f0a050;
+  --danger: #f87171;
+  --danger-foreground: #1f0a0a;
+  --success: #5bc98a;
 }
 
 /* Accent presets — light mode (green is the default :root palette above) */
@@ -79,21 +89,21 @@
 :root:not([data-theme="light"])[data-accent="blue"] {
   @media (prefers-color-scheme: dark) {
     --brand: #5b9bdc;
-    --brand-dark: #3f7ebd;
+    --brand-dark: #8fbdf0;
     --accent: #e8935a;
   }
 }
 :root:not([data-theme="light"])[data-accent="purple"] {
   @media (prefers-color-scheme: dark) {
     --brand: #a584d6;
-    --brand-dark: #8666b8;
+    --brand-dark: #c3a9eb;
     --accent: #e8c25a;
   }
 }
 :root:not([data-theme="light"])[data-accent="terracotta"] {
   @media (prefers-color-scheme: dark) {
     --brand: #e2894f;
-    --brand-dark: #c06f39;
+    --brand-dark: #f0a878;
     --accent: #4ca374;
   }
 }
@@ -101,17 +111,17 @@
 /* Accent presets — dark mode (explicit toggle) */
 :root[data-theme="dark"][data-accent="blue"] {
   --brand: #5b9bdc;
-  --brand-dark: #3f7ebd;
+  --brand-dark: #8fbdf0;
   --accent: #e8935a;
 }
 :root[data-theme="dark"][data-accent="purple"] {
   --brand: #a584d6;
-  --brand-dark: #8666b8;
+  --brand-dark: #c3a9eb;
   --accent: #e8c25a;
 }
 :root[data-theme="dark"][data-accent="terracotta"] {
   --brand: #e2894f;
-  --brand-dark: #c06f39;
+  --brand-dark: #f0a878;
   --accent: #4ca374;
 }
 
@@ -125,16 +135,27 @@
 
 :root:not([data-theme="light"]) {
   @media (prefers-color-scheme: dark) {
-    [data-accent-preview="green"] { --brand: #4ca374; --brand-dark: #3c8a60; --accent: #e8935a; }
-    [data-accent-preview="blue"] { --brand: #5b9bdc; --brand-dark: #3f7ebd; --accent: #e8935a; }
-    [data-accent-preview="purple"] { --brand: #a584d6; --brand-dark: #8666b8; --accent: #e8c25a; }
-    [data-accent-preview="terracotta"] { --brand: #e2894f; --brand-dark: #c06f39; --accent: #4ca374; }
+    [data-accent-preview="green"] { --brand: #4ca374; --brand-dark: #7cc49b; --accent: #e8935a; }
+    [data-accent-preview="blue"] { --brand: #5b9bdc; --brand-dark: #8fbdf0; --accent: #e8935a; }
+    [data-accent-preview="purple"] { --brand: #a584d6; --brand-dark: #c3a9eb; --accent: #e8c25a; }
+    [data-accent-preview="terracotta"] { --brand: #e2894f; --brand-dark: #f0a878; --accent: #4ca374; }
   }
 }
-:root[data-theme="dark"] [data-accent-preview="green"] { --brand: #4ca374; --brand-dark: #3c8a60; --accent: #e8935a; }
-:root[data-theme="dark"] [data-accent-preview="blue"] { --brand: #5b9bdc; --brand-dark: #3f7ebd; --accent: #e8935a; }
-:root[data-theme="dark"] [data-accent-preview="purple"] { --brand: #a584d6; --brand-dark: #8666b8; --accent: #e8c25a; }
-:root[data-theme="dark"] [data-accent-preview="terracotta"] { --brand: #e2894f; --brand-dark: #c06f39; --accent: #4ca374; }
+:root[data-theme="dark"] [data-accent-preview="green"] { --brand: #4ca374; --brand-dark: #7cc49b; --accent: #e8935a; }
+:root[data-theme="dark"] [data-accent-preview="blue"] { --brand: #5b9bdc; --brand-dark: #8fbdf0; --accent: #e8935a; }
+:root[data-theme="dark"] [data-accent-preview="purple"] { --brand: #a584d6; --brand-dark: #c3a9eb; --accent: #e8c25a; }
+:root[data-theme="dark"] [data-accent-preview="terracotta"] { --brand: #e2894f; --brand-dark: #f0a878; --accent: #4ca374; }
+
+/* Consistent keyboard focus indicator. Mouse/touch focus is unaffected
+   (focus-visible), and existing focus:border-brand styles still apply. */
+:where(a, button, input, select, textarea, summary, label, [tabindex]):focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}
+:where(input, select, textarea):focus-visible {
+  outline-offset: 1px;
+}
 
 html {
   overflow-x: hidden;
