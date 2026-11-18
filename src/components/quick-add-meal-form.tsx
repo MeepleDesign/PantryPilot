@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Plus, X } from "lucide-react";
 import { addMealPlanEntry, addBatchMealPlanEntry } from "@/lib/actions/planner";
 import { Spinner } from "@/components/spinner";
 import { OMNICOOK_TAG, OMNICOOK_MAX_SERVINGS } from "@/lib/omnicook";
@@ -26,6 +27,7 @@ export function QuickAddMealForm({
   batches: AvailableBatch[];
 }) {
   const [pending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<"recipe" | "batch">("recipe");
   const [recipeId, setRecipeId] = useState("");
   const [servings, setServings] = useState(DEFAULT_SERVINGS);
@@ -39,10 +41,24 @@ export function QuickAddMealForm({
   const overCapacity = isOmniCook && servings > OMNICOOK_MAX_SERVINGS;
   const selectedBatch = batches.find((b) => b.id === batchId);
 
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="flex w-full items-center gap-1.5 px-3 py-2.5 text-xs font-medium text-brand-dark transition-colors hover:bg-brand/5"
+      >
+        <Plus className="h-3.5 w-3.5" />
+        Add meal
+      </button>
+    );
+  }
+
   return (
-    <div className="px-3 py-2">
-      {batches.length > 0 && (
-        <div className="mb-2 flex overflow-hidden rounded-lg border border-border text-xs">
+    <div className="animate-fade-in-up bg-background/50 px-3 py-2.5">
+      <div className="mb-2 flex items-center justify-between gap-2">
+        {batches.length > 0 ? (
+        <div className="flex overflow-hidden rounded-lg border border-border bg-surface text-xs">
           <button
             type="button"
             onClick={() => setMode("recipe")}
@@ -62,7 +78,18 @@ export function QuickAddMealForm({
             Eat from a batch
           </button>
         </div>
-      )}
+        ) : (
+          <span className="text-xs font-medium text-muted">Add a meal</span>
+        )}
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          aria-label="Close"
+          className="rounded-md p-1 text-muted transition-colors hover:bg-background hover:text-foreground"
+        >
+          <X className="h-3.5 w-3.5" />
+        </button>
+      </div>
 
       {mode === "recipe" ? (
         <form
@@ -75,6 +102,7 @@ export function QuickAddMealForm({
                 meal_slot: String(formData.get("meal_slot")) as MealSlot,
                 batch_multiplier: batchMultiplier,
               });
+              setOpen(false);
             });
           }}
           className="flex flex-wrap gap-2"
@@ -84,7 +112,7 @@ export function QuickAddMealForm({
             required
             value={recipeId}
             onChange={(e) => setRecipeId(e.target.value)}
-            className="min-w-[140px] flex-1 rounded-lg border border-border bg-background px-2 py-1 text-xs"
+            className="min-w-[140px] flex-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
           >
             <option value="" disabled>
               Choose a recipe…
@@ -98,7 +126,7 @@ export function QuickAddMealForm({
           <select
             name="meal_slot"
             defaultValue="dinner"
-            className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
+            className="rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
           >
             <option value="breakfast">Breakfast</option>
             <option value="lunch">Lunch</option>
@@ -108,7 +136,7 @@ export function QuickAddMealForm({
           <select
             value={servings}
             onChange={(e) => setServings(Number(e.target.value))}
-            className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
+            className="rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
           >
             {SERVING_OPTIONS.map((s) => (
               <option key={s} value={s}>
@@ -119,7 +147,7 @@ export function QuickAddMealForm({
           <button
             type="submit"
             disabled={pending}
-            className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1 text-xs font-medium text-brand-foreground disabled:cursor-wait disabled:opacity-60"
+            className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-brand-foreground disabled:cursor-wait disabled:opacity-60"
           >
             {pending && <Spinner className="h-3 w-3" />}
             {pending ? "Adding…" : "Add"}
@@ -142,6 +170,7 @@ export function QuickAddMealForm({
                 batch_qty: Number(batchQty) || 1,
                 meal_slot: String(formData.get("meal_slot")) as MealSlot,
               });
+              setOpen(false);
             });
           }}
           className="flex flex-wrap gap-2"
@@ -150,7 +179,7 @@ export function QuickAddMealForm({
             required
             value={batchId}
             onChange={(e) => setBatchId(e.target.value)}
-            className="min-w-[140px] flex-1 rounded-lg border border-border bg-background px-2 py-1 text-xs"
+            className="min-w-[140px] flex-1 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
           >
             {batches.map((b) => (
               <option key={b.id} value={b.id}>
@@ -161,7 +190,7 @@ export function QuickAddMealForm({
           <select
             name="meal_slot"
             defaultValue="dinner"
-            className="rounded-lg border border-border bg-background px-2 py-1 text-xs"
+            className="rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
           >
             <option value="breakfast">Breakfast</option>
             <option value="lunch">Lunch</option>
@@ -178,12 +207,12 @@ export function QuickAddMealForm({
             onBlur={() => {
               if (!batchQty.trim() || Number(batchQty) < 1) setBatchQty("1");
             }}
-            className="w-16 rounded-lg border border-border bg-background px-2 py-1 text-xs"
+            className="w-16 rounded-lg border border-border bg-surface px-2 py-1.5 text-xs"
           />
           <button
             type="submit"
             disabled={pending || !batchId}
-            className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1 text-xs font-medium text-brand-foreground disabled:cursor-wait disabled:opacity-60"
+            className="flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-brand-foreground disabled:cursor-wait disabled:opacity-60"
           >
             {pending && <Spinner className="h-3 w-3" />}
             {pending ? "Adding…" : "Add"}

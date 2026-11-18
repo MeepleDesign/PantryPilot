@@ -136,14 +136,14 @@ export default async function PlannerPage() {
                     {relative}
                   </span>
                 )}
-                {mains.length > 0 && (
-                  <span className="ml-auto text-xs text-muted">
-                    {mains.length} meal{mains.length === 1 ? "" : "s"}
-                  </span>
-                )}
+                <span className="ml-auto text-xs text-muted">
+                  {mains.length > 0
+                    ? `${mains.length} meal${mains.length === 1 ? "" : "s"}`
+                    : "Nothing planned"}
+                </span>
               </div>
-              {mains.length ? (
-                <div className="divide-y divide-border">
+              {mains.length > 0 && (
+                <div className="divide-y divide-border border-b border-border">
                   {mains.map((entry) => (
                     <MealEntryRow
                       key={entry.id}
@@ -153,10 +153,8 @@ export default async function PlannerPage() {
                     />
                   ))}
                 </div>
-              ) : (
-                <p className="px-3 py-2 text-xs text-muted">Nothing planned</p>
               )}
-              <div className="border-t border-border">
+              <div>
                 <QuickAddMealForm date={date} recipes={recipes ?? []} batches={availableBatches ?? []} />
               </div>
             </div>
