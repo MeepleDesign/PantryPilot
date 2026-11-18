@@ -4,7 +4,46 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { revalidatePath } from "next/cache";
 import { normaliseIngredient as normalise } from "@/lib/ingredient-match";
+import { todayIsoForRegion } from "@/lib/local-date";
 import type { MealSlot } from "@/lib/types";
+
+function currentMealSlot(): MealSlot {
+  const hour = new Date().getHours();
+  if (hour < 11) return "breakfast";
+  if (hour < 17) return "lunch";
+  return "dinner";
+}
+
+/**
+ * Cook a recipe right now, without adding it to the planner first — creates
+ * a same-day meal plan entry (today's date, a sensible slot guessed from
+ * the time of day) so the existing cook view, ingredient scaling, pantry
+ * deduction, and batch logging all just work, and returns its id to
+ * navigate straight there.
+ */
+export async function startImpromptuCook(recipeId: string): Promise<string> {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const { household, profile } = await getCurrentHousehold();
+
+  const { data: entry, error } = await supabase
+    .from("meal_plan_entries")
+    .insert({
+      household_id: household.id,
+      plan_date: todayIsoForRegion(profile.region),
+      meal_slot: currentMealSlot(),
+      recipe_id: recipeId,
+      batch_multiplier: 1,
+      created_by: auth.user?.id,
+    })
+    .select("id")
+    .single();
+  if (error || !entry) throw new Error(error?.message ?? "Could not start cooking.");
+
+  revalidatePath("/planner");
+  revalidatePath("/dashboard");
+  return entry.id;
+}
 
 export async function addMealPlanEntry(input: {
   plan_date: string;

@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScaledIngredients } from "@/components/scaled-ingredients";
 import { AddToPlanForm } from "@/components/add-to-plan-form";
+import { CookNowButton } from "@/components/cook-now-button";
 import { DeleteRecipeButton } from "@/components/delete-recipe-button";
 import { StaticStars, InteractiveStars } from "@/components/star-rating";
 import { PrintButton } from "@/components/print-button";
@@ -203,6 +204,10 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
 
       <div className="mb-6 rounded-xl border border-border bg-surface p-3 shadow-sm print:hidden">
         <InteractiveStars recipeId={id} initialRating={myRating} />
+      </div>
+
+      <div className="mb-3 print:hidden">
+        <CookNowButton recipeId={id} />
       </div>
 
       <div className="mb-6 print:hidden">
