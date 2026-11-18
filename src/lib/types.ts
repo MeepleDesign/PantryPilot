@@ -96,6 +96,27 @@ export type PantryItem = {
   updated_at: string;
 };
 
+export type KeyIngredient = {
+  id: string;
+  household_id: string;
+  ingredient_name: string;
+  unit: string | null;
+  target_quantity: number;
+  created_at: string;
+};
+
+export type KeyIngredientStatusKind = "ok" | "low" | "out" | "expiring";
+
+export type KeyIngredientStatus = {
+  id: string;
+  ingredient_name: string;
+  unit: string | null;
+  target_quantity: number;
+  current_quantity: number;
+  status: KeyIngredientStatusKind;
+  nearest_expiry: string | null;
+};
+
 export type ShoppingListItem = {
   id: string;
   household_id: string;

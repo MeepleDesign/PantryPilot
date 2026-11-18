@@ -4,7 +4,9 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { PantryItemForm, PantryItemRow } from "@/components/pantry-item-form";
 import { PantryPhotoSection } from "@/components/pantry-photo-section";
+import { KeyIngredientsSection } from "@/components/key-ingredients-section";
 import { EmptyState } from "@/components/empty-state";
+import { getKeyIngredientStatuses } from "@/lib/actions/key-ingredients";
 import type { PantryItem, StorageLocation } from "@/lib/types";
 import type { UnitSystem } from "@/lib/units";
 
@@ -28,6 +30,8 @@ export default async function PantryPage() {
     .eq("household_id", household.id)
     .order("ingredient_name");
   if (error) throw new Error(error.message);
+
+  const keyIngredients = await getKeyIngredientStatuses();
 
   return (
     <div>
@@ -61,6 +65,8 @@ export default async function PantryPage() {
       <div className="mb-8">
         <PantryItemForm unitSystem={unitSystem} />
       </div>
+
+      <KeyIngredientsSection items={keyIngredients} unitSystem={unitSystem} />
 
       {LOCATIONS.map((loc) => {
         const locItems = (items as PantryItem[] | null)?.filter(

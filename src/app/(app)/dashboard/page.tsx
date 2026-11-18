@@ -19,6 +19,7 @@ import { formatShortDate } from "@/lib/format-date";
 import { EmptyState } from "@/components/empty-state";
 import { KitchenIllustration } from "@/components/illustrations";
 import { WelcomeCard } from "@/components/welcome-card";
+import { getKeyIngredientStatuses } from "@/lib/actions/key-ingredients";
 import type { MealBatch, MealPlanEntry, PantryItem } from "@/lib/types";
 
 function todayIso() {
@@ -36,8 +37,22 @@ export default async function DashboardPage() {
   monthStart.setDate(1);
   monthStart.setHours(0, 0, 0, 0);
 
-  const [todayMeals, upcomingMeals, pantryItems, shoppingItems, batches, wasteRows, spendRows] =
-    await Promise.all([
+  const weekStart = new Date();
+  const dayOfWeek = (weekStart.getDay() + 6) % 7; // Monday = 0
+  weekStart.setDate(weekStart.getDate() - dayOfWeek);
+  weekStart.setHours(0, 0, 0, 0);
+
+  const [
+    todayMeals,
+    upcomingMeals,
+    pantryItems,
+    shoppingItems,
+    batches,
+    wasteRows,
+    spendRows,
+    weekSpendRows,
+    keyIngredients,
+  ] = await Promise.all([
     supabase
       .from("meal_plan_entries")
       .select(
@@ -79,6 +94,12 @@ export default async function DashboardPage() {
       .select("receipt_items(price)")
       .eq("household_id", household.id)
       .gte("purchased_at", monthStart.toISOString().slice(0, 10)),
+    supabase
+      .from("receipt_scans")
+      .select("receipt_items(price)")
+      .eq("household_id", household.id)
+      .gte("purchased_at", weekStart.toISOString().slice(0, 10)),
+    getKeyIngredientStatuses(),
   ]);
 
   const allPantryItems = (pantryItems.data as PantryItem[] | null) ?? [];
@@ -88,12 +109,22 @@ export default async function DashboardPage() {
   const spentThisMonth = (
     (spendRows.data as { receipt_items: { price: number }[] }[] | null) ?? []
   ).reduce((sum, scan) => sum + scan.receipt_items.reduce((s, i) => s + Number(i.price), 0), 0);
+  const spentThisWeek = (
+    (weekSpendRows.data as { receipt_items: { price: number }[] }[] | null) ?? []
+  ).reduce((sum, scan) => sum + scan.receipt_items.reduce((s, i) => s + Number(i.price), 0), 0);
+
+  const keyIngredientAlerts = keyIngredients.filter((k) => k.status !== "ok");
 
   const hasPlannedMeals = Boolean(todayMeals.data?.length || upcomingMeals.data?.length);
   const todayMeal = (todayMeals.data as MealPlanEntry[] | null)?.[0];
   const useSoonCount = expiredItems.length + soonItems.length;
   const toBuyCount = shoppingItems.data?.length ?? 0;
-  const hasQuickFacts = Boolean(todayMeal) || useSoonCount > 0 || toBuyCount > 0;
+  const hasQuickFacts =
+    Boolean(todayMeal) ||
+    useSoonCount > 0 ||
+    toBuyCount > 0 ||
+    spentThisWeek > 0 ||
+    keyIngredientAlerts.length > 0;
   const showWelcome =
     (allPantryItems.length === 0 || !hasPlannedMeals) &&
     !batches.data?.length &&
@@ -137,6 +168,23 @@ export default async function DashboardPage() {
                 className="flex items-center gap-1 rounded-full border border-brand/20 bg-surface/80 px-2.5 py-1 text-xs font-medium backdrop-blur-sm transition-colors hover:bg-surface"
               >
                 {toBuyCount} to buy
+              </Link>
+            )}
+            {spentThisWeek > 0 && (
+              <Link
+                href="/shopping-list/spending"
+                className="flex items-center gap-1 rounded-full border border-brand/20 bg-surface/80 px-2.5 py-1 text-xs font-medium backdrop-blur-sm transition-colors hover:bg-surface"
+              >
+                {formatMoney(spentThisWeek, profile.region)} this week
+              </Link>
+            )}
+            {keyIngredientAlerts.length > 0 && (
+              <Link
+                href="/pantry"
+                className="flex items-center gap-1 rounded-full border border-danger/30 bg-danger/10 px-2.5 py-1 text-xs font-medium text-danger backdrop-blur-sm transition-colors hover:bg-danger/20"
+              >
+                {keyIngredientAlerts.length} key ingredient
+                {keyIngredientAlerts.length === 1 ? "" : "s"} need attention
               </Link>
             )}
           </div>
