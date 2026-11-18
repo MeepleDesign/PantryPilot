@@ -8,6 +8,7 @@ import { MarkCookedButton } from "@/components/cook-view-actions";
 import { LogBatchPrompt } from "@/components/log-batch-prompt";
 import { BatchCookOption, type AvailableBatch } from "@/components/batch-cook-option";
 import { RecipePhotoPrompt } from "@/components/recipe-photo-prompt";
+import { CookModeView } from "@/components/cook-mode-view";
 import type { MealBatchStorage } from "@/lib/types";
 
 function round(n: number) {
@@ -222,6 +223,18 @@ function RecipeBlock({
           <p>{recipe.prep_note}</p>
         </div>
       )}
+
+      <CookModeView
+        steps={steps}
+        ingredients={ingredients.map((ing) => ({
+          id: ing.id,
+          ingredient_name: ing.ingredient_name,
+          amount:
+            ing.quantity != null
+              ? `${round(ing.quantity * entry.batch_multiplier)} ${ing.unit ?? ""}`
+              : (ing.unit ?? "-"),
+        }))}
+      />
 
       <div className="lg:flex lg:items-start lg:gap-6">
         {ingredients.length > 0 && (
