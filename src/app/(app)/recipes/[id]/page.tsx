@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Clock, UtensilsCrossed, Flame, Dumbbell, AlarmClock } from "lucide-react";
+import { ArrowLeft, Clock, UtensilsCrossed, Flame, Dumbbell, AlarmClock, Wallet } from "lucide-react";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ScaledIngredients } from "@/components/scaled-ingredients";
@@ -14,6 +14,9 @@ import { StockPhotoBadge } from "@/components/stock-photo-badge";
 import { RecipePlaceholder } from "@/components/recipe-placeholder";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { getCommunityRatings, getCommunityHouseholdNames } from "@/lib/community-data";
+import { getKnownPrices } from "@/lib/actions/ingredient-prices";
+import { estimateRecipeCost } from "@/lib/recipe-cost";
+import { formatMoney } from "@/lib/currency";
 
 export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[id]">) {
   const { id } = await params;
@@ -42,6 +45,9 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
   const ingredients = [...recipe.recipe_ingredients].sort(
     (a, b) => a.sort_order - b.sort_order,
   );
+
+  const knownPrices = await getKnownPrices();
+  const costEstimate = estimateRecipeCost(ingredients, knownPrices, recipe.servings);
   const { data: auth } = await supabase.auth.getUser();
   const { data: ratings } = await supabase
     .from("recipe_ratings")
@@ -184,6 +190,13 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
           recipe.protein_g
             ? { icon: Dumbbell, label: "Protein", value: `${recipe.protein_g} g` }
             : null,
+          costEstimate
+            ? {
+                icon: Wallet,
+                label: "Cost/serving",
+                value: formatMoney(costEstimate.costPerServing, household.region),
+              }
+            : null,
         ].filter((x) => x !== null);
         const cols =
           stats.length >= 4
@@ -201,6 +214,13 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
           </div>
         );
       })()}
+
+      {costEstimate && costEstimate.pricedCount < costEstimate.totalCount && (
+        <p className="mb-6 -mt-3 text-xs text-muted">
+          Cost estimated from {costEstimate.pricedCount} of {costEstimate.totalCount}{" "}
+          ingredients with a known price from past receipts.
+        </p>
+      )}
 
       <div className="mb-6 rounded-xl border border-border bg-surface p-3 shadow-sm print:hidden">
         <InteractiveStars recipeId={id} initialRating={myRating} />
