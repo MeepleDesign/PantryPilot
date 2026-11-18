@@ -176,7 +176,7 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
           recipe.total_time_minutes
             ? { icon: Clock, label: "Time", value: `${recipe.total_time_minutes} min` }
             : null,
-          { icon: UtensilsCrossed, label: "Servings", value: "2" },
+          { icon: UtensilsCrossed, label: "Servings", value: String(recipe.servings) },
           recipe.calories
             ? { icon: Flame, label: "Calories", value: `${recipe.calories} kcal` }
             : null,

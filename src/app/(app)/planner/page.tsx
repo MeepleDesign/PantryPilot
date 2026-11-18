@@ -4,24 +4,27 @@ import { MealEntryRow } from "@/components/meal-entry-row";
 import { QuickAddMealForm } from "@/components/quick-add-meal-form";
 import { GenerateWeekForm } from "@/components/generate-week-form";
 import { PROTEIN_TAGS } from "@/lib/taxonomies";
-import type { MealPlanEntry } from "@/lib/types";
+import { todayIsoForRegion } from "@/lib/local-date";
+import type { MealPlanEntry, Region } from "@/lib/types";
 
-function dateRange(days: number) {
+function dateRange(days: number, region: Region | null | undefined) {
+  const todayStr = todayIsoForRegion(region);
+  const [y, m, d] = todayStr.split("-").map(Number);
+  const anchor = new Date(Date.UTC(y, m - 1, d, 12));
   const dates: string[] = [];
-  const today = new Date();
   for (let i = 0; i < days; i++) {
-    const d = new Date(today);
-    d.setDate(today.getDate() + i);
-    dates.push(d.toISOString().slice(0, 10));
+    const day = new Date(anchor);
+    day.setUTCDate(day.getUTCDate() + i);
+    dates.push(day.toISOString().slice(0, 10));
   }
   return dates;
 }
 
 export default async function PlannerPage() {
-  const { household } = await getCurrentHousehold();
+  const { household, profile } = await getCurrentHousehold();
   const supabase = await createClient();
 
-  const dates = dateRange(7);
+  const dates = dateRange(7, profile.region);
 
   const { data: entries, error } = await supabase
     .from("meal_plan_entries")

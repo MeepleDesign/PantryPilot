@@ -20,18 +20,16 @@ import { EmptyState } from "@/components/empty-state";
 import { KitchenIllustration } from "@/components/illustrations";
 import { WelcomeCard } from "@/components/welcome-card";
 import { getKeyIngredientStatuses } from "@/lib/actions/key-ingredients";
+import { todayIsoForRegion } from "@/lib/local-date";
 import type { MealBatch, MealPlanEntry, PantryItem } from "@/lib/types";
-
-function todayIso() {
-  return new Date().toISOString().slice(0, 10);
-}
 
 export default async function DashboardPage() {
   const { profile, household } = await getCurrentHousehold();
   const supabase = await createClient();
-  const today = todayIso();
-  const weekAhead = new Date();
-  weekAhead.setDate(weekAhead.getDate() + 6);
+  const today = todayIsoForRegion(profile.region);
+  const [todayY, todayM, todayD] = today.split("-").map(Number);
+  const weekAhead = new Date(Date.UTC(todayY, todayM - 1, todayD, 12));
+  weekAhead.setUTCDate(weekAhead.getUTCDate() + 6);
 
   const monthStart = new Date();
   monthStart.setDate(1);

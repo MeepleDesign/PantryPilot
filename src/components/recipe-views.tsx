@@ -346,7 +346,7 @@ function TilesView({
                     </span>
                   )}
                   <span className="flex items-center gap-1">
-                    <UtensilsCrossed className="h-3.5 w-3.5" /> 2 servings
+                    <UtensilsCrossed className="h-3.5 w-3.5" /> {recipe.servings} servings
                   </span>
                   {recipe.calories && (
                     <span className="flex items-center gap-1">
