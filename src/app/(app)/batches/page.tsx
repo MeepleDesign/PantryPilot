@@ -22,7 +22,11 @@ export default async function BatchesPage() {
   ]);
 
   return (
-    <div className="mx-auto max-w-xl">
+    <div className="mx-auto max-w-2xl">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight">Batches</h1>
+        <p className="text-sm text-muted">Cooked-ahead meals in your freezer and fridge</p>
+      </div>
       <BatchList batches={(batches.data as MealBatch[] | null) ?? []} recipes={recipes.data ?? []} />
     </div>
   );

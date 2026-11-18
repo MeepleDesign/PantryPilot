@@ -84,7 +84,7 @@ export default async function PlannerPage() {
       />
 
       <div className="space-y-4">
-        {dates.map((date) => {
+        {dates.map((date, dayIndex) => {
           const dayEntries = (entries as MealPlanEntry[] | null)?.filter(
             (e) => e.plan_date === date,
           );
@@ -96,15 +96,51 @@ export default async function PlannerPage() {
             list.push(e);
             sidesByParent.set(e.side_of, list);
           }
-          const label = new Date(date).toLocaleDateString("en-GB", {
-            weekday: "long",
-            day: "numeric",
-            month: "short",
-          });
+          const d = new Date(date);
+          const weekday = d.toLocaleDateString("en-GB", { weekday: "long" });
+          const dayNum = d.toLocaleDateString("en-GB", { day: "numeric" });
+          const month = d.toLocaleDateString("en-GB", { month: "short" });
+          const isToday = dayIndex === 0;
+          const relative = isToday ? "Today" : dayIndex === 1 ? "Tomorrow" : null;
           return (
-            <div key={date} className="animate-fade-in-up rounded-xl border border-border bg-surface shadow-sm">
-              <div className="border-b border-border px-3 py-2 text-sm font-medium">
-                {label}
+            <div
+              key={date}
+              className={`animate-fade-in-up overflow-hidden rounded-xl border bg-surface shadow-sm ${
+                isToday ? "border-brand/50 ring-2 ring-brand/10" : "border-border"
+              }`}
+            >
+              <div
+                className={`flex items-center gap-3 border-b border-border px-3 py-2 ${
+                  isToday ? "bg-brand/5" : ""
+                }`}
+              >
+                <span
+                  className={`flex h-10 w-10 shrink-0 flex-col items-center justify-center rounded-lg leading-none ${
+                    isToday
+                      ? "bg-brand text-brand-foreground"
+                      : "border border-border bg-background text-foreground"
+                  }`}
+                >
+                  <span className="text-[9px] font-semibold uppercase tracking-wider opacity-80">
+                    {month}
+                  </span>
+                  <span className="text-base font-semibold">{dayNum}</span>
+                </span>
+                <span className="text-sm font-medium">{weekday}</span>
+                {relative && (
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-[11px] font-medium ${
+                      isToday ? "bg-brand/15 text-brand-dark" : "bg-background text-muted"
+                    }`}
+                  >
+                    {relative}
+                  </span>
+                )}
+                {mains.length > 0 && (
+                  <span className="ml-auto text-xs text-muted">
+                    {mains.length} meal{mains.length === 1 ? "" : "s"}
+                  </span>
+                )}
               </div>
               {mains.length ? (
                 <div className="divide-y divide-border">
