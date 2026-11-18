@@ -4,6 +4,7 @@ import { useState } from "react";
 import { RecipeForm, type RecipeFormInitial } from "@/components/recipe-form";
 import { RecipePhotoImport } from "@/components/recipe-photo-import";
 import { RecipeUrlImport } from "@/components/recipe-url-import";
+import { AiRecipeGenerate } from "@/components/ai-recipe-generate";
 import { createRecipe } from "@/lib/actions/recipes";
 import type { ExtractedRecipe } from "@/lib/recipe-extraction-types";
 import type { UnitSystem } from "@/lib/units";
@@ -38,17 +39,23 @@ export function NewRecipeClient({
   unitSystem,
   cuisineOptions,
   dietOptions,
+  isPro,
+  cookingMachine,
+  pantryHints,
 }: {
   unitSystem: UnitSystem;
   cuisineOptions: string[];
   dietOptions: string[];
+  isPro: boolean;
+  cookingMachine: string;
+  pantryHints: string[];
 }) {
   const [imported, setImported] = useState<RecipeFormInitial | null>(null);
-  const [importSource, setImportSource] = useState<"photo" | "url">("url");
+  const [importSource, setImportSource] = useState<"photo" | "url" | "ai">("url");
   const [reviewFields, setReviewFields] = useState<string[]>([]);
   const [formKey, setFormKey] = useState(0);
 
-  function handleImported(data: ExtractedRecipe, source: "photo" | "url") {
+  function handleImported(data: ExtractedRecipe, source: "photo" | "url" | "ai") {
     setImported(toFormInitial(data));
     setImportSource(source);
     setReviewFields(data.low_confidence_fields ?? []);
@@ -59,6 +66,12 @@ export function NewRecipeClient({
     <>
       <RecipePhotoImport onImported={(data) => handleImported(data, "photo")} />
       <RecipeUrlImport onImported={(data) => handleImported(data, "url")} />
+      <AiRecipeGenerate
+        onImported={(data) => handleImported(data, "ai")}
+        isPro={isPro}
+        cookingMachine={cookingMachine}
+        pantryHints={pantryHints}
+      />
       <RecipeForm
         key={formKey}
         initial={imported ?? undefined}

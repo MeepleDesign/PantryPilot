@@ -23,7 +23,7 @@ type Props = {
   onSubmit: (input: RecipeFormInput) => Promise<void>;
   submitLabel: string;
   unitSystem: UnitSystem;
-  source?: "manual" | "photo" | "url";
+  source?: "manual" | "photo" | "url" | "ai";
   reviewFields?: string[];
   /** Cuisines already used elsewhere in this household's recipes, merged into the curated list. */
   cuisineOptions?: string[];

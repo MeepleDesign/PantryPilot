@@ -1,7 +1,12 @@
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 
-export type AiFeature = "receipt_scan" | "pantry_scan" | "recipe_photo_import" | "nutrition_estimate";
+export type AiFeature =
+  | "receipt_scan"
+  | "pantry_scan"
+  | "recipe_photo_import"
+  | "nutrition_estimate"
+  | "recipe_generate";
 
 export async function logAiUsage(
   feature: AiFeature,

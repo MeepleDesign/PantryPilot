@@ -17,7 +17,7 @@ export type Recipe = {
   course: RecipeCourse;
   equipment: string | null;
   method: string | null;
-  source: "seed" | "manual" | "photo" | "url" | "community";
+  source: "seed" | "manual" | "photo" | "url" | "community" | "ai";
   calories: number | null;
   protein_g: number | null;
   carbs_g: number | null;
@@ -165,6 +165,7 @@ export type Household = {
   stripe_price_id: string | null;
   plan_interval: "month" | "year" | null;
   plan_status: "none" | "active" | "past_due" | "canceled";
+  pro_override: boolean;
 };
 
 export type RecipeRating = {

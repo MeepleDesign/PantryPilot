@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Check, Minus, CreditCard, Sparkles, CheckCircle2 } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { UpgradeButtons, ManageBillingButton } from "@/components/billing-buttons";
+import { isPro } from "@/lib/plan";
 
 const FEATURES: { label: string; free: boolean; pro: boolean }[] = [
   { label: "Unlimited recipes, pantry & shopping list", free: true, pro: true },
@@ -19,7 +20,7 @@ export default async function BillingPage({
   const params = await searchParams;
   const justUpgraded = params.success === "1";
   const { household } = await getCurrentHousehold();
-  const isPro = household.plan === "pro";
+  const pro = isPro(household);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -28,13 +29,19 @@ export default async function BillingPage({
       </Link>
       <h1 className="mb-1 mt-3 text-2xl font-semibold tracking-tight">Plans & billing</h1>
       <p className="mb-6 text-sm text-muted">
-        You&apos;re currently on the{" "}
-        <span className="font-medium capitalize text-foreground">{household.plan}</span> plan
-        {isPro && household.plan_interval && ` (billed ${household.plan_interval}ly)`}
-        {household.plan_status === "past_due" && (
-          <span className="text-warn"> — payment past due</span>
+        {household.pro_override ? (
+          <>Pro features are unlocked on this household regardless of billing status.</>
+        ) : (
+          <>
+            You&apos;re currently on the{" "}
+            <span className="font-medium capitalize text-foreground">{household.plan}</span> plan
+            {pro && household.plan_interval && ` (billed ${household.plan_interval}ly)`}
+            {household.plan_status === "past_due" && (
+              <span className="text-warn"> — payment past due</span>
+            )}
+            .
+          </>
         )}
-        .
       </p>
 
       {justUpgraded && (
@@ -82,7 +89,7 @@ export default async function BillingPage({
         </table>
       </div>
 
-      {!isPro && (
+      {!pro && (
         <div className="mb-8 rounded-xl border border-dashed border-border bg-background p-5 text-center">
           <p className="mb-3 text-sm text-muted">Upgrade to Pro to unlock AI import and scanning.</p>
           <UpgradeButtons />

@@ -35,7 +35,7 @@ export type RecipeFormInput = {
   tags: string[];
   image_url: string | null;
   ingredients: RecipeIngredientInput[];
-  source?: "manual" | "photo" | "url";
+  source?: "manual" | "photo" | "url" | "ai";
 };
 
 export async function createRecipe(input: RecipeFormInput) {
