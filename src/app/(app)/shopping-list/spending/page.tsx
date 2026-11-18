@@ -4,6 +4,7 @@ import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { ReceiptScanSection } from "@/components/receipt-scan-section";
 import { ReceiptHistory } from "@/components/receipt-history";
+import { formatMoney } from "@/lib/currency";
 import type { UnitSystem } from "@/lib/units";
 
 function startOfMonthIso() {
@@ -11,10 +12,6 @@ function startOfMonthIso() {
   d.setDate(1);
   d.setHours(0, 0, 0, 0);
   return d.toISOString().slice(0, 10);
-}
-
-function money(n: number) {
-  return `£${n.toFixed(2)}`;
 }
 
 type ReceiptScanWithItems = {
@@ -76,18 +73,18 @@ export default async function SpendingPage() {
 
       <div className="mb-6 grid grid-cols-2 gap-4">
         <div className="rounded-xl border border-border bg-surface p-4 text-center shadow-sm">
-          <p className="text-3xl font-semibold tracking-tight">{money(spentThisMonth)}</p>
+          <p className="text-3xl font-semibold tracking-tight">{formatMoney(spentThisMonth, profile.region)}</p>
           <p className="text-xs text-muted">spent this month</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4 text-center shadow-sm">
-          <p className="text-3xl font-semibold tracking-tight">{money(spentAllTime)}</p>
+          <p className="text-3xl font-semibold tracking-tight">{formatMoney(spentAllTime, profile.region)}</p>
           <p className="text-xs text-muted">all time</p>
         </div>
       </div>
 
-      <ReceiptScanSection unitSystem={unitSystem} />
+      <ReceiptScanSection unitSystem={unitSystem} region={profile.region} />
 
-      <ReceiptHistory scans={allScans} unitSystem={unitSystem} />
+      <ReceiptHistory scans={allScans} unitSystem={unitSystem} region={profile.region} />
     </div>
   );
 }

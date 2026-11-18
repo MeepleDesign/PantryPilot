@@ -18,7 +18,16 @@ export type AdminPlatformStats = {
   ai_input_tokens_all_time: number;
   ai_output_tokens_all_time: number;
   ai_by_feature: { feature: string; calls: number; input_tokens: number; output_tokens: number }[];
+  ai_first_logged_at: string | null;
   top_stores: { store_name: string; scan_count: number; total_spend: number }[];
+  community: {
+    total_recipes: number;
+    shared_by_others: number;
+    total_imports: number;
+    avg_rating: number | null;
+    rating_count: number;
+    top_imported: { id: string; name: string; import_count: number }[];
+  };
 };
 
 export type AdminHouseholdRow = {

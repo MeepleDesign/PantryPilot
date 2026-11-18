@@ -25,6 +25,7 @@ export async function updateProfileSettings(input: {
   display_name: string;
   dietary_preference: string;
   units: string;
+  region: string;
 }) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -36,12 +37,15 @@ export async function updateProfileSettings(input: {
       display_name: input.display_name,
       dietary_preference: input.dietary_preference,
       units: input.units,
+      region: input.region,
     })
     .eq("user_id", auth.user.id);
   if (error) throw new Error(error.message);
 
   revalidatePath("/settings");
   revalidatePath("/dashboard");
+  revalidatePath("/shopping-list");
+  revalidatePath("/shopping-list/spending");
 }
 
 export async function joinHousehold(code: string) {

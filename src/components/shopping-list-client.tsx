@@ -13,8 +13,9 @@ import {
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
 import { buildSupermarketSearchUrl, hasDirectSearch } from "@/lib/supermarket-links";
+import { formatMoney } from "@/lib/currency";
 import type { UnitSystem } from "@/lib/units";
-import type { ShoppingListItem } from "@/lib/types";
+import type { ShoppingListItem, Region } from "@/lib/types";
 
 export function RegenerateButton() {
   const [pending, startTransition] = useTransition();
@@ -90,10 +91,12 @@ export function ShoppingListRow({
   item,
   supermarketName,
   knownPrice,
+  region,
 }: {
   item: ShoppingListItem;
   supermarketName: string | null;
   knownPrice?: { price: number; updated_at: string } | null;
+  region: Region;
 }) {
   const [pending, startTransition] = useTransition();
   const [ticked, setTicked] = useState(item.ticked);
@@ -130,7 +133,7 @@ export function ShoppingListRow({
       )}
       {knownPrice && (
         <span className="text-xs text-muted" title={`Last priced ${new Date(knownPrice.updated_at).toLocaleDateString()}`}>
-          est. £{knownPrice.price.toFixed(2)}
+          est. {formatMoney(knownPrice.price, region)}
         </span>
       )}
       <a

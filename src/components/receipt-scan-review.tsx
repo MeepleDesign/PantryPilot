@@ -8,9 +8,11 @@ import { saveReceiptScan } from "@/lib/actions/receipts";
 import { getKnownPrices, type KnownPrice } from "@/lib/actions/ingredient-prices";
 import { normalizeIngredientName } from "@/lib/ingredient-name";
 import { PantryImportReview } from "@/components/pantry-import-review";
+import { formatMoney, currencySymbol } from "@/lib/currency";
 import type { ExtractedReceiptScan } from "@/lib/actions/receipt-import";
 import type { ExtractedPantryScan } from "@/lib/actions/pantry-import";
 import type { UnitSystem } from "@/lib/units";
+import type { Region } from "@/lib/types";
 
 type ReviewRow = {
   id: string;
@@ -23,10 +25,6 @@ type ReviewRow = {
   updatePrice: boolean;
 };
 
-function money(n: number) {
-  return `£${n.toFixed(2)}`;
-}
-
 function daysAgo(iso: string): string {
   const days = Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000));
   if (days === 0) return "today";
@@ -37,10 +35,12 @@ function daysAgo(iso: string): string {
 export function ReceiptScanReview({
   scan,
   unitSystem,
+  region,
   onDone,
 }: {
   scan: ExtractedReceiptScan;
   unitSystem: UnitSystem;
+  region: Region;
   onDone: () => void;
 }) {
   const [pantryScan, setPantryScan] = useState<ExtractedPantryScan | null>(null);
@@ -105,7 +105,7 @@ export function ReceiptScanReview({
         );
         return;
       }
-      showToast(`Saved ${includedRows.length} item${includedRows.length === 1 ? "" : "s"} · ${money(includedTotal)}`);
+      showToast(`Saved ${includedRows.length} item${includedRows.length === 1 ? "" : "s"} · ${formatMoney(includedTotal, region)}`);
       setPantryScan({
         items: includedRows.map((r) => ({
           ingredient_name: r.ingredient_name.trim(),
@@ -217,7 +217,7 @@ export function ReceiptScanReview({
                   className="min-w-0 rounded-lg border border-border bg-background px-2 py-1.5 text-sm sm:w-24 sm:shrink-0"
                 />
                 <div className="flex min-w-0 items-center gap-1 rounded-lg border border-border bg-background px-2 py-1.5 sm:w-24 sm:shrink-0 sm:border-0 sm:bg-transparent sm:p-0">
-                  <span className="text-sm text-muted">£</span>
+                  <span className="text-sm text-muted">{currencySymbol(region)}</span>
                   <input
                     type="number"
                     step="0.01"
@@ -246,8 +246,8 @@ export function ReceiptScanReview({
                     onChange={(e) => updateRow(row.id, { updatePrice: e.target.checked })}
                     className="h-3.5 w-3.5 accent-brand"
                   />
-                  Last priced {money(known.price)} ({daysAgo(known.updated_at)}) — update remembered
-                  price to {money(row.price)}?
+                  Last priced {formatMoney(known.price, region)} ({daysAgo(known.updated_at)}) — update remembered
+                  price to {formatMoney(row.price, region)}?
                 </label>
               )}
               {pricesLoaded && !known && (
@@ -272,9 +272,9 @@ export function ReceiptScanReview({
         <p className="text-sm">
           <span className="font-medium">{includedRows.length}</span> item
           {includedRows.length === 1 ? "" : "s"} ·{" "}
-          <span className="font-medium">{money(includedTotal)}</span>
+          <span className="font-medium">{formatMoney(includedTotal, region)}</span>
           {scan.total != null && (
-            <span className="text-muted"> (receipt total {money(scan.total)})</span>
+            <span className="text-muted"> (receipt total {formatMoney(scan.total, region)})</span>
           )}
         </p>
         <button

@@ -89,6 +89,7 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
             display_name: String(formData.get("display_name")),
             dietary_preference: dietaryPreference,
             units: String(formData.get("units")),
+            region: String(formData.get("region")),
           });
           setSaved(true);
           showToast("Profile saved");
@@ -117,6 +118,19 @@ export function ProfileSettingsForm({ profile }: { profile: Profile }) {
           <option value="metric">Metric</option>
           <option value="imperial">Imperial</option>
         </select>
+      </label>
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium">Region</span>
+        <select
+          name="region"
+          defaultValue={profile.region}
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+        >
+          <option value="uk">UK (£)</option>
+          <option value="us">US ($)</option>
+          <option value="unspecified">Not specified</option>
+        </select>
+        <p className="mt-1.5 text-xs text-muted">Sets the currency symbol shown for spend and prices.</p>
       </label>
       <SaveButton pending={pending} saved={saved} />
     </form>

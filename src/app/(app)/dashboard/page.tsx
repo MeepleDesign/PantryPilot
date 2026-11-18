@@ -13,6 +13,7 @@ import {
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { expiryStatus } from "@/lib/expiry";
+import { formatMoney } from "@/lib/currency";
 import { EmptyState } from "@/components/empty-state";
 import type { MealBatch, MealPlanEntry, PantryItem } from "@/lib/types";
 
@@ -196,7 +197,7 @@ export default async function DashboardPage() {
         <Card title="Spending" href="/shopping-list/spending" icon={Receipt}>
           {spentThisMonth > 0 ? (
             <p className="text-sm">
-              <span className="font-medium">£{spentThisMonth.toFixed(2)}</span> spent this month
+              <span className="font-medium">{formatMoney(spentThisMonth, profile.region)}</span> spent this month
             </p>
           ) : (
             <EmptyState icon={Receipt} title="No spend tracked this month" body="Scan a receipt to start." compact />

@@ -109,6 +109,8 @@ export type ShoppingListItem = {
   updated_at: string;
 };
 
+export type Region = "uk" | "us" | "unspecified";
+
 export type Profile = {
   user_id: string;
   display_name: string | null;
@@ -116,6 +118,7 @@ export type Profile = {
   dietary_preference: string | null;
   disliked_ingredients: string[];
   units: string;
+  region: Region;
   is_admin: boolean;
 };
 

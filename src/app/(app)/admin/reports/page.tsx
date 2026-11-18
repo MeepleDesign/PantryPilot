@@ -2,7 +2,13 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { AdminReportsList, type AdminReportRow } from "@/components/admin-reports-list";
 import { CollapsibleSection } from "@/components/collapsible-section";
-import { AdminPlatformStatsView } from "@/components/admin-platform-stats";
+import {
+  PlatformStatsTiles,
+  ClaudeApiUsage,
+  TopSupermarkets,
+  HouseholdsTable,
+  CommunityRecipeStats,
+} from "@/components/admin-platform-stats";
 import { getAdminPlatformStats, getAdminHouseholdList } from "@/lib/actions/admin-stats";
 
 export default async function AdminReportsPage() {
@@ -47,19 +53,35 @@ export default async function AdminReportsPage() {
     <div>
       <h1 className="mb-6 text-2xl font-semibold tracking-tight">Admin</h1>
 
-      <CollapsibleSection
-        title="Platform stats & usage"
-        subtitle="Users, households, Claude API usage, and supermarket spend"
-        defaultOpen
-      >
-        <AdminPlatformStatsView stats={stats} households={households} />
+      <CollapsibleSection title="Platform stats" subtitle="Users, households, spend" defaultOpen>
+        <PlatformStatsTiles stats={stats} />
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Claude API usage" subtitle="In-app AI feature usage">
+        <ClaudeApiUsage stats={stats} />
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Top supermarkets" subtitle="By tracked spend">
+        <TopSupermarkets stats={stats} />
+      </CollapsibleSection>
+
+      <CollapsibleSection title="Households" subtitle={`${households.length} total`}>
+        <HouseholdsTable households={households} />
       </CollapsibleSection>
 
       <CollapsibleSection
-        title="Community recipe reports"
-        subtitle={`${rows.length} open report${rows.length === 1 ? "" : "s"}`}
+        title="Community recipes"
+        subtitle={`${stats.community.total_recipes} shared · ${stats.community.total_imports} imported`}
       >
-        <AdminReportsList reports={rows} />
+        <div className="space-y-4">
+          <CommunityRecipeStats stats={stats.community} />
+          <CollapsibleSection
+            title="Reports"
+            subtitle={`${rows.length} open report${rows.length === 1 ? "" : "s"}`}
+          >
+            <AdminReportsList reports={rows} />
+          </CollapsibleSection>
+        </div>
       </CollapsibleSection>
     </div>
   );

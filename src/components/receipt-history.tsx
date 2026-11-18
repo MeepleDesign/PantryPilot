@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import { ChevronDown, Receipt } from "lucide-react";
 import { AddReceiptToPantryButton } from "@/components/add-receipt-to-pantry";
 import { EmptyState } from "@/components/empty-state";
+import { formatMoney } from "@/lib/currency";
 import type { UnitSystem } from "@/lib/units";
+import type { Region } from "@/lib/types";
 
 type ReceiptScanWithItems = {
   id: string;
@@ -20,10 +22,6 @@ type ReceiptScanWithItems = {
   }[];
 };
 
-function money(n: number) {
-  return `£${n.toFixed(2)}`;
-}
-
 function monthLabel(key: string) {
   const [year, month] = key.split("-").map(Number);
   return new Date(year, month - 1, 1).toLocaleDateString("en-GB", {
@@ -35,9 +33,11 @@ function monthLabel(key: string) {
 function ReceiptCard({
   scan,
   unitSystem,
+  region,
 }: {
   scan: ReceiptScanWithItems;
   unitSystem: UnitSystem;
+  region: Region;
 }) {
   const [open, setOpen] = useState(false);
   const scanTotal = scan.receipt_items.reduce((sum, i) => sum + Number(i.price), 0);
@@ -57,7 +57,7 @@ function ReceiptCard({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <p className="text-sm font-medium">{money(scanTotal)}</p>
+          <p className="text-sm font-medium">{formatMoney(scanTotal, region)}</p>
           <ChevronDown
             className={`h-4 w-4 shrink-0 text-muted transition-transform ${open ? "rotate-180" : ""}`}
           />
@@ -69,7 +69,7 @@ function ReceiptCard({
             {scan.receipt_items.map((item) => (
               <div key={item.id} className="flex items-center justify-between px-4 py-2 text-sm">
                 <span>{item.ingredient_name}</span>
-                <span className="text-muted">{money(Number(item.price))}</span>
+                <span className="text-muted">{formatMoney(Number(item.price), region)}</span>
               </div>
             ))}
           </div>
@@ -90,9 +90,11 @@ function ReceiptCard({
 export function ReceiptHistory({
   scans,
   unitSystem,
+  region,
 }: {
   scans: ReceiptScanWithItems[];
   unitSystem: UnitSystem;
+  region: Region;
 }) {
   const [shopFilter, setShopFilter] = useState("all");
   const [monthFilter, setMonthFilter] = useState("all");
@@ -151,7 +153,7 @@ export function ReceiptHistory({
       {filtered.length > 0 ? (
         <div className="space-y-3">
           {filtered.map((scan) => (
-            <ReceiptCard key={scan.id} scan={scan} unitSystem={unitSystem} />
+            <ReceiptCard key={scan.id} scan={scan} unitSystem={unitSystem} region={region} />
           ))}
         </div>
       ) : scans.length > 0 ? (

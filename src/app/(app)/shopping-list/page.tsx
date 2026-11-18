@@ -12,6 +12,7 @@ import {
 import { PrintButton } from "@/components/print-button";
 import { EmptyState } from "@/components/empty-state";
 import { normalizeIngredientName } from "@/lib/ingredient-name";
+import { formatMoney } from "@/lib/currency";
 import type { UnitSystem } from "@/lib/units";
 
 export default async function ShoppingListPage() {
@@ -87,7 +88,7 @@ export default async function ShoppingListPage() {
 
       {estimatedCount > 0 && (
         <p className="mb-3 text-sm text-muted">
-          Estimated cost: <span className="font-medium text-foreground">£{estimatedTotal.toFixed(2)}</span>{" "}
+          Estimated cost: <span className="font-medium text-foreground">{formatMoney(estimatedTotal, profile.region)}</span>{" "}
           ({estimatedCount} of {toBuy.length} items priced from past receipts)
         </p>
       )}
@@ -100,6 +101,7 @@ export default async function ShoppingListPage() {
               item={item}
               supermarketName={household.default_supermarket}
               knownPrice={priceByName.get(normalizeIngredientName(item.ingredient_name)) ?? null}
+              region={profile.region}
             />
           ))}
         </div>
