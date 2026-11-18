@@ -111,7 +111,12 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
 
       <h1 className="mb-1 mt-3 text-2xl font-semibold tracking-tight">{recipe.name}</h1>
       <p className="mb-2 text-sm text-muted">
-        {[recipe.cuisine, ...(recipe.diet ?? []), recipe.protein_tag].filter(Boolean).join(" · ")}
+        {[recipe.cuisine, ...(recipe.diet ?? []), recipe.protein_tag]
+          .filter((v, i, arr): v is string =>
+            Boolean(v) &&
+            arr.findIndex((x) => x?.toLowerCase() === v?.toLowerCase()) === i,
+          )
+          .join(" · ")}
       </p>
 
       <div className="mb-1">

@@ -60,6 +60,24 @@ function useViewMode() {
   return { view, setView: update, ready };
 }
 
+/**
+ * Joins a recipe's descriptive labels with " · ", dropping blanks, repeats
+ * (case-insensitive) and anything already shown as the protein-tag badge.
+ */
+function metaLine(recipe: Recipe, parts: (string | null | undefined)[]) {
+  const seen = new Set<string>();
+  if (recipe.protein_tag) seen.add(recipe.protein_tag.toLowerCase());
+  const out: string[] = [];
+  for (const p of parts) {
+    if (!p) continue;
+    const key = p.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out.join(" · ");
+}
+
 export function RecipeBrowser({
   recipes,
   ratings,
@@ -218,9 +236,7 @@ function ListDetailsView({
                 <PantryMatchBadge match={pantryMatch?.[recipe.id]} />
               </div>
               <p className="truncate text-xs text-muted">
-                {[courseLabel(recipe), recipe.cuisine, ...(recipe.diet ?? [])]
-                  .filter(Boolean)
-                  .join(" · ")}
+                {metaLine(recipe, [courseLabel(recipe), recipe.cuisine, ...(recipe.diet ?? [])])}
                 {recipe.tags?.length ? ` · ${recipe.tags.join(", ")}` : ""}
               </p>
             </div>
@@ -309,9 +325,12 @@ function TilesView({
               </div>
               {size === "medium" && (
                 <p className="mb-3 text-xs text-muted">
-                  {[courseLabel(recipe), recipe.cuisine, ...(recipe.diet ?? []), ...(recipe.tags ?? [])]
-                    .filter(Boolean)
-                    .join(" · ")}
+                  {metaLine(recipe, [
+                    courseLabel(recipe),
+                    recipe.cuisine,
+                    ...(recipe.diet ?? []),
+                    ...(recipe.tags ?? []),
+                  ])}
                 </p>
               )}
               {r.length > 0 && (
