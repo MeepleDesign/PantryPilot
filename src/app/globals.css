@@ -115,6 +115,27 @@
   --accent: #4ca374;
 }
 
+/* Accent previews (Settings → Appearance). Each swatch card re-scopes the
+   brand tokens to its own preset so it renders in that accent whatever the
+   current one is. Values mirror the presets above. */
+[data-accent-preview="green"] { --brand: #2f7a4f; --brand-dark: #245f3e; --accent: #d97a3f; }
+[data-accent-preview="blue"] { --brand: #2563a8; --brand-dark: #1d4f85; --accent: #d97a3f; }
+[data-accent-preview="purple"] { --brand: #6d4fa0; --brand-dark: #553c80; --accent: #c99a30; }
+[data-accent-preview="terracotta"] { --brand: #b2531f; --brand-dark: #8f4119; --accent: #2f7a4f; }
+
+:root:not([data-theme="light"]) {
+  @media (prefers-color-scheme: dark) {
+    [data-accent-preview="green"] { --brand: #4ca374; --brand-dark: #3c8a60; --accent: #e8935a; }
+    [data-accent-preview="blue"] { --brand: #5b9bdc; --brand-dark: #3f7ebd; --accent: #e8935a; }
+    [data-accent-preview="purple"] { --brand: #a584d6; --brand-dark: #8666b8; --accent: #e8c25a; }
+    [data-accent-preview="terracotta"] { --brand: #e2894f; --brand-dark: #c06f39; --accent: #4ca374; }
+  }
+}
+:root[data-theme="dark"] [data-accent-preview="green"] { --brand: #4ca374; --brand-dark: #3c8a60; --accent: #e8935a; }
+:root[data-theme="dark"] [data-accent-preview="blue"] { --brand: #5b9bdc; --brand-dark: #3f7ebd; --accent: #e8935a; }
+:root[data-theme="dark"] [data-accent-preview="purple"] { --brand: #a584d6; --brand-dark: #8666b8; --accent: #e8c25a; }
+:root[data-theme="dark"] [data-accent-preview="terracotta"] { --brand: #e2894f; --brand-dark: #c06f39; --accent: #4ca374; }
+
 html {
   overflow-x: hidden;
 }

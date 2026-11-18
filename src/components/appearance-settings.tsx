@@ -69,20 +69,45 @@ export function AppearanceSettings() {
 
       <div>
         <p className="mb-2 text-sm font-medium">Accent colour</p>
-        <div className="flex gap-3">
-          {THEME_ACCENTS.map((a) => (
-            <button
-              key={a.value}
-              type="button"
-              onClick={() => updateAccent(a.value)}
-              title={a.label}
-              aria-label={a.label}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-border shadow-sm transition-transform hover:scale-105"
-              style={{ backgroundColor: a.swatch }}
-            >
-              {accent === a.value && <Check className="h-4 w-4 text-white" strokeWidth={3} />}
-            </button>
-          ))}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {THEME_ACCENTS.map((a) => {
+            const selected = accent === a.value;
+            return (
+              <button
+                key={a.value}
+                type="button"
+                onClick={() => updateAccent(a.value)}
+                aria-label={a.label}
+                aria-pressed={selected}
+                data-accent-preview={a.value}
+                className={`group overflow-hidden rounded-xl border text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${
+                  selected ? "border-brand ring-2 ring-brand/25" : "border-border"
+                }`}
+              >
+                {/* mini dashboard header */}
+                <div className="bg-gradient-to-br from-brand/15 via-surface to-accent/15 p-2.5">
+                  <div className="mb-1.5 h-1.5 w-10 rounded-full bg-brand-dark/70" />
+                  <div className="mb-2 h-2.5 w-16 rounded-full bg-foreground/70" />
+                  <div className="flex items-end gap-1">
+                    <span className="h-3 w-6 rounded bg-brand" />
+                    <span className="h-3 w-3 rounded bg-accent" />
+                    <span className="ml-auto h-4 w-4 rounded-full bg-brand/20" />
+                  </div>
+                </div>
+                <div className="flex items-center justify-between gap-2 border-t border-border bg-surface px-2.5 py-2">
+                  <span className="flex items-center gap-1.5 text-xs font-medium">
+                    <span className="h-3 w-3 rounded-full bg-brand" aria-hidden />
+                    {a.label}
+                  </span>
+                  {selected && (
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-brand-foreground">
+                      <Check className="h-3 w-3" strokeWidth={3} />
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
