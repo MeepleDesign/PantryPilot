@@ -42,8 +42,10 @@ export default async function PantryPage() {
         href="/shopping-list/spending"
         className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-dashed border-brand/40 bg-brand/5 p-4 transition-colors hover:bg-brand/10"
       >
-        <div className="flex items-center gap-2">
-          <Receipt className="h-5 w-5 shrink-0 text-brand" />
+        <div className="flex items-center gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-surface text-brand shadow-sm">
+          <Receipt className="h-[18px] w-[18px]" />
+        </span>
           <div>
             <p className="text-sm font-medium">Just did a shop?</p>
             <p className="text-xs text-muted">

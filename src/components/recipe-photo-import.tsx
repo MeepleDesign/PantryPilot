@@ -103,8 +103,10 @@ export function RecipePhotoImport({
 
   return (
     <div className="mb-6 rounded-xl border border-dashed border-brand/40 bg-brand/5 p-4">
-      <div className="mb-3 flex items-center gap-2">
-        <Sparkles className="h-5 w-5 text-brand" />
+      <div className="mb-3 flex items-center gap-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-surface text-brand shadow-sm">
+          <Sparkles className="h-[18px] w-[18px]" />
+        </span>
         <div>
           <p className="text-sm font-medium">Import from a photo</p>
           <p className="text-xs text-muted">

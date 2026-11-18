@@ -214,23 +214,42 @@ export function PantryItemRow({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-3 px-4 py-3 text-sm">
-      <div className="min-w-0">
-        <p className="font-medium">{item.ingredient_name}</p>
-        <p className="text-xs text-muted">
-          {item.quantity} {item.unit ?? ""} ·{" "}
-          <span className="capitalize">{item.storage_location}</span>
-          {item.expiry_date && (
-            <span
-              className={
-                expired ? "text-danger" : expiringSoon ? "text-warn" : undefined
-              }
-            >
-              {" "}
-              · use by {item.expiry_date}
+    <div className="flex flex-wrap items-center justify-between gap-y-2 gap-x-3 px-4 py-3 text-sm transition-colors hover:bg-background/60">
+      <div className="flex min-w-0 flex-1 items-center gap-3">
+        <span
+          aria-hidden
+          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-sm font-semibold ${
+            expired
+              ? "bg-danger/10 text-danger"
+              : expiringSoon
+                ? "bg-warn/10 text-warn"
+                : "bg-brand/10 text-brand-dark"
+          }`}
+        >
+          {item.ingredient_name.trim().charAt(0).toUpperCase()}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate font-medium">{item.ingredient_name}</p>
+          <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted">
+            <span>
+              {item.quantity} {item.unit ?? ""} ·{" "}
+              <span className="capitalize">{item.storage_location}</span>
             </span>
-          )}
-        </p>
+            {item.expiry_date && (
+              <span
+                className={`rounded-full px-1.5 py-px text-[11px] font-medium ${
+                  expired
+                    ? "bg-danger/10 text-danger"
+                    : expiringSoon
+                      ? "bg-warn/10 text-warn"
+                      : "bg-background text-muted"
+                }`}
+              >
+                {expired ? "expired" : "use by"} {item.expiry_date}
+              </span>
+            )}
+          </p>
+        </div>
       </div>
       {adjustingQty ? (
         <form
@@ -323,20 +342,26 @@ export function PantryItemRow({
           </button>
         </div>
       ) : (
-        <div className="flex shrink-0 gap-3">
+        <div className="-ml-2 flex w-full shrink-0 gap-1 pl-12 sm:ml-0 sm:w-auto sm:pl-0">
           <button
             onClick={() => {
               setQtyDraft("");
               setAdjustingQty(true);
             }}
-            className="font-medium text-brand"
+            className="rounded-md px-2 py-1 text-xs font-medium text-brand-dark transition-colors hover:bg-brand/10"
           >
             Use some
           </button>
-          <button onClick={() => setEditing(true)} className="font-medium text-brand">
+          <button
+            onClick={() => setEditing(true)}
+            className="rounded-md px-2 py-1 text-xs font-medium text-brand-dark transition-colors hover:bg-brand/10"
+          >
             Edit
           </button>
-          <button onClick={() => setConfirmingRemove(true)} className="text-danger">
+          <button
+            onClick={() => setConfirmingRemove(true)}
+            className="rounded-md px-2 py-1 text-xs font-medium text-danger transition-colors hover:bg-danger/10"
+          >
             Remove
           </button>
         </div>
