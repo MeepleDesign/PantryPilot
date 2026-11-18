@@ -1,5 +1,6 @@
 "use client";
 
+import { formatShortDate } from "@/lib/format-date";
 import { useState, useTransition } from "react";
 import { addPantryItem, updatePantryItem, deletePantryItem } from "@/lib/actions/pantry";
 import { Spinner } from "@/components/spinner";
@@ -245,7 +246,7 @@ export function PantryItemRow({
                       : "bg-background text-muted"
                 }`}
               >
-                {expired ? "expired" : "use by"} {item.expiry_date}
+                {expired ? "expired" : "use by"} {formatShortDate(item.expiry_date)}
               </span>
             )}
           </p>

@@ -5,6 +5,7 @@ import { ChevronDown, Receipt } from "lucide-react";
 import { AddReceiptToPantryButton } from "@/components/add-receipt-to-pantry";
 import { EmptyState } from "@/components/empty-state";
 import { formatMoney } from "@/lib/currency";
+import { formatShortDate } from "@/lib/format-date";
 import type { UnitSystem } from "@/lib/units";
 import type { Region } from "@/lib/types";
 
@@ -52,7 +53,7 @@ function ReceiptCard({
         <div>
           <p className="text-sm font-medium">{scan.store_name ?? "Receipt"}</p>
           <p className="text-xs text-muted">
-            {scan.purchased_at} · {scan.receipt_items.length} item
+            {formatShortDate(scan.purchased_at, true)} · {scan.receipt_items.length} item
             {scan.receipt_items.length === 1 ? "" : "s"}
           </p>
         </div>

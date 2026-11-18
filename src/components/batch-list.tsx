@@ -7,6 +7,7 @@ import { Spinner } from "@/components/spinner";
 import { LogBatchManual } from "@/components/log-batch-manual";
 import { EmptyState } from "@/components/empty-state";
 import { useToast } from "@/components/toast";
+import { formatShortDate } from "@/lib/format-date";
 import {
   consumeBatchPortion,
   deleteMealBatch,
@@ -70,7 +71,7 @@ export function BatchList({
                   <Icon className="h-3.5 w-3.5" />
                   {loc}
                 </h3>
-                <div className="divide-y divide-border rounded-lg border border-border">
+                <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
                   {locBatches.map((batch) => (
                     <BatchRow key={batch.id} batch={batch} />
                   ))}
@@ -196,52 +197,69 @@ function BatchRow({ batch }: { batch: MealBatch }) {
     );
   }
 
+  const LocIcon = LOCATION_ICONS[batch.storage_location];
   return (
-    <div className="px-3 py-2.5 text-sm">
-      <div className="mb-1.5">
-        {batch.recipe_id ? (
-          <Link
-            href={`/recipes/${batch.recipe_id}`}
-            className="block truncate font-medium text-brand hover:text-brand-dark hover:underline"
-          >
-            {batch.recipe_name}
-          </Link>
-        ) : (
-          <p className="truncate font-medium">{batch.recipe_name}</p>
-        )}
-        <p className="flex items-center gap-1 text-xs text-muted">
-          <Layers className="h-3 w-3" />
-          {empty ? (
-            <span className="text-muted">All used up</span>
-          ) : (
-            <>
-              <span className="font-medium text-foreground">{batch.portions_remaining}</span>{" "}
-              portion{batch.portions_remaining === 1 ? "" : "s"} left
-            </>
-          )}
-        </p>
-      </div>
-      {!empty && (
-        <div className="mb-2 flex flex-wrap gap-1.5">
-          {Array.from({ length: batch.portions_remaining }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              title="Tick off a used portion"
-              disabled={pending}
-              onClick={() => startTransition(() => consumeBatchPortion(batch.id, 1))}
-              className="flex h-6 w-6 items-center justify-center rounded-md border border-border bg-background text-muted hover:border-brand hover:bg-brand/10 hover:text-brand-dark disabled:cursor-wait disabled:opacity-60"
+    <div className="flex flex-wrap items-start gap-x-3 gap-y-2 px-3 py-3 text-sm transition-colors hover:bg-background/60">
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <span
+          aria-hidden
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand/10 text-brand-dark"
+        >
+          <LocIcon className="h-4 w-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          {batch.recipe_id ? (
+            <Link
+              href={`/recipes/${batch.recipe_id}`}
+              className="block truncate font-medium hover:text-brand-dark hover:underline"
             >
-              {pending ? <Spinner className="h-3 w-3" /> : <Check className="h-3.5 w-3.5" />}
-            </button>
-          ))}
+              {batch.recipe_name}
+            </Link>
+          ) : (
+            <p className="truncate font-medium">{batch.recipe_name}</p>
+          )}
+          <p className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted">
+            {empty ? (
+              <span>All used up</span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-1.5 py-px text-[11px] font-medium text-brand-dark">
+                <Layers className="h-3 w-3" />
+                {batch.portions_remaining} portion{batch.portions_remaining === 1 ? "" : "s"} left
+              </span>
+            )}
+            {batch.cooked_date && <span>cooked {formatShortDate(batch.cooked_date)}</span>}
+          </p>
+          {!empty && (
+            <div className="mt-2 flex flex-wrap items-center gap-1">
+              {Array.from({ length: batch.portions_remaining }).map((_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  title="Tick off a used portion"
+                  aria-label="Tick off a used portion"
+                  disabled={pending}
+                  onClick={() => startTransition(() => consumeBatchPortion(batch.id, 1))}
+                  className="flex h-6 w-6 items-center justify-center rounded-full border border-brand/25 bg-surface text-brand/60 transition-colors hover:border-brand hover:bg-brand/10 hover:text-brand-dark disabled:cursor-wait disabled:opacity-60"
+                >
+                  {pending ? <Spinner className="h-3 w-3" /> : <Check className="h-3 w-3" />}
+                </button>
+              ))}
+              <span className="ml-1 text-[11px] text-muted">tap to use a portion</span>
+            </div>
+          )}
         </div>
-      )}
-      <div className="flex items-center justify-end gap-3 text-xs">
-        <button onClick={() => setEditing(true)} className="font-medium text-brand hover:text-brand-dark">
+      </div>
+      <div className="-ml-2 flex w-full shrink-0 gap-1 pl-12 sm:ml-0 sm:w-auto sm:pl-0">
+        <button
+          onClick={() => setEditing(true)}
+          className="rounded-md px-2 py-1 text-xs font-medium text-brand-dark transition-colors hover:bg-brand/10"
+        >
           Edit
         </button>
-        <button onClick={() => setConfirmingRemove(true)} className="font-medium text-danger">
+        <button
+          onClick={() => setConfirmingRemove(true)}
+          className="rounded-md px-2 py-1 text-xs font-medium text-danger transition-colors hover:bg-danger/10"
+        >
           Remove
         </button>
       </div>
