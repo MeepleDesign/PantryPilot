@@ -37,7 +37,7 @@ export const PROFILE_DIETS = RECIPE_DIETS;
 
 export const PROTEIN_TAGS = ["High protein", "Low protein", "Vegetarian", "Vegan"];
 
-export const SUPERMARKETS = [
+export const UK_SUPERMARKETS = [
   "Tesco",
   "Sainsbury's",
   "Asda",
@@ -50,3 +50,23 @@ export const SUPERMARKETS = [
   "Ocado",
   "Marks & Spencer",
 ];
+
+export const US_SUPERMARKETS = [
+  "Walmart",
+  "Target",
+  "Kroger",
+  "Costco",
+  "Safeway",
+  "Publix",
+  "Trader Joe's",
+  "Whole Foods",
+  "Aldi",
+  "Albertsons",
+];
+
+/** Default supermarket in each region — the US list differs from the UK list. */
+export function supermarketsForRegion(region: string): string[] {
+  if (region === "us") return US_SUPERMARKETS;
+  if (region === "uk") return UK_SUPERMARKETS;
+  return [...UK_SUPERMARKETS, ...US_SUPERMARKETS.filter((s) => !UK_SUPERMARKETS.includes(s))];
+}

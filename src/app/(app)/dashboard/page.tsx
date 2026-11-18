@@ -26,7 +26,7 @@ import type { MealBatch, MealPlanEntry, PantryItem } from "@/lib/types";
 export default async function DashboardPage() {
   const { profile, household } = await getCurrentHousehold();
   const supabase = await createClient();
-  const today = todayIsoForRegion(profile.region);
+  const today = todayIsoForRegion(household.region);
   const [todayY, todayM, todayD] = today.split("-").map(Number);
   const weekAhead = new Date(Date.UTC(todayY, todayM - 1, todayD, 12));
   weekAhead.setUTCDate(weekAhead.getUTCDate() + 6);
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
                 href="/shopping-list/spending"
                 className="flex items-center gap-1 rounded-full border border-brand/20 bg-surface/80 px-2.5 py-1 text-xs font-medium backdrop-blur-sm transition-colors hover:bg-surface"
               >
-                {formatMoney(spentThisWeek, profile.region)} this week
+                {formatMoney(spentThisWeek, household.region)} this week
               </Link>
             )}
             {keyIngredientAlerts.length > 0 && (
@@ -304,7 +304,7 @@ export default async function DashboardPage() {
 
         <Card title="Spending" href="/shopping-list/spending" icon={Receipt}>
           {spentThisMonth > 0 ? (
-            <BigStat value={formatMoney(spentThisMonth, profile.region)} label="spent this month" />
+            <BigStat value={formatMoney(spentThisMonth, household.region)} label="spent this month" />
           ) : (
             <EmptyState icon={Receipt} title="No spend tracked this month" body="Scan a receipt to start." compact />
           )}

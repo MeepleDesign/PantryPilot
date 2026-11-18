@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 
 export async function updateHouseholdSettings(input: {
   name: string;
+  region: string;
   default_supermarket: string;
 }) {
   const supabase = await createClient();
@@ -13,19 +14,25 @@ export async function updateHouseholdSettings(input: {
 
   const { error } = await supabase
     .from("households")
-    .update({ name: input.name, default_supermarket: input.default_supermarket })
+    .update({
+      name: input.name,
+      region: input.region,
+      default_supermarket: input.default_supermarket,
+    })
     .eq("id", household.id);
   if (error) throw new Error(error.message);
 
   revalidatePath("/settings");
   revalidatePath("/dashboard");
+  revalidatePath("/planner");
+  revalidatePath("/shopping-list");
+  revalidatePath("/shopping-list/spending");
 }
 
 export async function updateProfileSettings(input: {
   display_name: string;
   dietary_preference: string;
   units: string;
-  region: string;
 }) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
@@ -37,7 +44,6 @@ export async function updateProfileSettings(input: {
       display_name: input.display_name,
       dietary_preference: input.dietary_preference,
       units: input.units,
-      region: input.region,
     })
     .eq("user_id", auth.user.id);
   if (error) throw new Error(error.message);

@@ -26,6 +26,21 @@ const SUPERMARKET_SEARCH: { label: string; match: RegExp; build: LinkBuilder }[]
     match: /ocado/i,
     build: (q) => `https://www.ocado.com/search?q=${encodeURIComponent(q)}`,
   },
+  {
+    label: "Walmart",
+    match: /walmart/i,
+    build: (q) => `https://www.walmart.com/search?q=${encodeURIComponent(q)}`,
+  },
+  {
+    label: "Target",
+    match: /target/i,
+    build: (q) => `https://www.target.com/s?searchTerm=${encodeURIComponent(q)}`,
+  },
+  {
+    label: "Kroger",
+    match: /kroger/i,
+    build: (q) => `https://www.kroger.com/search?query=${encodeURIComponent(q)}`,
+  },
 ];
 
 /** Display names of supermarkets with a confirmed direct search-URL pattern. */

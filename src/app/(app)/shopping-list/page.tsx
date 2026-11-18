@@ -89,7 +89,7 @@ export default async function ShoppingListPage() {
 
       {estimatedCount > 0 && (
         <p className="mb-3 text-sm text-muted">
-          Estimated cost: <span className="font-medium text-foreground">{formatMoney(estimatedTotal, profile.region)}</span>{" "}
+          Estimated cost: <span className="font-medium text-foreground">{formatMoney(estimatedTotal, household.region)}</span>{" "}
           ({estimatedCount} of {toBuy.length} items priced from past receipts)
         </p>
       )}
@@ -105,7 +105,7 @@ export default async function ShoppingListPage() {
               priceByName.get(normalizeIngredientName(item.ingredient_name)) ?? null,
             ]),
           )}
-          region={profile.region}
+          region={household.region}
         />
       ) : (
         <div className="mb-6 rounded-xl border border-dashed border-border">

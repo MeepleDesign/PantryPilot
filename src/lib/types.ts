@@ -139,7 +139,6 @@ export type Profile = {
   dietary_preference: string | null;
   disliked_ingredients: string[];
   units: string;
-  region: Region;
   is_admin: boolean;
 };
 
@@ -159,6 +158,7 @@ export type Household = {
   default_supermarket: string | null;
   invite_code: string;
   plan: "free" | "pro";
+  region: Region;
 };
 
 export type RecipeRating = {

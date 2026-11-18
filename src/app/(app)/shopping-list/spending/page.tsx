@@ -73,18 +73,18 @@ export default async function SpendingPage() {
 
       <div className="mb-6 grid grid-cols-2 gap-4">
         <div className="rounded-xl border border-border bg-surface p-4 text-center shadow-sm">
-          <p className="text-3xl font-semibold tracking-tight">{formatMoney(spentThisMonth, profile.region)}</p>
+          <p className="text-3xl font-semibold tracking-tight">{formatMoney(spentThisMonth, household.region)}</p>
           <p className="text-xs text-muted">spent this month</p>
         </div>
         <div className="rounded-xl border border-border bg-surface p-4 text-center shadow-sm">
-          <p className="text-3xl font-semibold tracking-tight">{formatMoney(spentAllTime, profile.region)}</p>
+          <p className="text-3xl font-semibold tracking-tight">{formatMoney(spentAllTime, household.region)}</p>
           <p className="text-xs text-muted">all time</p>
         </div>
       </div>
 
-      <ReceiptScanSection unitSystem={unitSystem} region={profile.region} />
+      <ReceiptScanSection unitSystem={unitSystem} region={household.region} />
 
-      <ReceiptHistory scans={allScans} unitSystem={unitSystem} region={profile.region} />
+      <ReceiptHistory scans={allScans} unitSystem={unitSystem} region={household.region} />
     </div>
   );
 }

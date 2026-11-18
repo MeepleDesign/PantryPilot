@@ -24,13 +24,13 @@ function currentMealSlot(): MealSlot {
 export async function startImpromptuCook(recipeId: string): Promise<string> {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
-  const { household, profile } = await getCurrentHousehold();
+  const { household } = await getCurrentHousehold();
 
   const { data: entry, error } = await supabase
     .from("meal_plan_entries")
     .insert({
       household_id: household.id,
-      plan_date: todayIsoForRegion(profile.region),
+      plan_date: todayIsoForRegion(household.region),
       meal_slot: currentMealSlot(),
       recipe_id: recipeId,
       batch_multiplier: 1,

@@ -21,10 +21,10 @@ function dateRange(days: number, region: Region | null | undefined) {
 }
 
 export default async function PlannerPage() {
-  const { household, profile } = await getCurrentHousehold();
+  const { household } = await getCurrentHousehold();
   const supabase = await createClient();
 
-  const dates = dateRange(7, profile.region);
+  const dates = dateRange(7, household.region);
 
   const { data: entries, error } = await supabase
     .from("meal_plan_entries")
