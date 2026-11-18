@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { Check, Minus, CreditCard, Sparkles } from "lucide-react";
+import { Check, Minus, CreditCard, Sparkles, CheckCircle2 } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
+import { UpgradeButtons, ManageBillingButton } from "@/components/billing-buttons";
 
 const FEATURES: { label: string; free: boolean; pro: boolean }[] = [
   { label: "Unlimited recipes, pantry & shopping list", free: true, pro: true },
@@ -12,8 +13,13 @@ const FEATURES: { label: string; free: boolean; pro: boolean }[] = [
   { label: "Community recipe library (coming soon)", free: false, pro: true },
 ];
 
-export default async function BillingPage() {
+export default async function BillingPage({
+  searchParams,
+}: PageProps<"/billing">) {
+  const params = await searchParams;
+  const justUpgraded = params.success === "1";
   const { household } = await getCurrentHousehold();
+  const isPro = household.plan === "pro";
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -23,8 +29,20 @@ export default async function BillingPage() {
       <h1 className="mb-1 mt-3 text-2xl font-semibold tracking-tight">Plans & billing</h1>
       <p className="mb-6 text-sm text-muted">
         You&apos;re currently on the{" "}
-        <span className="font-medium capitalize text-foreground">{household.plan}</span> plan.
+        <span className="font-medium capitalize text-foreground">{household.plan}</span> plan
+        {isPro && household.plan_interval && ` (billed ${household.plan_interval}ly)`}
+        {household.plan_status === "past_due" && (
+          <span className="text-warn"> — payment past due</span>
+        )}
+        .
       </p>
+
+      {justUpgraded && (
+        <p className="mb-6 flex items-center gap-2 rounded-lg border border-success/40 bg-success/10 px-4 py-3 text-sm text-success">
+          <CheckCircle2 className="h-4 w-4 shrink-0" />
+          Thanks for upgrading! It can take a few seconds for your Pro features to unlock.
+        </p>
+      )}
 
       <div className="mb-8 overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
         <table className="w-full text-sm">
@@ -64,18 +82,12 @@ export default async function BillingPage() {
         </table>
       </div>
 
-      <div className="mb-8 rounded-xl border border-dashed border-border bg-background p-5 text-center">
-        <p className="mb-3 text-sm text-muted">
-          Pro plan pricing and upgrades are coming soon.
-        </p>
-        <button
-          type="button"
-          disabled
-          className="rounded-lg bg-brand px-5 py-2 text-sm font-medium text-brand-foreground opacity-50"
-        >
-          Upgrade to Pro
-        </button>
-      </div>
+      {!isPro && (
+        <div className="mb-8 rounded-xl border border-dashed border-border bg-background p-5 text-center">
+          <p className="mb-3 text-sm text-muted">Upgrade to Pro to unlock AI import and scanning.</p>
+          <UpgradeButtons />
+        </div>
+      )}
 
       <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h2 className="mb-3 flex items-center gap-2 font-medium">
@@ -84,10 +96,16 @@ export default async function BillingPage() {
           </span>
           Payment method
         </h2>
-        <p className="rounded-lg border border-dashed border-border bg-background px-4 py-6 text-center text-sm text-muted">
-          No payment method on file. This app is currently free to use. Payment details will
-          appear here once paid plans launch.
-        </p>
+        {household.stripe_customer_id ? (
+          <div className="flex flex-col items-center gap-3 px-4 py-6 text-center text-sm text-muted">
+            <p>Manage your card, invoices and subscription with Stripe.</p>
+            <ManageBillingButton />
+          </div>
+        ) : (
+          <p className="rounded-lg border border-dashed border-border bg-background px-4 py-6 text-center text-sm text-muted">
+            No payment method on file. Upgrade to Pro above to add one.
+          </p>
+        )}
       </section>
     </div>
   );

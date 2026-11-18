@@ -160,6 +160,11 @@ export type Household = {
   plan: "free" | "pro";
   region: Region;
   cooking_machine: string;
+  stripe_customer_id: string | null;
+  stripe_subscription_id: string | null;
+  stripe_price_id: string | null;
+  plan_interval: "month" | "year" | null;
+  plan_status: "none" | "active" | "past_due" | "canceled";
 };
 
 export type RecipeRating = {
