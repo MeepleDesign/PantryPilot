@@ -10,6 +10,7 @@ import { StaticStars, InteractiveStars } from "@/components/star-rating";
 import { PrintButton } from "@/components/print-button";
 import { ShareRecipeControl } from "@/components/share-recipe-control";
 import { StockPhotoBadge } from "@/components/stock-photo-badge";
+import { RecipePlaceholder } from "@/components/recipe-placeholder";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { getCommunityRatings, getCommunityHouseholdNames } from "@/lib/community-data";
 
@@ -100,6 +101,11 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
             unoptimized
           />
           {recipe.image_is_stock && <StockPhotoBadge withLabel />}
+        </div>
+      )}
+      {!recipe.image_url && (
+        <div className="mt-3 h-36 w-full overflow-hidden rounded-xl border border-border sm:h-44 print:hidden">
+          <RecipePlaceholder name={recipe.name} size="md" />
         </div>
       )}
 
