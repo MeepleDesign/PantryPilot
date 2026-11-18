@@ -1,32 +1,40 @@
 "use client";
 
 import { useState } from "react";
+import { Sparkles } from "lucide-react";
 import {
   isMulticookerRecipe,
   machineHasCapacityLimit,
   maxServingsForMachine,
 } from "@/lib/cooking-machine";
+import { smartRound, maxServingsFromPantry } from "@/lib/recipe-scaling";
 import type { RecipeIngredient } from "@/lib/types";
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
 const DEFAULT_SERVINGS = 2;
+
+type PantryStock = { ingredient_name: string; unit: string | null; quantity: number };
 
 export function ScaledIngredients({
   ingredients,
   baseServings,
   tags = [],
   cookingMachine,
+  pantryItems = [],
 }: {
   ingredients: RecipeIngredient[];
   baseServings: number;
   tags?: string[];
   cookingMachine?: string;
+  pantryItems?: PantryStock[];
 }) {
   const [servings, setServings] = useState(DEFAULT_SERVINGS);
   const multiplier = servings / baseServings;
   const maxServings = maxServingsForMachine(cookingMachine);
   const overCapacity =
     isMulticookerRecipe(tags) && machineHasCapacityLimit(cookingMachine) && servings > maxServings;
+  const pantryMaxServings = maxServingsFromPantry(ingredients, pantryItems, baseServings);
+  const servingOptions = [...new Set([...SERVING_OPTIONS, servings])].sort((a, b) => a - b);
 
   return (
     <div>
@@ -41,7 +49,7 @@ export function ScaledIngredients({
             onChange={(e) => setServings(Number(e.target.value))}
             className="rounded-lg border border-border bg-surface px-2 py-1 outline-none focus:border-brand"
           >
-            {SERVING_OPTIONS.map((s) => (
+            {servingOptions.map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
@@ -49,6 +57,22 @@ export function ScaledIngredients({
           </select>
         </div>
       </div>
+      {pantryMaxServings != null && pantryMaxServings > 0 && pantryMaxServings !== servings && (
+        <button
+          type="button"
+          onClick={() => setServings(pantryMaxServings)}
+          className="mb-3 flex items-center gap-1.5 text-xs font-medium text-brand hover:text-brand-dark print:hidden"
+        >
+          <Sparkles className="h-3.5 w-3.5" />
+          Scale to what&apos;s in your pantry ({pantryMaxServings} serving
+          {pantryMaxServings === 1 ? "" : "s"})
+        </button>
+      )}
+      {pantryMaxServings === 0 && (
+        <p className="mb-3 text-xs text-warn">
+          Your pantry doesn&apos;t have enough of a tracked ingredient to make even one serving.
+        </p>
+      )}
       {overCapacity && (
         <p className="mb-3 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
           ⚠ {servings} servings may exceed the {cookingMachine}&apos;s bowl capacity.{" "}
@@ -64,7 +88,7 @@ export function ScaledIngredients({
             <span>{ing.ingredient_name}</span>
             <span className="font-medium tabular-nums">
               {ing.quantity != null
-                ? `${round(ing.quantity * multiplier)} ${ing.unit ?? ""}`
+                ? `${smartRound(ing.quantity * multiplier, ing.unit)} ${ing.unit ?? ""}`
                 : ing.unit ?? "-"}
             </span>
           </li>
@@ -72,8 +96,4 @@ export function ScaledIngredients({
       </ul>
     </div>
   );
-}
-
-function round(n: number) {
-  return Math.round(n * 100) / 100;
 }

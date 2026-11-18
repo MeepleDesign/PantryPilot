@@ -46,6 +46,11 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
     (a, b) => a.sort_order - b.sort_order,
   );
 
+  const { data: pantryItems } = await supabase
+    .from("pantry_items")
+    .select("ingredient_name, unit, quantity")
+    .eq("household_id", household.id);
+
   const knownPrices = await getKnownPrices();
   const costEstimate = estimateRecipeCost(ingredients, knownPrices, recipe.servings);
   const { data: auth } = await supabase.auth.getUser();
@@ -245,6 +250,7 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
           baseServings={recipe.servings}
           tags={recipe.tags}
           cookingMachine={household.cooking_machine}
+          pantryItems={pantryItems ?? []}
         />
       </div>
 
