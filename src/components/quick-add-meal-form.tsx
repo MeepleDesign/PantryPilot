@@ -4,7 +4,11 @@ import { useState, useTransition } from "react";
 import { Plus, X } from "lucide-react";
 import { addMealPlanEntry, addBatchMealPlanEntry } from "@/lib/actions/planner";
 import { Spinner } from "@/components/spinner";
-import { OMNICOOK_TAG, OMNICOOK_MAX_SERVINGS } from "@/lib/omnicook";
+import {
+  isMulticookerRecipe,
+  machineHasCapacityLimit,
+  maxServingsForMachine,
+} from "@/lib/cooking-machine";
 import type { MealSlot, Recipe } from "@/lib/types";
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 6, 8];
@@ -21,10 +25,12 @@ export function QuickAddMealForm({
   date,
   recipes,
   batches,
+  cookingMachine,
 }: {
   date: string;
   recipes: Recipe[];
   batches: AvailableBatch[];
+  cookingMachine?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [open, setOpen] = useState(false);
@@ -37,8 +43,11 @@ export function QuickAddMealForm({
   const selectedRecipe = recipes.find((r) => r.id === recipeId);
   const baseServings = selectedRecipe?.servings || 1;
   const batchMultiplier = servings / baseServings;
-  const isOmniCook = selectedRecipe?.tags.includes(OMNICOOK_TAG) ?? false;
-  const overCapacity = isOmniCook && servings > OMNICOOK_MAX_SERVINGS;
+  const maxServings = maxServingsForMachine(cookingMachine);
+  const overCapacity =
+    isMulticookerRecipe(selectedRecipe?.tags ?? []) &&
+    machineHasCapacityLimit(cookingMachine) &&
+    servings > maxServings;
   const selectedBatch = batches.find((b) => b.id === batchId);
 
   if (!open) {
@@ -154,8 +163,8 @@ export function QuickAddMealForm({
           </button>
           {overCapacity && (
             <p className="w-full text-xs text-warn">
-              ⚠ {servings} servings may exceed the Omni Cook&apos;s bowl capacity (
-              {OMNICOOK_MAX_SERVINGS} max recommended).
+              ⚠ {servings} servings may exceed the {cookingMachine}&apos;s bowl capacity (
+              {maxServings} max recommended).
             </p>
           )}
         </form>

@@ -7,6 +7,7 @@ import { SelectWithOther } from "@/components/select-with-other";
 import { useToast } from "@/components/toast";
 import { DIRECT_SEARCH_SUPERMARKETS, hasDirectSearch } from "@/lib/supermarket-links";
 import { PROFILE_DIETS, supermarketsForRegion } from "@/lib/taxonomies";
+import { COOKING_MACHINES } from "@/lib/cooking-machine";
 import {
   updateHouseholdSettings,
   updateProfileSettings,
@@ -19,6 +20,7 @@ export function HouseholdSettingsForm({ household }: { household: Household }) {
   const [saved, setSaved] = useState(false);
   const [region, setRegion] = useState(household.region);
   const [defaultSupermarket, setDefaultSupermarket] = useState(household.default_supermarket ?? "");
+  const [cookingMachine, setCookingMachine] = useState(household.cooking_machine);
   const showToast = useToast();
 
   return (
@@ -29,6 +31,7 @@ export function HouseholdSettingsForm({ household }: { household: Household }) {
           await updateHouseholdSettings({
             name: String(formData.get("name")),
             region,
+            cooking_machine: cookingMachine,
             default_supermarket: defaultSupermarket,
           });
           setSaved(true);
@@ -52,6 +55,23 @@ export function HouseholdSettingsForm({ household }: { household: Household }) {
         <p className="mt-1.5 text-xs text-muted">
           Sets the currency shown for spend and prices, today&apos;s date for planning, and the
           supermarkets suggested below.
+        </p>
+      </label>
+      <label className="block">
+        <span className="mb-1.5 block text-sm font-medium">Cooking machine</span>
+        <select
+          value={cookingMachine}
+          onChange={(e) => setCookingMachine(e.target.value)}
+          className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+        >
+          {COOKING_MACHINES.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+        <p className="mt-1.5 text-xs text-muted">
+          Used for the multicooker bowl-capacity warning when planning or scaling recipes.
         </p>
       </label>
       <label className="block">

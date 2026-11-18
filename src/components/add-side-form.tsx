@@ -3,7 +3,11 @@
 import { useState, useTransition } from "react";
 import { addMealPlanEntry } from "@/lib/actions/planner";
 import { Spinner } from "@/components/spinner";
-import { OMNICOOK_TAG, OMNICOOK_MAX_SERVINGS } from "@/lib/omnicook";
+import {
+  isMulticookerRecipe,
+  machineHasCapacityLimit,
+  maxServingsForMachine,
+} from "@/lib/cooking-machine";
 import type { MealSlot, Recipe } from "@/lib/types";
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 6, 8];
@@ -15,12 +19,14 @@ export function AddSideForm({
   parentEntryId,
   sideRecipes,
   onDone,
+  cookingMachine,
 }: {
   date: string;
   mealSlot: MealSlot;
   parentEntryId: string;
   sideRecipes: Recipe[];
   onDone: () => void;
+  cookingMachine?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [recipeId, setRecipeId] = useState("");
@@ -28,8 +34,11 @@ export function AddSideForm({
 
   const selectedRecipe = sideRecipes.find((r) => r.id === recipeId);
   const baseServings = selectedRecipe?.servings || 1;
-  const isOmniCook = selectedRecipe?.tags.includes(OMNICOOK_TAG) ?? false;
-  const overCapacity = isOmniCook && servings > OMNICOOK_MAX_SERVINGS;
+  const maxServings = maxServingsForMachine(cookingMachine);
+  const overCapacity =
+    isMulticookerRecipe(selectedRecipe?.tags ?? []) &&
+    machineHasCapacityLimit(cookingMachine) &&
+    servings > maxServings;
 
   return (
     <div className="flex flex-wrap items-center gap-2 py-2 pl-6 text-xs">
@@ -83,7 +92,7 @@ export function AddSideForm({
       </button>
       {overCapacity && (
         <p className="w-full text-warn">
-          ⚠ {servings} servings may exceed the Omni Cook's bowl capacity ({OMNICOOK_MAX_SERVINGS}{" "}
+          ⚠ {servings} servings may exceed the {cookingMachine}&apos;s bowl capacity ({maxServings}{" "}
           max recommended).
         </p>
       )}

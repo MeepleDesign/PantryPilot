@@ -15,10 +15,12 @@ export function MealEntryRow({
   entry,
   sides = [],
   sideRecipes = [],
+  cookingMachine,
 }: {
   entry: MealPlanEntry;
   sides?: MealPlanEntry[];
   sideRecipes?: Recipe[];
+  cookingMachine?: string;
 }) {
   const [addingSide, setAddingSide] = useState(false);
 
@@ -37,6 +39,7 @@ export function MealEntryRow({
           parentEntryId={entry.id}
           sideRecipes={sideRecipes}
           onDone={() => setAddingSide(false)}
+          cookingMachine={cookingMachine}
         />
       ) : (
         sideRecipes.length > 0 && (

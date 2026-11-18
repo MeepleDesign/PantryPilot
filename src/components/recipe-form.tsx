@@ -31,7 +31,7 @@ type Props = {
   dietOptions?: string[];
 };
 
-const SUGGESTED_TAGS = ["Freezer-friendly", "OmniCook", "Manual cook", "Air fryer"];
+const SUGGESTED_TAGS = ["Freezer-friendly", "OmniCook", "Thermomix", "Manual cook", "Air fryer"];
 
 function parseMethodToSteps(method: string | null | undefined): string[] {
   if (!method?.trim()) return [""];

@@ -7,6 +7,7 @@ import { revalidatePath } from "next/cache";
 export async function updateHouseholdSettings(input: {
   name: string;
   region: string;
+  cooking_machine: string;
   default_supermarket: string;
 }) {
   const supabase = await createClient();
@@ -17,6 +18,7 @@ export async function updateHouseholdSettings(input: {
     .update({
       name: input.name,
       region: input.region,
+      cooking_machine: input.cooking_machine,
       default_supermarket: input.default_supermarket,
     })
     .eq("id", household.id);
@@ -25,6 +27,7 @@ export async function updateHouseholdSettings(input: {
   revalidatePath("/settings");
   revalidatePath("/dashboard");
   revalidatePath("/planner");
+  revalidatePath("/recipes");
   revalidatePath("/shopping-list");
   revalidatePath("/shopping-list/spending");
 }

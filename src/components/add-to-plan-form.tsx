@@ -3,7 +3,11 @@
 import { useState, useTransition } from "react";
 import { addMealPlanEntry } from "@/lib/actions/planner";
 import { Spinner } from "@/components/spinner";
-import { OMNICOOK_TAG, OMNICOOK_MAX_SERVINGS } from "@/lib/omnicook";
+import {
+  isMulticookerRecipe,
+  machineHasCapacityLimit,
+  maxServingsForMachine,
+} from "@/lib/cooking-machine";
 import type { MealSlot } from "@/lib/types";
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 6, 8];
@@ -17,15 +21,18 @@ export function AddToPlanForm({
   recipeId,
   baseServings,
   tags = [],
+  cookingMachine,
 }: {
   recipeId: string;
   baseServings: number;
   tags?: string[];
+  cookingMachine?: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [servings, setServings] = useState(DEFAULT_SERVINGS);
-  const isOmniCook = tags.includes(OMNICOOK_TAG);
-  const overCapacity = isOmniCook && servings > OMNICOOK_MAX_SERVINGS;
+  const maxServings = maxServingsForMachine(cookingMachine);
+  const overCapacity =
+    isMulticookerRecipe(tags) && machineHasCapacityLimit(cookingMachine) && servings > maxServings;
 
   return (
     <form
@@ -88,8 +95,8 @@ export function AddToPlanForm({
       </button>
       {overCapacity && (
         <p className="w-full text-xs text-warn">
-          ⚠ {servings} servings may exceed the Omni Cook's bowl capacity ({OMNICOOK_MAX_SERVINGS}{" "}
-          max recommended).
+          ⚠ {servings} servings may exceed the {cookingMachine}&apos;s bowl capacity (
+          {maxServings} max recommended).
         </p>
       )}
     </form>

@@ -153,12 +153,18 @@ export default async function PlannerPage() {
                       entry={entry}
                       sides={sidesByParent.get(entry.id) ?? []}
                       sideRecipes={sideRecipes}
+                      cookingMachine={household.cooking_machine}
                     />
                   ))}
                 </div>
               )}
               <div>
-                <QuickAddMealForm date={date} recipes={recipes ?? []} batches={availableBatches ?? []} />
+                <QuickAddMealForm
+                  date={date}
+                  recipes={recipes ?? []}
+                  batches={availableBatches ?? []}
+                  cookingMachine={household.cooking_machine}
+                />
               </div>
             </div>
           );

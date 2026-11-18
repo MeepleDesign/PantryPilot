@@ -159,6 +159,7 @@ export type Household = {
   invite_code: string;
   plan: "free" | "pro";
   region: Region;
+  cooking_machine: string;
 };
 
 export type RecipeRating = {

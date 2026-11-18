@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { OMNICOOK_TAG, OMNICOOK_MAX_SERVINGS } from "@/lib/omnicook";
+import {
+  isMulticookerRecipe,
+  machineHasCapacityLimit,
+  maxServingsForMachine,
+} from "@/lib/cooking-machine";
 import type { RecipeIngredient } from "@/lib/types";
 
 const SERVING_OPTIONS = [1, 2, 3, 4, 5, 6, 8, 10, 12];
@@ -11,15 +15,18 @@ export function ScaledIngredients({
   ingredients,
   baseServings,
   tags = [],
+  cookingMachine,
 }: {
   ingredients: RecipeIngredient[];
   baseServings: number;
   tags?: string[];
+  cookingMachine?: string;
 }) {
   const [servings, setServings] = useState(DEFAULT_SERVINGS);
   const multiplier = servings / baseServings;
-  const isOmniCook = tags.includes(OMNICOOK_TAG);
-  const overCapacity = isOmniCook && servings > OMNICOOK_MAX_SERVINGS;
+  const maxServings = maxServingsForMachine(cookingMachine);
+  const overCapacity =
+    isMulticookerRecipe(tags) && machineHasCapacityLimit(cookingMachine) && servings > maxServings;
 
   return (
     <div>
@@ -44,8 +51,8 @@ export function ScaledIngredients({
       </div>
       {overCapacity && (
         <p className="mb-3 rounded-lg border border-warn/40 bg-warn/10 px-3 py-2 text-xs text-warn">
-          ⚠ {servings} servings may exceed the Omni Cook&apos;s bowl capacity.{" "}
-          {OMNICOOK_MAX_SERVINGS} servings is the recommended max for this cook method.
+          ⚠ {servings} servings may exceed the {cookingMachine}&apos;s bowl capacity.{" "}
+          {maxServings} servings is the recommended max for this cook method.
         </p>
       )}
       <ul className="divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">

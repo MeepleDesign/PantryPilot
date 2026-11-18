@@ -211,7 +211,12 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
       </div>
 
       <div className="mb-6 print:hidden">
-        <AddToPlanForm recipeId={id} baseServings={recipe.servings} tags={recipe.tags} />
+        <AddToPlanForm
+          recipeId={id}
+          baseServings={recipe.servings}
+          tags={recipe.tags}
+          cookingMachine={household.cooking_machine}
+        />
       </div>
 
       <div className="mb-8">
@@ -219,6 +224,7 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
           ingredients={ingredients}
           baseServings={recipe.servings}
           tags={recipe.tags}
+          cookingMachine={household.cooking_machine}
         />
       </div>
 
