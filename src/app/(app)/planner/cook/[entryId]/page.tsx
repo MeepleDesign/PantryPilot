@@ -1,4 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
+import { StockPhotoBadge } from "@/components/stock-photo-badge";
+import { RecipePlaceholder } from "@/components/recipe-placeholder";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MarkCookedButton } from "@/components/cook-view-actions";
@@ -160,7 +163,24 @@ function RecipeBlock({
   const steps = methodSteps(recipe.method);
 
   return (
-    <div className="mb-8 rounded-xl border border-border bg-surface p-4">
+    <div className="mb-8 overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
+      <div className="relative h-36 w-full border-b border-border sm:h-44 print:hidden">
+        {recipe.image_url ? (
+          <>
+            <Image
+              src={recipe.image_url}
+              alt={recipe.name}
+              fill
+              className="object-cover"
+              unoptimized
+            />
+            {recipe.image_is_stock && <StockPhotoBadge withLabel />}
+          </>
+        ) : (
+          <RecipePlaceholder name={recipe.name} size="md" />
+        )}
+      </div>
+      <div className="p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div>
           <span className="mb-1 inline-block rounded-full bg-brand/10 px-2 py-0.5 text-[11px] font-medium text-brand-dark">
@@ -174,11 +194,13 @@ function RecipeBlock({
       </div>
 
       {!entry.cooked && (
-        <BatchCookOption
-          entryId={entry.id}
-          recipeId={entry.recipe_id}
-          batches={availableBatches}
-        />
+        <div className="mb-4">
+          <BatchCookOption
+            entryId={entry.id}
+            recipeId={entry.recipe_id}
+            batches={availableBatches}
+          />
+        </div>
       )}
 
       {entry.cooked && (
@@ -229,16 +251,19 @@ function RecipeBlock({
           <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-muted">
             Method
           </h3>
-          <ol className="space-y-2 text-sm leading-relaxed">
+          <ol className="space-y-3 text-sm leading-relaxed">
             {steps.map((step, i) => (
               <li key={i} className="flex gap-3">
-                <span className="shrink-0 font-medium text-brand-dark">{i + 1}.</span>
-                <span>{step}</span>
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand-dark">
+                  {i + 1}
+                </span>
+                <span className="pt-0.5">{step}</span>
               </li>
             ))}
           </ol>
         </div>
       )}
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Check, Minus, CreditCard } from "lucide-react";
+import { Check, Minus, CreditCard, Sparkles } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 
 const FEATURES: { label: string; free: boolean; pro: boolean }[] = [
@@ -32,7 +32,12 @@ export default async function BillingPage() {
             <tr className="border-b border-border text-left">
               <th className="px-4 py-3 font-medium">Feature</th>
               <th className="px-4 py-3 text-center font-medium">Free</th>
-              <th className="px-4 py-3 text-center font-medium">Pro</th>
+              <th className="bg-brand/5 px-4 py-3 text-center font-medium text-brand-dark">
+                <span className="inline-flex items-center gap-1">
+                  <Sparkles className="h-3.5 w-3.5" />
+                  Pro
+                </span>
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -46,7 +51,7 @@ export default async function BillingPage() {
                     <Minus className="mx-auto h-4 w-4 text-muted" />
                   )}
                 </td>
-                <td className="px-4 py-3 text-center">
+                <td className="bg-brand/5 px-4 py-3 text-center">
                   {f.pro ? (
                     <Check className="mx-auto h-4 w-4 text-success" />
                   ) : (

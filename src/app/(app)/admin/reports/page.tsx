@@ -1,3 +1,6 @@
+import Link from "next/link";
+import { Lock } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { AdminReportsList, type AdminReportRow } from "@/components/admin-reports-list";
@@ -15,8 +18,20 @@ export default async function AdminReportsPage() {
   const { profile } = await getCurrentHousehold();
   if (!profile.is_admin) {
     return (
-      <div className="rounded-xl border border-dashed border-border py-16 text-center text-muted">
-        You don&apos;t have access to this page.
+      <div className="rounded-xl border border-dashed border-border">
+        <EmptyState
+          icon={Lock}
+          title="You don't have access to this page"
+          body="Admin tools are only available to PantryPilot administrators."
+          action={
+            <Link
+              href="/dashboard"
+              className="text-sm font-medium text-brand hover:text-brand-dark"
+            >
+              Back to dashboard
+            </Link>
+          }
+        />
       </div>
     );
   }
