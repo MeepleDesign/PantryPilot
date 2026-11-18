@@ -5,8 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   RegenerateButton,
   ResetButton,
-  ClearTickedButton,
-  ShoppingListRow,
+  ShoppingListGroups,
   AddManualItemForm,
 } from "@/components/shopping-list-client";
 import { PrintButton } from "@/components/print-button";
@@ -96,17 +95,18 @@ export default async function ShoppingListPage() {
       )}
 
       {toBuy.length > 0 ? (
-        <div className="mb-6 divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
-          {toBuy.map((item) => (
-            <ShoppingListRow
-              key={item.id}
-              item={item}
-              supermarketName={household.default_supermarket}
-              knownPrice={priceByName.get(normalizeIngredientName(item.ingredient_name)) ?? null}
-              region={profile.region}
-            />
-          ))}
-        </div>
+        <ShoppingListGroups
+          key={toBuy.map((i) => `${i.id}:${i.ticked ? 1 : 0}`).join(",")}
+          items={toBuy}
+          supermarketName={household.default_supermarket}
+          prices={Object.fromEntries(
+            toBuy.map((item) => [
+              item.id,
+              priceByName.get(normalizeIngredientName(item.ingredient_name)) ?? null,
+            ]),
+          )}
+          region={profile.region}
+        />
       ) : (
         <div className="mb-6 rounded-xl border border-dashed border-border">
           <EmptyState
@@ -114,12 +114,6 @@ export default async function ShoppingListPage() {
             title="Nothing to buy yet"
             body="Plan some meals, then recalculate."
           />
-        </div>
-      )}
-
-      {toBuy.some((i) => i.ticked) && (
-        <div className="mb-6 text-right print:hidden">
-          <ClearTickedButton />
         </div>
       )}
 

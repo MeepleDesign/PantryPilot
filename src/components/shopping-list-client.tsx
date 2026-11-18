@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Globe, RefreshCw, Search, X } from "lucide-react";
+import { Globe, PartyPopper, RefreshCw, Search, ShoppingBasket, X } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import {
   regenerateShoppingList,
   toggleShoppingItem,
@@ -92,11 +93,13 @@ export function ShoppingListRow({
   supermarketName,
   knownPrice,
   region,
+  onTickedChange,
 }: {
   item: ShoppingListItem;
   supermarketName: string | null;
   knownPrice?: { price: number; updated_at: string } | null;
   region: Region;
+  onTickedChange?: (id: string, ticked: boolean) => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [ticked, setTicked] = useState(item.ticked);
@@ -114,6 +117,7 @@ export function ShoppingListRow({
         onChange={(e) => {
           const next = e.target.checked;
           setTicked(next);
+          onTickedChange?.(item.id, next);
           startTransition(() => toggleShoppingItem(item.id, next));
         }}
         className="h-4 w-4 accent-brand transition-transform duration-150 active:scale-90"
@@ -211,5 +215,102 @@ export function AddManualItemForm({ unitSystem }: { unitSystem: UnitSystem }) {
         Add
       </button>
     </form>
+  );
+}
+
+type KnownPrice = { price: number; updated_at: string };
+
+/**
+ * Splits the list into "still to get" and "in the trolley", with a progress
+ * bar. Tick state is tracked here so items move between groups immediately.
+ */
+export function ShoppingListGroups({
+  items,
+  supermarketName,
+  prices,
+  region,
+}: {
+  items: ShoppingListItem[];
+  supermarketName: string | null;
+  prices: Record<string, KnownPrice | null>;
+  region: Region;
+}) {
+  const [tickedIds, setTickedIds] = useState(
+    () => new Set(items.filter((i) => i.ticked).map((i) => i.id)),
+  );
+  const onTickedChange = (id: string, next: boolean) =>
+    setTickedIds((prev) => {
+      const copy = new Set(prev);
+      if (next) copy.add(id);
+      else copy.delete(id);
+      return copy;
+    });
+
+  const remaining = items.filter((i) => !tickedIds.has(i.id));
+  const inTrolley = items.filter((i) => tickedIds.has(i.id));
+  const row = (item: ShoppingListItem) => (
+    <ShoppingListRow
+      key={item.id}
+      item={{ ...item, ticked: tickedIds.has(item.id) }}
+      supermarketName={supermarketName}
+      knownPrice={prices[item.id] ?? null}
+      region={region}
+      onTickedChange={onTickedChange}
+    />
+  );
+
+  return (
+    <>
+      <div className="mb-3 flex items-center gap-3 print:hidden">
+        <div
+          className="h-2 flex-1 overflow-hidden rounded-full bg-border/70"
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={items.length}
+          aria-valuenow={inTrolley.length}
+          aria-label="Shopping progress"
+        >
+          <div
+            className="h-full rounded-full bg-brand transition-[width] duration-500"
+            style={{ width: `${(inTrolley.length / items.length) * 100}%` }}
+          />
+        </div>
+        <span className="shrink-0 text-xs font-medium tabular-nums text-muted">
+          {inTrolley.length} of {items.length} in the trolley
+        </span>
+      </div>
+
+      {remaining.length > 0 ? (
+        <div className="mb-6 divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
+          {remaining.map(row)}
+        </div>
+      ) : (
+        <div className="mb-6 rounded-xl border border-dashed border-brand/40 bg-brand/5">
+          <EmptyState
+            icon={PartyPopper}
+            title="All done, everything's in the trolley"
+            body="Clear the ticked items when you're home."
+            compact
+          />
+        </div>
+      )}
+
+      {inTrolley.length > 0 && (
+        <div className="mb-6">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="flex items-center gap-1.5 text-sm font-semibold uppercase tracking-wide text-muted">
+              <ShoppingBasket className="h-4 w-4" />
+              In the trolley
+            </h2>
+            <span className="print:hidden">
+              <ClearTickedButton />
+            </span>
+          </div>
+          <div className="divide-y divide-border rounded-xl border border-border bg-surface/70">
+            {inTrolley.map(row)}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
