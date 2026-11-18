@@ -33,6 +33,14 @@ export default async function PantryPage() {
 
   const keyIngredients = await getKeyIngredientStatuses();
 
+  const pantryOptions = Array.from(
+    new Map(
+      ((items as PantryItem[] | null) ?? []).map((i) => [i.ingredient_name, i.unit]),
+    ).entries(),
+  )
+    .map(([name, unit]) => ({ name, unit }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -66,7 +74,11 @@ export default async function PantryPage() {
         <PantryItemForm unitSystem={unitSystem} />
       </div>
 
-      <KeyIngredientsSection items={keyIngredients} unitSystem={unitSystem} />
+      <KeyIngredientsSection
+        items={keyIngredients}
+        unitSystem={unitSystem}
+        pantryOptions={pantryOptions}
+      />
 
       {LOCATIONS.map((loc) => {
         const locItems = (items as PantryItem[] | null)?.filter(

@@ -4,9 +4,12 @@ import { useState, useTransition } from "react";
 import { Star, X } from "lucide-react";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
+import { SelectWithOther } from "@/components/select-with-other";
 import { addKeyIngredient, removeKeyIngredient } from "@/lib/actions/key-ingredients";
 import type { KeyIngredientStatus } from "@/lib/types";
 import type { UnitSystem } from "@/lib/units";
+
+export type PantryIngredientOption = { name: string; unit: string | null };
 
 const STATUS_STYLES: Record<KeyIngredientStatus["status"], string> = {
   ok: "bg-success/10 text-success",
@@ -25,9 +28,11 @@ const STATUS_LABELS: Record<KeyIngredientStatus["status"], string> = {
 export function KeyIngredientsSection({
   items,
   unitSystem,
+  pantryOptions,
 }: {
   items: KeyIngredientStatus[];
   unitSystem: UnitSystem;
+  pantryOptions: PantryIngredientOption[];
 }) {
   const [adding, setAdding] = useState(false);
 
@@ -53,7 +58,13 @@ export function KeyIngredientsSection({
         is about to expire, even after the last of it is used up.
       </p>
 
-      {adding && <AddKeyIngredientForm unitSystem={unitSystem} onDone={() => setAdding(false)} />}
+      {adding && (
+        <AddKeyIngredientForm
+          unitSystem={unitSystem}
+          pantryOptions={pantryOptions}
+          onDone={() => setAdding(false)}
+        />
+      )}
 
       {items.length > 0 ? (
         <div className="mt-3 divide-y divide-border rounded-lg border border-border">
@@ -70,20 +81,26 @@ export function KeyIngredientsSection({
 
 function AddKeyIngredientForm({
   unitSystem,
+  pantryOptions,
   onDone,
 }: {
   unitSystem: UnitSystem;
+  pantryOptions: PantryIngredientOption[];
   onDone: () => void;
 }) {
   const [pending, startTransition] = useTransition();
+  const [name, setName] = useState("");
   const [unit, setUnit] = useState("");
+
+  const pantryNames = pantryOptions.map((o) => o.name);
 
   return (
     <form
       action={(formData) => {
+        if (!name.trim()) return;
         startTransition(async () => {
           await addKeyIngredient({
-            ingredient_name: String(formData.get("ingredient_name")),
+            ingredient_name: name.trim(),
             target_quantity: Number(formData.get("target_quantity")) || 1,
             unit: unit || null,
           });
@@ -92,10 +109,16 @@ function AddKeyIngredientForm({
       }}
       className="mb-3 grid grid-cols-2 gap-2 rounded-lg border border-dashed border-border p-3 sm:grid-cols-4"
     >
-      <input
+      <SelectWithOther
         name="ingredient_name"
-        placeholder="e.g. Milk"
-        required
+        value={name}
+        onChange={(v) => {
+          setName(v);
+          const known = pantryOptions.find((o) => o.name === v);
+          if (known) setUnit(known.unit ?? "");
+        }}
+        options={pantryNames}
+        placeholder="Choose from pantry…"
         className="col-span-2 rounded-lg border border-border bg-background px-2 py-1.5 text-sm sm:col-span-2"
       />
       <input
