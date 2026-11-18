@@ -82,10 +82,12 @@ export function RecipeBrowser({
   recipes,
   ratings,
   pantryMatch,
+  expiringCounts,
 }: {
   recipes: Recipe[];
   ratings: Record<string, number[]>;
   pantryMatch?: Record<string, RecipeMatch>;
+  expiringCounts?: Record<string, number>;
 }) {
   const { view, setView } = useViewMode();
 
@@ -114,11 +116,22 @@ export function RecipeBrowser({
 
       {view === "list" && <ListView recipes={recipes} ratings={ratings} />}
       {view === "list-details" && (
-        <ListDetailsView recipes={recipes} ratings={ratings} pantryMatch={pantryMatch} />
+        <ListDetailsView
+          recipes={recipes}
+          ratings={ratings}
+          pantryMatch={pantryMatch}
+          expiringCounts={expiringCounts}
+        />
       )}
       {view === "tiles-small" && <TilesView recipes={recipes} ratings={ratings} size="small" />}
       {view === "tiles-medium" && (
-        <TilesView recipes={recipes} ratings={ratings} size="medium" pantryMatch={pantryMatch} />
+        <TilesView
+          recipes={recipes}
+          ratings={ratings}
+          size="medium"
+          pantryMatch={pantryMatch}
+          expiringCounts={expiringCounts}
+        />
       )}
     </div>
   );
@@ -136,6 +149,15 @@ function PantryMatchBadge({ match }: { match?: RecipeMatch }) {
   return (
     <span className="shrink-0 rounded-full bg-background px-2 py-0.5 text-[11px] text-muted">
       {match.covered}/{match.total} in pantry
+    </span>
+  );
+}
+
+function UseItUpBadge({ count }: { count?: number }) {
+  if (!count) return null;
+  return (
+    <span className="shrink-0 rounded-full bg-warn/10 px-2 py-0.5 text-[11px] font-medium text-warn">
+      Uses {count} expiring
     </span>
   );
 }
@@ -197,10 +219,12 @@ function ListDetailsView({
   recipes,
   ratings,
   pantryMatch,
+  expiringCounts,
 }: {
   recipes: Recipe[];
   ratings: Record<string, number[]>;
   pantryMatch?: Record<string, RecipeMatch>;
+  expiringCounts?: Record<string, number>;
 }) {
   return (
     <div className="divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
@@ -234,6 +258,7 @@ function ListDetailsView({
                   </span>
                 )}
                 <PantryMatchBadge match={pantryMatch?.[recipe.id]} />
+                <UseItUpBadge count={expiringCounts?.[recipe.id]} />
               </div>
               <p className="truncate text-xs text-muted">
                 {metaLine(recipe, [courseLabel(recipe), recipe.cuisine, ...(recipe.diet ?? [])])}
@@ -267,11 +292,13 @@ function TilesView({
   ratings,
   size,
   pantryMatch,
+  expiringCounts,
 }: {
   recipes: Recipe[];
   ratings: Record<string, number[]>;
   size: "small" | "medium";
   pantryMatch?: Record<string, RecipeMatch>;
+  expiringCounts?: Record<string, number>;
 }) {
   const gridClass =
     size === "small"
@@ -320,6 +347,7 @@ function TilesView({
                       </span>
                     )}
                     <PantryMatchBadge match={pantryMatch?.[recipe.id]} />
+                    <UseItUpBadge count={expiringCounts?.[recipe.id]} />
                   </div>
                 )}
               </div>

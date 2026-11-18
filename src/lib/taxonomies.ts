@@ -64,9 +64,14 @@ export const US_SUPERMARKETS = [
   "Albertsons",
 ];
 
-/** Default supermarket in each region — the US list differs from the UK list. */
+/**
+ * Default supermarket in each region — the US list differs from the UK list.
+ * With no country set we don't know which list applies, so there's nothing
+ * sensible to suggest (a merged list would mostly show the wrong country's
+ * stores) — the caller should treat the default supermarket as N/A instead.
+ */
 export function supermarketsForRegion(region: string): string[] {
   if (region === "us") return US_SUPERMARKETS;
   if (region === "uk") return UK_SUPERMARKETS;
-  return [...UK_SUPERMARKETS, ...US_SUPERMARKETS.filter((s) => !UK_SUPERMARKETS.includes(s))];
+  return [];
 }
