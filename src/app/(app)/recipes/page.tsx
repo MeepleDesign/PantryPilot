@@ -6,6 +6,7 @@ import { RecipeBrowser } from "@/components/recipe-views";
 import { RecipeViewTabs } from "@/components/recipe-view-tabs";
 import { EmptyState } from "@/components/empty-state";
 import { LinkButton } from "@/components/link-button";
+import { RecipeFilterBar } from "@/components/recipe-filter-bar";
 import { computeRecipeMatches } from "@/lib/pantry-match";
 
 export default async function RecipesPage({
@@ -124,18 +125,14 @@ export default async function RecipesPage({
 
       <RecipeViewTabs active="mine" />
 
-      <form className="mb-6 flex flex-wrap gap-3" method="get">
-        <input
-          type="search"
-          name="q"
-          defaultValue={q}
-          placeholder="Search recipes…"
-          className="w-56 rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
-        />
+      <RecipeFilterBar
+        q={q}
+        activeCount={[cuisine, tag, course, minRating].filter(Boolean).length + (readyOnly ? 1 : 0)}
+      >
         <select
           name="cuisine"
           defaultValue={cuisine}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+          className="min-w-0 rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
         >
           <option value="">All cuisines</option>
           {cuisines.map((c) => (
@@ -147,7 +144,7 @@ export default async function RecipesPage({
         <select
           name="tag"
           defaultValue={tag}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+          className="min-w-0 rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
         >
           <option value="">All tags</option>
           {tags.map((t) => (
@@ -159,7 +156,7 @@ export default async function RecipesPage({
         <select
           name="course"
           defaultValue={course}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+          className="min-w-0 rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
         >
           <option value="">All courses</option>
           {COURSES.map((c) => (
@@ -171,7 +168,7 @@ export default async function RecipesPage({
         <select
           name="minRating"
           defaultValue={minRating}
-          className="rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
+          className="min-w-0 rounded-lg border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-brand"
         >
           <option value="">Any rating</option>
           <option value="4">★★★★ & up</option>
@@ -179,17 +176,17 @@ export default async function RecipesPage({
           <option value="2">★★ & up</option>
           <option value="1">★ & up</option>
         </select>
-        <label className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm">
+        <label className="col-span-2 flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-sm">
           <input type="checkbox" name="ready" value="1" defaultChecked={readyOnly} className="h-4 w-4 accent-brand" />
           I can make this now
         </label>
         <button
           type="submit"
-          className="rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-surface"
+          className="col-span-2 rounded-lg bg-brand px-4 py-2 text-sm font-medium text-brand-foreground transition-colors hover:bg-brand-dark sm:border sm:border-border sm:bg-transparent sm:text-foreground sm:hover:bg-surface"
         >
-          Filter
+          Apply filters
         </button>
-      </form>
+      </RecipeFilterBar>
 
       {!visibleRecipes.length ? (
         <RecipesEmptyState />
