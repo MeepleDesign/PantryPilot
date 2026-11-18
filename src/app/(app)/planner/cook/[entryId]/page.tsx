@@ -88,7 +88,7 @@ export default async function CookViewPage({
   });
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-2xl lg:max-w-4xl">
       <div className="mb-1 flex items-center justify-between">
         <Link href="/planner" className="text-sm text-muted hover:text-foreground">
           ← Planner
@@ -223,46 +223,48 @@ function RecipeBlock({
         </div>
       )}
 
-      {ingredients.length > 0 && (
-        <div className="mb-4">
-          <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-muted">
-            Ingredients
-          </h3>
-          <ul className="divide-y divide-border rounded-lg border border-border bg-background">
-            {ingredients.map((ing) => (
-              <li
-                key={ing.id}
-                className="flex items-center justify-between px-3 py-2 text-sm"
-              >
-                <span>{ing.ingredient_name}</span>
-                <span className="font-medium tabular-nums">
-                  {ing.quantity != null
-                    ? `${round(ing.quantity * entry.batch_multiplier)} ${ing.unit ?? ""}`
-                    : (ing.unit ?? "-")}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="lg:flex lg:items-start lg:gap-6">
+        {ingredients.length > 0 && (
+          <div className="mb-4 lg:mb-0 lg:w-64 lg:shrink-0 lg:sticky lg:top-4">
+            <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-muted">
+              Ingredients
+            </h3>
+            <ul className="divide-y divide-border rounded-lg border border-border bg-background">
+              {ingredients.map((ing) => (
+                <li
+                  key={ing.id}
+                  className="flex items-center justify-between px-3 py-2 text-sm"
+                >
+                  <span>{ing.ingredient_name}</span>
+                  <span className="font-medium tabular-nums">
+                    {ing.quantity != null
+                      ? `${round(ing.quantity * entry.batch_multiplier)} ${ing.unit ?? ""}`
+                      : (ing.unit ?? "-")}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
-      {steps.length > 0 && (
-        <div>
-          <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-muted">
-            Method
-          </h3>
-          <ol className="space-y-3 text-sm leading-relaxed">
-            {steps.map((step, i) => (
-              <li key={i} className="flex gap-3">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand-dark">
-                  {i + 1}
-                </span>
-                <span className="pt-0.5">{step}</span>
-              </li>
-            ))}
-          </ol>
-        </div>
-      )}
+        {steps.length > 0 && (
+          <div className="lg:min-w-0 lg:flex-1">
+            <h3 className="mb-1.5 text-sm font-semibold uppercase tracking-wide text-muted">
+              Method
+            </h3>
+            <ol className="space-y-3 text-sm leading-relaxed">
+              {steps.map((step, i) => (
+                <li key={i} className="flex gap-3">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-semibold text-brand-dark">
+                    {i + 1}
+                  </span>
+                  <span className="pt-0.5">{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
+      </div>
       </div>
     </div>
   );
