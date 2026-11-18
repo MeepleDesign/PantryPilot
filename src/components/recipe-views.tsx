@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { StaticStars } from "@/components/star-rating";
 import { StockPhotoBadge } from "@/components/stock-photo-badge";
+import { RecipePlaceholder } from "@/components/recipe-placeholder";
 import type { RecipeMatch } from "@/lib/pantry-match";
 import type { Recipe } from "@/lib/types";
 
@@ -37,6 +38,8 @@ function useViewMode() {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY) as ViewMode | null;
       if (stored && VIEW_OPTIONS.some((o) => o.mode === stored)) {
+        // Pre-existing hydration-safe read of a localStorage preference.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setView(stored);
       }
     } catch {
@@ -201,9 +204,7 @@ function ListDetailsView({
                   unoptimized
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-muted">
-                  <UtensilsCrossed className="h-5 w-5" strokeWidth={1.5} />
-                </div>
+                <RecipePlaceholder name={recipe.name} size="xs" />
               )}
             </div>
             <div className="min-w-0 flex-1">
@@ -265,7 +266,6 @@ function TilesView({
       ? "grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5"
       : "grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3";
   const imgHeight = size === "small" ? "h-20" : "h-32";
-  const iconSize = size === "small" ? "h-5 w-5" : "h-8 w-8";
   const padding = size === "small" ? "p-2.5" : "p-4";
 
   return (
@@ -291,8 +291,8 @@ function TilesView({
                 {recipe.image_is_stock && <StockPhotoBadge />}
               </div>
             ) : (
-              <div className={`flex w-full items-center justify-center bg-background text-muted ${imgHeight}`}>
-                <UtensilsCrossed className={iconSize} strokeWidth={1.5} />
+              <div className={`w-full ${imgHeight}`}>
+                <RecipePlaceholder name={recipe.name} size={size === "small" ? "sm" : "md"} />
               </div>
             )}
             <div className={padding}>

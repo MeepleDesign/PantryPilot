@@ -3,7 +3,8 @@
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Download, Flag, UtensilsCrossed, Users } from "lucide-react";
+import { Download, Flag, Users } from "lucide-react";
+import { RecipePlaceholder } from "@/components/recipe-placeholder";
 import { Spinner } from "@/components/spinner";
 import { EmptyState } from "@/components/empty-state";
 import { importCommunityRecipe, reportCommunityRecipe, unshareRecipe } from "@/lib/actions/community-recipes";
@@ -58,9 +59,7 @@ function CommunityRecipeRow({ recipe }: { recipe: CommunityRecipeCard }) {
               unoptimized
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-muted">
-              <UtensilsCrossed className="h-5 w-5" strokeWidth={1.5} />
-            </div>
+            <RecipePlaceholder name={recipe.name} size="xs" />
           )}
         </div>
         <div className="min-w-0">
