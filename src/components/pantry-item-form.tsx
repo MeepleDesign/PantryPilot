@@ -1,8 +1,10 @@
 "use client";
 
 import { formatShortDate } from "@/lib/format-date";
+import { Star } from "lucide-react";
 import { useState, useTransition } from "react";
 import { addPantryItem, updatePantryItem, deletePantryItem } from "@/lib/actions/pantry";
+import { toggleKeyIngredient } from "@/lib/actions/key-ingredients";
 import { Spinner } from "@/components/spinner";
 import { UnitSelect } from "@/components/unit-select";
 import { useToast } from "@/components/toast";
@@ -21,6 +23,7 @@ export function PantryItemForm({
 }) {
   const [pending, startTransition] = useTransition();
   const [unit, setUnit] = useState("");
+  const [keyIngredient, setKeyIngredient] = useState(false);
   const showToast = useToast();
 
   return (
@@ -28,15 +31,25 @@ export function PantryItemForm({
       action={(formData) => {
         startTransition(async () => {
           const name = String(formData.get("ingredient_name"));
+          const quantity = Number(formData.get("quantity")) || 0;
           await addPantryItem({
             ingredient_name: name,
             storage_location: String(formData.get("storage_location")) as StorageLocation,
-            quantity: Number(formData.get("quantity")) || 0,
+            quantity,
             unit: unit || null,
             expiry_date: (formData.get("expiry_date") as string) || null,
             notes: null,
           });
+          if (keyIngredient) {
+            await toggleKeyIngredient({
+              ingredient_name: name,
+              tracked: true,
+              default_target_quantity: quantity,
+              default_unit: unit || null,
+            });
+          }
           setUnit("");
+          setKeyIngredient(false);
           showToast(`${name} added to pantry`);
           onDone?.();
         });
@@ -94,6 +107,15 @@ export function PantryItemForm({
           className="w-full rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
         />
       </label>
+      <label className="col-span-2 flex items-center gap-1.5 text-xs text-muted sm:col-span-6">
+        <input
+          type="checkbox"
+          checked={keyIngredient}
+          onChange={(e) => setKeyIngredient(e.target.checked)}
+          className="h-3.5 w-3.5 accent-brand"
+        />
+        Also track as a key ingredient (always keep stocked)
+      </label>
       <button
         type="submit"
         disabled={pending}
@@ -109,9 +131,11 @@ export function PantryItemForm({
 export function PantryItemRow({
   item,
   unitSystem,
+  isKeyIngredient = false,
 }: {
   item: PantryItem;
   unitSystem: UnitSystem;
+  isKeyIngredient?: boolean;
 }) {
   const [editing, setEditing] = useState(false);
   const [confirmingRemove, setConfirmingRemove] = useState(false);
@@ -119,6 +143,7 @@ export function PantryItemRow({
   const [qtyDraft, setQtyDraft] = useState("");
   const [pending, startTransition] = useTransition();
   const [unit, setUnit] = useState(item.unit ?? "");
+  const [keyIngredient, setKeyIngredient] = useState(isKeyIngredient);
 
   const status = expiryStatus(item.expiry_date);
   const expiringSoon = status === "soon";
@@ -129,15 +154,23 @@ export function PantryItemRow({
       <form
         action={(formData) => {
           startTransition(async () => {
+            const name = String(formData.get("ingredient_name"));
+            const quantity = Number(formData.get("quantity")) || 0;
             await updatePantryItem(item.id, {
-              ingredient_name: String(formData.get("ingredient_name")),
+              ingredient_name: name,
               storage_location: String(
                 formData.get("storage_location"),
               ) as StorageLocation,
-              quantity: Number(formData.get("quantity")) || 0,
+              quantity,
               unit: unit || null,
               expiry_date: (formData.get("expiry_date") as string) || null,
               notes: item.notes,
+            });
+            await toggleKeyIngredient({
+              ingredient_name: name,
+              tracked: keyIngredient,
+              default_target_quantity: quantity,
+              default_unit: unit || null,
             });
             setEditing(false);
           });
@@ -194,6 +227,15 @@ export function PantryItemRow({
             className="w-full rounded-lg border border-border bg-background px-2 py-1 text-sm"
           />
         </label>
+        <label className="col-span-2 flex items-center gap-1.5 text-xs text-muted sm:col-span-6">
+          <input
+            type="checkbox"
+            checked={keyIngredient}
+            onChange={(e) => setKeyIngredient(e.target.checked)}
+            className="h-3.5 w-3.5 accent-brand"
+          />
+          Key ingredient (always keep stocked)
+        </label>
         <div className="col-span-2 flex gap-2 sm:col-span-6">
           <button
             type="submit"
@@ -230,7 +272,12 @@ export function PantryItemRow({
           {item.ingredient_name.trim().charAt(0).toUpperCase()}
         </span>
         <div className="min-w-0">
-          <p className="truncate font-medium">{item.ingredient_name}</p>
+          <p className="flex items-center gap-1 truncate font-medium">
+            {isKeyIngredient && (
+              <Star className="h-3 w-3 shrink-0 fill-brand text-brand" aria-label="Key ingredient" />
+            )}
+            <span className="truncate">{item.ingredient_name}</span>
+          </p>
           <p className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted">
             <span>
               {item.quantity} {item.unit ?? ""} ·{" "}

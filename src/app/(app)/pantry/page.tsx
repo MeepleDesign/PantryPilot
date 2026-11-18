@@ -6,6 +6,7 @@ import { PantryPhotoSection } from "@/components/pantry-photo-section";
 import { KeyIngredientsSection } from "@/components/key-ingredients-section";
 import { EmptyState } from "@/components/empty-state";
 import { getKeyIngredientStatuses } from "@/lib/actions/key-ingredients";
+import { normalizeIngredientName } from "@/lib/ingredient-name";
 import type { PantryItem, StorageLocation } from "@/lib/types";
 import type { UnitSystem } from "@/lib/units";
 
@@ -31,6 +32,9 @@ export default async function PantryPage() {
   if (error) throw new Error(error.message);
 
   const keyIngredients = await getKeyIngredientStatuses();
+  const keyIngredientNames = new Set(
+    keyIngredients.map((k) => normalizeIngredientName(k.ingredient_name)),
+  );
 
   const pantryOptions = Array.from(
     new Map(
@@ -75,7 +79,12 @@ export default async function PantryPage() {
             </h2>
             <div className="divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
               {locItems.map((item) => (
-                <PantryItemRow key={item.id} item={item} unitSystem={unitSystem} />
+                <PantryItemRow
+                  key={item.id}
+                  item={item}
+                  unitSystem={unitSystem}
+                  isKeyIngredient={keyIngredientNames.has(normalizeIngredientName(item.ingredient_name))}
+                />
               ))}
             </div>
           </div>

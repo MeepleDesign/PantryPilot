@@ -35,6 +35,54 @@ export async function addKeyIngredient(input: {
   revalidatePath("/dashboard");
 }
 
+/**
+ * Quick toggle used from the pantry add/edit form: turns tracking on or
+ * off for an ingredient by name. Turning on only creates a row if one
+ * doesn't already exist for this name — it never overwrites an existing
+ * target, so editing stock later doesn't quietly change your "keep at
+ * least" goal. Turning off removes it outright.
+ */
+export async function toggleKeyIngredient(input: {
+  ingredient_name: string;
+  tracked: boolean;
+  default_target_quantity: number;
+  default_unit: string | null;
+}) {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  const { household } = await getCurrentHousehold();
+
+  const name = input.ingredient_name.trim();
+  if (!name) return;
+
+  if (!input.tracked) {
+    const { error } = await supabase
+      .from("key_ingredients")
+      .delete()
+      .eq("household_id", household.id)
+      .ilike("ingredient_name", name);
+    if (error) throw new Error(error.message);
+    revalidatePath("/pantry");
+    revalidatePath("/dashboard");
+    return;
+  }
+
+  const { error } = await supabase.from("key_ingredients").upsert(
+    {
+      household_id: household.id,
+      ingredient_name: name,
+      unit: input.default_unit,
+      target_quantity: Math.max(0, input.default_target_quantity) || 1,
+      created_by: auth.user?.id,
+    },
+    { onConflict: "household_id,ingredient_name", ignoreDuplicates: true },
+  );
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/pantry");
+  revalidatePath("/dashboard");
+}
+
 export async function removeKeyIngredient(id: string) {
   const supabase = await createClient();
   const { error } = await supabase.from("key_ingredients").delete().eq("id", id);
