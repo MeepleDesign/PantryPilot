@@ -29,6 +29,13 @@ export async function updateSession(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // API routes (including webhooks hit by external services like Stripe)
+  // check auth themselves and must return a real response, not an HTML
+  // redirect to /login — never gate them here.
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    return supabaseResponse;
+  }
+
   const isPublicPath =
     request.nextUrl.pathname === "/" ||
     PUBLIC_PATHS.some((path) => request.nextUrl.pathname.startsWith(path));
