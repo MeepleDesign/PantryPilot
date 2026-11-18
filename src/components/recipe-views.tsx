@@ -225,11 +225,7 @@ function ListDetailsView({
               </p>
             </div>
             <div className="hidden shrink-0 flex-col items-end gap-1 text-xs text-muted sm:flex">
-              {r.length > 0 ? (
-                <StaticStars value={avgOf(r)} count={r.length} />
-              ) : (
-                <span>No ratings yet</span>
-              )}
+              {r.length > 0 && <StaticStars value={avgOf(r)} count={r.length} />}
               <div className="flex gap-3">
                 {recipe.total_time_minutes && (
                   <span className="flex items-center gap-1">
@@ -277,7 +273,7 @@ function TilesView({
           <Link
             key={recipe.id}
             href={`/recipes/${recipe.id}`}
-            className="animate-fade-in-up block overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
+            className="animate-fade-in-up flex flex-col overflow-hidden rounded-xl border border-border bg-surface shadow-sm transition hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
           >
             {recipe.image_url ? (
               <div className={`relative w-full ${imgHeight}`}>
@@ -295,7 +291,7 @@ function TilesView({
                 <RecipePlaceholder name={recipe.name} size={size === "small" ? "sm" : "md"} />
               </div>
             )}
-            <div className={padding}>
+            <div className={`flex flex-1 flex-col ${padding}`}>
               <div className="mb-1 flex items-start justify-between gap-2">
                 <h3 className={`font-medium leading-snug ${size === "small" ? "text-sm" : ""}`}>
                   {recipe.name}
@@ -312,35 +308,19 @@ function TilesView({
                 )}
               </div>
               {size === "medium" && (
-                <p className="mb-1 text-xs text-muted">
-                  {[courseLabel(recipe), recipe.cuisine, ...(recipe.diet ?? [])]
+                <p className="mb-3 text-xs text-muted">
+                  {[courseLabel(recipe), recipe.cuisine, ...(recipe.diet ?? []), ...(recipe.tags ?? [])]
                     .filter(Boolean)
                     .join(" · ")}
                 </p>
               )}
-              <div className={size === "small" ? "mb-1" : "mb-2"}>
-                {r.length > 0 ? (
+              {r.length > 0 && (
+                <div className={size === "small" ? "mb-1" : "mb-2"}>
                   <StaticStars value={avgRating} count={size === "medium" ? r.length : undefined} />
-                ) : (
-                  <span className="text-xs text-muted">
-                    {size === "small" ? "-" : "No ratings yet"}
-                  </span>
-                )}
-              </div>
-              {size === "medium" && recipe.tags?.length > 0 && (
-                <div className="mb-3 flex flex-wrap gap-1">
-                  {recipe.tags.map((t) => (
-                    <span
-                      key={t}
-                      className="rounded-full bg-background px-2 py-0.5 text-[11px] text-muted"
-                    >
-                      {t}
-                    </span>
-                  ))}
                 </div>
               )}
               {size === "medium" ? (
-                <div className="flex flex-wrap gap-3 text-xs text-muted">
+                <div className="mt-auto flex flex-wrap gap-3 border-t border-border pt-3 text-xs text-muted">
                   {recipe.total_time_minutes && (
                     <span className="flex items-center gap-1">
                       <Clock className="h-3.5 w-3.5" /> {recipe.total_time_minutes} min
@@ -357,7 +337,7 @@ function TilesView({
                 </div>
               ) : (
                 recipe.total_time_minutes && (
-                  <span className="flex items-center gap-1 text-[11px] text-muted">
+                  <span className="mt-auto flex items-center gap-1 text-[11px] text-muted">
                     <Clock className="h-3 w-3" /> {recipe.total_time_minutes} min
                   </span>
                 )

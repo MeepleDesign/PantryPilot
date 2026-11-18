@@ -166,24 +166,35 @@ export default async function RecipeDetailPage({ params }: PageProps<"/recipes/[
 
       {recipe.description && <p className="mb-6 text-sm">{recipe.description}</p>}
 
-      <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat
-          icon={Clock}
-          label="Time"
-          value={recipe.total_time_minutes ? `${recipe.total_time_minutes} min` : "-"}
-        />
-        <Stat icon={UtensilsCrossed} label="Servings" value="2" />
-        <Stat
-          icon={Flame}
-          label="Calories"
-          value={recipe.calories ? `${recipe.calories} kcal` : "-"}
-        />
-        <Stat
-          icon={Dumbbell}
-          label="Protein"
-          value={recipe.protein_g ? `${recipe.protein_g} g` : "-"}
-        />
-      </div>
+      {(() => {
+        const stats = [
+          recipe.total_time_minutes
+            ? { icon: Clock, label: "Time", value: `${recipe.total_time_minutes} min` }
+            : null,
+          { icon: UtensilsCrossed, label: "Servings", value: "2" },
+          recipe.calories
+            ? { icon: Flame, label: "Calories", value: `${recipe.calories} kcal` }
+            : null,
+          recipe.protein_g
+            ? { icon: Dumbbell, label: "Protein", value: `${recipe.protein_g} g` }
+            : null,
+        ].filter((x) => x !== null);
+        const cols =
+          stats.length >= 4
+            ? "grid-cols-2 sm:grid-cols-4"
+            : stats.length === 3
+              ? "grid-cols-3"
+              : stats.length === 2
+                ? "grid-cols-2"
+                : "grid-cols-2 sm:grid-cols-4";
+        return (
+          <div className={`mb-6 grid gap-3 ${cols}`}>
+            {stats.map((st) => (
+              <Stat key={st.label} icon={st.icon} label={st.label} value={st.value} />
+            ))}
+          </div>
+        );
+      })()}
 
       <div className="mb-6 rounded-xl border border-border bg-surface p-3 shadow-sm print:hidden">
         <InteractiveStars recipeId={id} initialRating={myRating} />

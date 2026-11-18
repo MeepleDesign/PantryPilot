@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { Archive, Snowflake, Refrigerator, Package, Receipt, ArrowRight } from "lucide-react";
+import { Archive, Snowflake, Refrigerator, Package } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { PantryItemForm, PantryItemRow } from "@/components/pantry-item-form";
@@ -50,27 +49,9 @@ export default async function PantryPage() {
         </div>
       </div>
 
-      <Link
-        href="/shopping-list/spending"
-        className="mb-6 flex items-center justify-between gap-3 rounded-xl border border-dashed border-brand/40 bg-brand/5 p-4 transition-colors hover:bg-brand/10"
-      >
-        <div className="flex items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-brand/20 bg-surface text-brand shadow-sm">
-          <Receipt className="h-[18px] w-[18px]" />
-        </span>
-          <div>
-            <p className="text-sm font-medium">Just did a shop?</p>
-            <p className="text-xs text-muted">
-              Scan your receipt or order confirmation to add it to your pantry.
-            </p>
-          </div>
-        </div>
-        <ArrowRight className="h-4 w-4 shrink-0 text-muted" />
-      </Link>
-
       <PantryPhotoSection unitSystem={unitSystem} />
 
-      <div className="mb-8">
+      <div className="mb-8 mt-2">
         <PantryItemForm unitSystem={unitSystem} />
       </div>
 
