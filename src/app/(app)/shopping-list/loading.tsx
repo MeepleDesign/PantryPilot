@@ -5,7 +5,12 @@ export default function Loading() {
     <div className="mx-auto max-w-2xl">
       <Skeleton className="mb-2 h-7 w-40" />
       <Skeleton className="mb-6 h-4 w-56" />
+      <Skeleton className="mb-4 h-16 w-full rounded-xl" />
       <Skeleton className="mb-4 h-12 w-full rounded-xl" />
+      <div className="mb-3 flex items-center gap-3">
+        <Skeleton className="h-2 flex-1 rounded-full" />
+        <Skeleton className="h-3 w-28" />
+      </div>
       <div className="divide-y divide-border rounded-xl border border-border bg-surface shadow-sm">
         {Array.from({ length: 6 }).map((_, i) => (
           <div key={i} className="flex items-center gap-3 px-4 py-3">
