@@ -1,8 +1,9 @@
-import { Sparkles } from "lucide-react";
+import { Sparkles, Bell } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { HouseholdSettingsForm, JoinHouseholdForm } from "@/components/settings-forms";
 import { LinkButton } from "@/components/link-button";
 import { AppearanceSettings } from "@/components/appearance-settings";
+import { PushNotificationSettings } from "@/components/push-notification-settings";
 
 const FREE_INCLUDES = [
   "Unlimited recipes, pantry & shopping list",
@@ -20,6 +21,16 @@ export default async function SettingsPage() {
       <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
         <h2 className="mb-4 font-medium">Appearance</h2>
         <AppearanceSettings />
+      </section>
+
+      <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
+        <h2 className="mb-4 flex items-center gap-2 font-medium">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-brand/10 text-brand-dark">
+            <Bell className="h-4 w-4" />
+          </span>
+          Notifications
+        </h2>
+        <PushNotificationSettings />
       </section>
 
       <section className="rounded-xl border border-border bg-surface p-5 shadow-sm">
