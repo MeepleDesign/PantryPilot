@@ -116,7 +116,8 @@ export function PushNotificationSettings() {
   return (
     <div className="flex items-center justify-between gap-3">
       <p className="text-sm text-muted">
-        Get a daily alert when pantry items are expiring soon or a key ingredient is running low.
+        Get a daily alert for today&apos;s planned meals (and any missing ingredients), plus
+        pantry items expiring soon or a key ingredient running low.
       </p>
       <button
         type="button"
