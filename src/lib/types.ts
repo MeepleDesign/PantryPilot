@@ -141,6 +141,7 @@ export type Profile = {
   units: string;
   is_admin: boolean;
   avatar_url: string | null;
+  avatar_emoji: string | null;
 };
 
 export type CommunityRecipeReport = {

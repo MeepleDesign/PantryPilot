@@ -57,14 +57,29 @@ export async function updateProfileSettings(input: {
   revalidatePath("/shopping-list/spending");
 }
 
-export async function updateAvatar(avatarUrl: string | null) {
+/** A photo and an icon are mutually exclusive — setting one clears the other. */
+export async function updateAvatarPhoto(avatarUrl: string | null) {
   const supabase = await createClient();
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) throw new Error("Not authenticated");
 
   const { error } = await supabase
     .from("profiles")
-    .update({ avatar_url: avatarUrl })
+    .update({ avatar_url: avatarUrl, avatar_emoji: null })
+    .eq("user_id", auth.user.id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/profile", "layout");
+}
+
+export async function updateAvatarEmoji(emoji: string | null) {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) throw new Error("Not authenticated");
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_emoji: emoji, avatar_url: null })
     .eq("user_id", auth.user.id);
   if (error) throw new Error(error.message);
 

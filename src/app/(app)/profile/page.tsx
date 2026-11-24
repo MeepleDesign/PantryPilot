@@ -17,6 +17,7 @@ export default async function ProfilePage() {
         <AvatarUpload
           userId={profile.user_id}
           avatarUrl={profile.avatar_url}
+          avatarEmoji={profile.avatar_emoji}
           initials={initials}
         />
         <div className="min-w-0">

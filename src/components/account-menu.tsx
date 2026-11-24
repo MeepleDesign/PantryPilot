@@ -17,10 +17,12 @@ export function AccountMenu({
   displayName,
   householdName,
   avatarUrl,
+  avatarEmoji,
 }: {
   displayName: string;
   householdName: string;
   avatarUrl?: string | null;
+  avatarEmoji?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -43,6 +45,8 @@ export function AccountMenu({
       >
         {avatarUrl ? (
           <Image src={avatarUrl} alt="" fill className="object-cover" unoptimized />
+        ) : avatarEmoji ? (
+          <span className="text-lg">{avatarEmoji}</span>
         ) : (
           initialsOf(displayName)
         )}

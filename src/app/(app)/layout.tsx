@@ -30,6 +30,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             displayName={profile.display_name ?? "You"}
             householdName={household.name}
             avatarUrl={profile.avatar_url}
+            avatarEmoji={profile.avatar_emoji}
           />
         </div>
         <div className="mx-auto max-w-5xl px-4 py-6 md:px-8 md:py-8">
