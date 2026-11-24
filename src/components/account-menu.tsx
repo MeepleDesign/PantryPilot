@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { User, Settings, CreditCard, LogOut } from "lucide-react";
 import { signOut } from "@/app/login/actions";
+import { AvatarGlyph } from "@/components/avatar-glyph";
 
 function initialsOf(name: string) {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -46,7 +47,7 @@ export function AccountMenu({
         {avatarUrl ? (
           <Image src={avatarUrl} alt="" fill className="object-cover" unoptimized />
         ) : avatarEmoji ? (
-          <span className="text-lg">{avatarEmoji}</span>
+          <AvatarGlyph value={avatarEmoji} className="h-full w-full text-lg" />
         ) : (
           initialsOf(displayName)
         )}

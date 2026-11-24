@@ -8,6 +8,8 @@ import { useToast } from "@/components/toast";
 import { createClient } from "@/lib/supabase/client";
 import { updateAvatarPhoto, updateAvatarEmoji } from "@/lib/actions/settings";
 import { AVATAR_EMOJIS } from "@/lib/avatar-emojis";
+import { AVATAR_CHARACTERS } from "@/lib/avatar-characters";
+import { AvatarGlyph } from "@/components/avatar-glyph";
 
 const MAX_SIZE_MB = 5;
 
@@ -74,7 +76,7 @@ export function AvatarUpload({
     }
   }
 
-  async function handlePickEmoji(choice: string) {
+  async function handlePickIcon(choice: string) {
     setPending(true);
     try {
       await updateAvatarEmoji(choice);
@@ -109,7 +111,7 @@ export function AvatarUpload({
         {url ? (
           <Image src={url} alt="" fill className="object-cover" unoptimized />
         ) : emoji ? (
-          <span className="text-2xl">{emoji}</span>
+          <AvatarGlyph value={emoji} className="h-full w-full text-2xl" />
         ) : (
           initials
         )}
@@ -140,8 +142,8 @@ export function AvatarUpload({
         type="button"
         disabled={pending}
         onClick={() => setPickerOpen((o) => !o)}
-        aria-label="Choose a food icon"
-        title="Choose an icon"
+        aria-label="Choose an icon or character"
+        title="Choose an icon or character"
         className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-surface text-muted shadow-sm hover:text-foreground disabled:cursor-wait"
       >
         <Smile className="h-3.5 w-3.5" />
@@ -160,14 +162,29 @@ export function AvatarUpload({
 
       {pickerOpen && (
         <div className="absolute left-0 top-16 z-30 w-64 rounded-xl border border-border bg-surface p-3 shadow-lg">
-          <p className="mb-2 text-xs font-medium text-muted">Pick an icon</p>
+          <p className="mb-2 text-xs font-medium text-muted">Cartoon characters</p>
+          <div className="mb-3 grid grid-cols-6 gap-1.5">
+            {AVATAR_CHARACTERS.map((c) => (
+              <button
+                key={c.id}
+                type="button"
+                disabled={pending}
+                onClick={() => handlePickIcon(c.id)}
+                title={c.label}
+                className="flex h-8 w-8 items-center justify-center rounded-full hover:bg-background disabled:cursor-wait"
+              >
+                <AvatarGlyph value={c.id} className="h-7 w-7" />
+              </button>
+            ))}
+          </div>
+          <p className="mb-2 text-xs font-medium text-muted">Emoji</p>
           <div className="grid grid-cols-8 gap-1">
             {AVATAR_EMOJIS.map((e) => (
               <button
                 key={e}
                 type="button"
                 disabled={pending}
-                onClick={() => handlePickEmoji(e)}
+                onClick={() => handlePickIcon(e)}
                 className="flex h-7 w-7 items-center justify-center rounded-lg text-lg hover:bg-background disabled:cursor-wait"
               >
                 {e}
