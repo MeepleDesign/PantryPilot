@@ -1,4 +1,4 @@
-import { Archive, Snowflake, Refrigerator, Package } from "lucide-react";
+import { Archive, Snowflake, Refrigerator, Package, AlertTriangle } from "lucide-react";
 import { getCurrentHousehold } from "@/lib/current-household";
 import { createClient } from "@/lib/supabase/server";
 import { PantryItemForm, PantryItemRow } from "@/components/pantry-item-form";
@@ -7,6 +7,8 @@ import { KeyIngredientsSection } from "@/components/key-ingredients-section";
 import { EmptyState } from "@/components/empty-state";
 import { getKeyIngredientStatuses } from "@/lib/actions/key-ingredients";
 import { normalizeIngredientName } from "@/lib/ingredient-name";
+import { expiryStatus } from "@/lib/expiry";
+import { formatShortDate } from "@/lib/format-date";
 import type { PantryItem, StorageLocation } from "@/lib/types";
 import type { UnitSystem } from "@/lib/units";
 
@@ -44,6 +46,15 @@ export default async function PantryPage() {
     .map(([name, unit]) => ({ name, unit }))
     .sort((a, b) => a.name.localeCompare(b.name));
 
+  const byExpiry = (a: PantryItem, b: PantryItem) =>
+    (a.expiry_date ?? "").localeCompare(b.expiry_date ?? "");
+  const expiredItems = ((items as PantryItem[] | null) ?? [])
+    .filter((i) => expiryStatus(i.expiry_date) === "expired")
+    .sort(byExpiry);
+  const soonItems = ((items as PantryItem[] | null) ?? [])
+    .filter((i) => expiryStatus(i.expiry_date) === "soon")
+    .sort(byExpiry);
+
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
@@ -52,6 +63,34 @@ export default async function PantryPage() {
           <p className="text-sm text-muted">{items?.length ?? 0} items tracked</p>
         </div>
       </div>
+
+      {(expiredItems.length > 0 || soonItems.length > 0) && (
+        <div className="mb-6 rounded-xl border border-warn/40 bg-warn/5 p-4">
+          <h2 className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-warn">
+            <AlertTriangle className="h-4 w-4" />
+            {expiredItems.length + soonItems.length} item
+            {expiredItems.length + soonItems.length === 1 ? "" : "s"} need attention
+          </h2>
+          <ul className="space-y-1 text-sm">
+            {expiredItems.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-3">
+                <span className="min-w-0 truncate">{p.ingredient_name}</span>
+                <span className="shrink-0 rounded-full bg-danger/10 px-2 py-0.5 text-xs font-medium text-danger">
+                  Expired {formatShortDate(p.expiry_date)}
+                </span>
+              </li>
+            ))}
+            {soonItems.map((p) => (
+              <li key={p.id} className="flex items-center justify-between gap-3">
+                <span className="min-w-0 truncate">{p.ingredient_name}</span>
+                <span className="shrink-0 rounded-full bg-warn/10 px-2 py-0.5 text-xs font-medium text-warn">
+                  Use by {formatShortDate(p.expiry_date)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <PantryPhotoSection unitSystem={unitSystem} />
 
