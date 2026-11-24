@@ -57,6 +57,20 @@ export async function updateProfileSettings(input: {
   revalidatePath("/shopping-list/spending");
 }
 
+export async function updateAvatar(avatarUrl: string | null) {
+  const supabase = await createClient();
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) throw new Error("Not authenticated");
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ avatar_url: avatarUrl })
+    .eq("user_id", auth.user.id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/profile", "layout");
+}
+
 export async function joinHousehold(code: string) {
   const supabase = await createClient();
   const { error } = await supabase.rpc("join_household_by_code", { code });

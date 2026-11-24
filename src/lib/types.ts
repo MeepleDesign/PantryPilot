@@ -140,6 +140,7 @@ export type Profile = {
   disliked_ingredients: string[];
   units: string;
   is_admin: boolean;
+  avatar_url: string | null;
 };
 
 export type CommunityRecipeReport = {

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { User, Settings, CreditCard, LogOut } from "lucide-react";
 import { signOut } from "@/app/login/actions";
 
@@ -15,9 +16,11 @@ function initialsOf(name: string) {
 export function AccountMenu({
   displayName,
   householdName,
+  avatarUrl,
 }: {
   displayName: string;
   householdName: string;
+  avatarUrl?: string | null;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -35,10 +38,14 @@ export function AccountMenu({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className="flex h-9 w-9 items-center justify-center rounded-full bg-brand text-sm font-semibold text-brand-foreground shadow-sm transition-opacity hover:opacity-90"
+        className="relative flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-brand text-sm font-semibold text-brand-foreground shadow-sm transition-opacity hover:opacity-90"
         aria-label="Account menu"
       >
-        {initialsOf(displayName)}
+        {avatarUrl ? (
+          <Image src={avatarUrl} alt="" fill className="object-cover" unoptimized />
+        ) : (
+          initialsOf(displayName)
+        )}
       </button>
 
       {open && (

@@ -1,5 +1,6 @@
 import { getCurrentHousehold } from "@/lib/current-household";
 import { ProfileSettingsForm } from "@/components/settings-forms";
+import { AvatarUpload } from "@/components/avatar-upload";
 
 export default async function ProfilePage() {
   const { profile, household } = await getCurrentHousehold();
@@ -13,9 +14,11 @@ export default async function ProfilePage() {
   return (
     <div className="mx-auto max-w-xl space-y-8">
       <div className="flex items-center gap-4">
-        <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-brand text-lg font-semibold text-brand-foreground shadow-sm ring-4 ring-brand/15">
-          {initials}
-        </span>
+        <AvatarUpload
+          userId={profile.user_id}
+          avatarUrl={profile.avatar_url}
+          initials={initials}
+        />
         <div className="min-w-0">
           <h1 className="text-2xl font-semibold tracking-tight">My Profile</h1>
           <p className="truncate text-sm text-muted">
